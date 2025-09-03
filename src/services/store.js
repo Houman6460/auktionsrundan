@@ -5,12 +5,14 @@ const defaults = {
   header: {
     visible: true,
     logo: '',
+    // Bilingual nav labels with defaults (SV/EN)
     nav: {
-      home: 'Hem',
-      auctions: 'Kommande auktioner',
-      items: 'Auktionsvaror',
-      terms: 'Auktionsvillkor',
+      home: { sv: 'Hem', en: 'Home' },
+      auctions: { sv: 'Kommande auktioner', en: 'Upcoming auctions' },
+      items: { sv: 'Auktionsvaror', en: 'Auction items' },
+      terms: { sv: 'Auktionsvillkor', en: 'Terms' },
     },
+    // Active languages toggles
     languages: { sv: true, en: true },
   },
   hero: {
@@ -20,7 +22,8 @@ const defaults = {
       { name: 'Hindås Rotundan', date: '24/2-2024' },
       { name: 'Ullareds Bygdegård', date: '25/2-2024' },
     ],
-    cta: { text: 'Hitta Hit', link: '#auctions' },
+    // Bilingual CTA text with defaults (SV/EN)
+    cta: { text: { sv: 'Hitta Hit', en: 'Get Directions' }, link: '#auctions' },
   },
   auctions: {
     visible: true,
@@ -78,14 +81,58 @@ const defaults = {
   },
 }
 
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj))
+}
+
+// Normalize legacy single-language values to bilingual structures
+function normalize(content) {
+  const out = deepClone(content)
+  try {
+    // header.nav.* may be strings from older data; convert to {sv, en}
+    if (out.header && out.header.nav) {
+      for (const key of ['home', 'auctions', 'items', 'terms']) {
+        const v = out.header.nav[key]
+        if (typeof v === 'string') {
+          const enDefault = defaults.header.nav[key].en
+          out.header.nav[key] = { sv: v, en: enDefault }
+        } else if (v && typeof v === 'object') {
+          // ensure both sv and en exist
+          out.header.nav[key].sv = out.header.nav[key].sv ?? defaults.header.nav[key].sv
+          out.header.nav[key].en = out.header.nav[key].en ?? defaults.header.nav[key].en
+        } else if (v == null) {
+          out.header.nav[key] = deepClone(defaults.header.nav[key])
+        }
+      }
+    }
+
+    // hero.cta.text may be string; convert to {sv, en}
+    if (out.hero && out.hero.cta) {
+      const t = out.hero.cta.text
+      if (typeof t === 'string') {
+        out.hero.cta.text = { sv: t, en: defaults.hero.cta.text.en }
+      } else if (t && typeof t === 'object') {
+        out.hero.cta.text.sv = t.sv ?? defaults.hero.cta.text.sv
+        out.hero.cta.text.en = t.en ?? defaults.hero.cta.text.en
+      } else if (t == null) {
+        out.hero.cta.text = deepClone(defaults.hero.cta.text)
+      }
+    }
+  } catch {
+    // noop normalization errors
+  }
+  return out
+}
+
 export function loadContent() {
   try {
     const raw = localStorage.getItem(LS_KEY)
-    if (!raw) return JSON.parse(JSON.stringify(defaults))
+    if (!raw) return deepClone(defaults)
     const parsed = JSON.parse(raw)
-    return { ...JSON.parse(JSON.stringify(defaults)), ...parsed }
+    const merged = { ...deepClone(defaults), ...parsed }
+    return normalize(merged)
   } catch {
-    return JSON.parse(JSON.stringify(defaults))
+    return deepClone(defaults)
   }
 }
 

@@ -16,6 +16,7 @@ export default function Admin() {
   const [saved, setSaved] = React.useState(false)
   const [authed, setAuthed] = React.useState(() => localStorage.getItem('ar_admin_authed') === '1')
   const [pw, setPw] = React.useState('')
+  const [currentLang, setCurrentLang] = React.useState(() => localStorage.getItem('ar_admin_lang') || 'sv')
 
   const handleToggle = (path) => (e) => {
     const next = { ...data }
@@ -114,6 +115,20 @@ export default function Admin() {
             <h1 className="font-serif text-xl">Admin</h1>
           </div>
           <nav className="flex items-center gap-3">
+            <div className="flex items-center gap-1 mr-2">
+              <button
+                className={`px-2 py-1 rounded text-sm ${currentLang==='sv' ? 'bg-earth-dark text-white' : 'btn-outline'}`}
+                onClick={()=>{setCurrentLang('sv'); localStorage.setItem('ar_admin_lang','sv')}}
+                disabled={!data.header.languages?.sv}
+                title={!data.header.languages?.sv ? 'SV inaktiverat' : 'Svenska'}
+              >SV</button>
+              <button
+                className={`px-2 py-1 rounded text-sm ${currentLang==='en' ? 'bg-earth-dark text-white' : 'btn-outline'}`}
+                onClick={()=>{setCurrentLang('en'); localStorage.setItem('ar_admin_lang','en')}}
+                disabled={!data.header.languages?.en}
+                title={!data.header.languages?.en ? 'EN inaktiverat' : 'English'}
+              >EN</button>
+            </div>
             <Link to="/" className="btn-outline text-sm">Till webbplatsen</Link>
             <button className="btn-primary text-sm" onClick={save}>Spara</button>
           </nav>
@@ -163,6 +178,19 @@ export default function Admin() {
               </div>
             </div>
           </div>
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">Navigering ({currentLang.toUpperCase()})</h3>
+              <label className="block text-sm text-neutral-600 mb-1">Hem</label>
+              <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.home?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.home[currentLang]=e.target.value; setData(n)}} />
+              <label className="block text-sm text-neutral-600 mb-1">Kommande auktioner</label>
+              <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.auctions?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.auctions[currentLang]=e.target.value; setData(n)}} />
+              <label className="block text-sm text-neutral-600 mb-1">Auktionsvaror</label>
+              <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
+              <label className="block text-sm text-neutral-600 mb-1">Auktionsvillkor</label>
+              <input className="w-full border rounded px-3 py-2" value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
+            </div>
+          </div>
         </Section>
 
         <Section id="admin-hero" title="Hero (Hem)">
@@ -176,8 +204,8 @@ export default function Admin() {
               <input className="w-full border rounded px-3 py-2" value={data.hero.bg || ''} onChange={handleChange(['hero','bg'])} placeholder="https://..." />
             </div>
             <div>
-              <label className="block text-sm text-neutral-600 mb-1">CTA text</label>
-              <input className="w-full border rounded px-3 py-2" value={data.hero.cta?.text || ''} onChange={(e)=>{const n={...data};n.hero.cta.text=e.target.value;setData(n)}} />
+              <label className="block text-sm text-neutral-600 mb-1">CTA text ({currentLang.toUpperCase()})</label>
+              <input className="w-full border rounded px-3 py-2" value={data.hero.cta?.text?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.cta.text[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mt-2 mb-1">CTA länk</label>
               <input className="w-full border rounded px-3 py-2" value={data.hero.cta?.link || ''} onChange={(e)=>{const n={...data};n.hero.cta.link=e.target.value;setData(n)}} />
             </div>
