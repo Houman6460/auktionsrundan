@@ -2,9 +2,9 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { loadContent, saveContent, resetContent } from '../services/store'
 
-function Section({ title, children }) {
+function Section({ id, title, children }) {
   return (
-    <section className="section-card p-5">
+    <section id={id} className="section-card p-5">
       <h2 className="font-serif text-2xl mb-4">{title}</h2>
       {children}
     </section>
@@ -120,10 +120,32 @@ export default function Admin() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 grid gap-6">
-        {saved && <div className="section-card p-3 text-emerald-700 bg-emerald-50">Sparat!</div>}
+      <main className="container mx-auto px-4 py-8">
+        {saved && <div className="section-card p-3 text-emerald-700 bg-emerald-50 mb-6">Sparat!</div>}
 
-        <Section title="Header">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Sidebar */}
+          <aside className="col-span-12 md:col-span-3 lg:col-span-3">
+            <div className="section-card p-4 sticky top-4 max-h-[80vh] overflow-auto">
+              <nav className="flex flex-col gap-2 text-sm">
+                <a href="#admin-header" className="hover:underline">Header</a>
+                <a href="#admin-hero" className="hover:underline">Hero (Hem)</a>
+                <a href="#admin-auctions" className="hover:underline">Kommande Auktioner</a>
+                <a href="#admin-items" className="hover:underline">Auktionsvaror</a>
+                <a href="#admin-terms" className="hover:underline">Auktionsvillkor</a>
+                <a href="#admin-instagram" className="hover:underline">Instagram</a>
+                <a href="#admin-footer" className="hover:underline">Footer</a>
+                <hr className="my-3" />
+                <button className="btn-primary w-full" onClick={save}>Spara</button>
+                <button className="btn-outline w-full" onClick={hardReset}>Återställ standard</button>
+              </nav>
+            </div>
+          </aside>
+
+          {/* Content */}
+          <div className="col-span-12 md:col-span-9 lg:col-span-9 grid gap-6">
+
+        <Section id="admin-header" title="Header">
           <label className="flex items-center gap-2 mb-3">
             <input type="checkbox" checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
             <span>Visa header</span>
@@ -143,7 +165,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section title="Hero (Hem)">
+        <Section id="admin-hero" title="Hero (Hem)">
           <label className="flex items-center gap-2 mb-3">
             <input type="checkbox" checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
             <span>Visa hero</span>
@@ -185,7 +207,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section title="Kommande Auktioner">
+        <Section id="admin-auctions" title="Kommande Auktioner">
           <label className="flex items-center gap-2 mb-3">
             <input type="checkbox" checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
             <span>Visa sektion</span>
@@ -225,7 +247,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section title="Auktionsvaror">
+        <Section id="admin-items" title="Auktionsvaror">
           <label className="flex items-center gap-2 mb-3">
             <input type="checkbox" checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
             <span>Visa sektion</span>
@@ -234,7 +256,7 @@ export default function Admin() {
           {/* Minimal editor: demonstrates structure; can be expanded later. */}
         </Section>
 
-        <Section title="Auktionsvillkor">
+        <Section id="admin-terms" title="Auktionsvillkor">
           <label className="flex items-center gap-2 mb-3">
             <input type="checkbox" checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
             <span>Visa sektion</span>
@@ -247,7 +269,7 @@ export default function Admin() {
           ))}
         </Section>
 
-        <Section title="Instagram">
+        <Section id="admin-instagram" title="Instagram">
           <label className="flex items-center gap-2 mb-3">
             <input type="checkbox" checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
             <span>Visa sektion</span>
@@ -271,7 +293,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section title="Footer">
+        <Section id="admin-footer" title="Footer">
           <label className="flex items-center gap-2 mb-3">
             <input type="checkbox" checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
             <span>Visa footer</span>
@@ -294,9 +316,13 @@ export default function Admin() {
           </div>
         </Section>
 
+        {/* Bottom actions (duplicate for convenience) */}
         <div className="flex items-center gap-3">
           <button className="btn-primary" onClick={save}>Spara</button>
           <button className="btn-outline" onClick={hardReset}>Återställ standard</button>
+        </div>
+
+          </div>
         </div>
       </main>
     </div>
