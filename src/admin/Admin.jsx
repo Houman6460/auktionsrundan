@@ -35,6 +35,29 @@ export default function Admin() {
     setData(next)
   }
 
+  // Convert an uploaded image to Data URL and store at given path
+  const handleFileToDataUrl = (path) => async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const next = { ...data }
+      let cur = next
+      for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
+      cur[path[path.length - 1]] = reader.result
+      setData(next)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const clearField = (path) => () => {
+    const next = { ...data }
+    let cur = next
+    for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
+    cur[path[path.length - 1]] = ''
+    setData(next)
+  }
+
   const addAuction = () => {
     const next = { ...data }
     next.auctions.list = next.auctions.list || []
@@ -169,6 +192,15 @@ export default function Admin() {
             <div>
               <label className="block text-sm text-neutral-600 mb-1">Logotyp URL</label>
               <input className="w-full border rounded px-3 py-2" value={data.header.logo || ''} onChange={handleChange(['header','logo'])} placeholder="https://..." />
+              <div className="mt-2 flex items-center gap-2">
+                <input type="file" accept="image/*" onChange={handleFileToDataUrl(['header','logo'])} />
+                <button type="button" className="btn-outline text-xs" onClick={clearField(['header','logo'])}>Rensa</button>
+              </div>
+              {data.header.logo && (
+                <div className="mt-2">
+                  <img src={data.header.logo} alt="Logotyp" className="h-12 w-auto border rounded bg-white" />
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">Språk aktiva (SV/EN)</label>
@@ -202,6 +234,15 @@ export default function Admin() {
             <div>
               <label className="block text-sm text-neutral-600 mb-1">Bakgrundsbild URL</label>
               <input className="w-full border rounded px-3 py-2" value={data.hero.bg || ''} onChange={handleChange(['hero','bg'])} placeholder="https://..." />
+              <div className="mt-2 flex items-center gap-2">
+                <input type="file" accept="image/*" onChange={handleFileToDataUrl(['hero','bg'])} />
+                <button type="button" className="btn-outline text-xs" onClick={clearField(['hero','bg'])}>Rensa</button>
+              </div>
+              {data.hero.bg && (
+                <div className="mt-2">
+                  <img src={data.hero.bg} alt="Hero bakgrund" className="h-24 w-auto border rounded bg-white object-cover" />
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">CTA text ({currentLang.toUpperCase()})</label>
