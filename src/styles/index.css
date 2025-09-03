@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base typography */
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-vintage-cream text-vintage-black font-sans antialiased;
+}
+
+.container {
+  @apply max-w-6xl;
+}
+
+.section-card {
+  @apply bg-white/80 backdrop-blur shadow-sm rounded-lg border border-amber-900/10;
+}
+
+.btn-primary {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-md bg-earth-dark text-white hover:bg-earth transition;
+}
+
+.btn-outline {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-md border border-earth-dark text-earth-dark hover:bg-earth-light/30 transition;
+}

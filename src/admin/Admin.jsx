@@ -1,0 +1,304 @@
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { loadContent, saveContent, resetContent } from '../services/store'
+
+function Section({ title, children }) {
+  return (
+    <section className="section-card p-5">
+      <h2 className="font-serif text-2xl mb-4">{title}</h2>
+      {children}
+    </section>
+  )
+}
+
+export default function Admin() {
+  const [data, setData] = React.useState(loadContent())
+  const [saved, setSaved] = React.useState(false)
+  const [authed, setAuthed] = React.useState(() => localStorage.getItem('ar_admin_authed') === '1')
+  const [pw, setPw] = React.useState('')
+
+  const handleToggle = (path) => (e) => {
+    const next = { ...data }
+    let cur = next
+    for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
+    cur[path[path.length - 1]] = e.target.checked
+    setData(next)
+  }
+
+  const handleChange = (path) => (e) => {
+    const value = e.target.value
+    const next = { ...data }
+    let cur = next
+    for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
+    cur[path[path.length - 1]] = value
+    setData(next)
+  }
+
+  const addAuction = () => {
+    const next = { ...data }
+    next.auctions.list = next.auctions.list || []
+    next.auctions.list.push({ title: 'Ny auktion', address: '', mapEmbed: '', viewing: '', start: '' })
+    setData(next)
+  }
+
+  const removeAuction = (idx) => {
+    const next = { ...data }
+    next.auctions.list.splice(idx, 1)
+    setData(next)
+  }
+
+  const updateAuction = (idx, key, value) => {
+    const next = { ...data }
+    next.auctions.list[idx][key] = value
+    setData(next)
+  }
+
+  const addNextAuction = () => {
+    const next = { ...data }
+    next.hero.nextAuctions = next.hero.nextAuctions || []
+    next.hero.nextAuctions.push({ name: 'Ny auktion', date: '2025-12-31' })
+    setData(next)
+  }
+
+  const removeNextAuction = (idx) => {
+    const next = { ...data }
+    next.hero.nextAuctions.splice(idx, 1)
+    setData(next)
+  }
+
+  const save = () => {
+    saveContent(data)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1500)
+    // notify other tabs
+    window.dispatchEvent(new StorageEvent('storage', { key: 'ar_site_content_v1' }))
+  }
+
+  const hardReset = () => {
+    if (!confirm('Återställ till standardinnehåll?')) return
+    resetContent()
+    setData(loadContent())
+  }
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-vintage-cream px-4">
+        <div className="section-card w-full max-w-sm p-6">
+          <h1 className="font-serif text-2xl mb-4">Admin Login</h1>
+          <p className="text-sm text-neutral-600 mb-3">Ange lösenord för att fortsätta.</p>
+          <form onSubmit={(e)=>{e.preventDefault(); if (pw.trim().length >= 4) { localStorage.setItem('ar_admin_authed','1'); setAuthed(true);} else { alert('Ogiltigt lösenord (minst 4 tecken).') } }}>
+            <input
+              type="password"
+              className="w-full border rounded px-3 py-2 mb-3"
+              placeholder="Lösenord"
+              value={pw}
+              onChange={(e)=>setPw(e.target.value)}
+            />
+            <button className="btn-primary w-full" type="submit">Logga in</button>
+          </form>
+          <p className="text-xs text-neutral-500 mt-3">Tips: För demo, valfritt lösenord ≥ 4 tecken.</p>
+          <div className="mt-4 text-center">
+            <Link to="/" className="underline text-sm">Tillbaka</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-vintage-cream">
+      <header className="border-b bg-white/80 backdrop-blur">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-earth-dark" aria-hidden="true" />
+            <h1 className="font-serif text-xl">Admin</h1>
+          </div>
+          <nav className="flex items-center gap-3">
+            <Link to="/" className="btn-outline text-sm">Till webbplatsen</Link>
+            <button className="btn-primary text-sm" onClick={save}>Spara</button>
+          </nav>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 grid gap-6">
+        {saved && <div className="section-card p-3 text-emerald-700 bg-emerald-50">Sparat!</div>}
+
+        <Section title="Header">
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
+            <span>Visa header</span>
+          </label>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Logotyp URL</label>
+              <input className="w-full border rounded px-3 py-2" value={data.header.logo || ''} onChange={handleChange(['header','logo'])} placeholder="https://..." />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Språk aktiva (SV/EN)</label>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={!!data.header.languages.sv} onChange={(e)=>{const n={...data};n.header.languages.sv=e.target.checked;setData(n)}} />SV</label>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={!!data.header.languages.en} onChange={(e)=>{const n={...data};n.header.languages.en=e.target.checked;setData(n)}} />EN</label>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Hero (Hem)">
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
+            <span>Visa hero</span>
+          </label>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Bakgrundsbild URL</label>
+              <input className="w-full border rounded px-3 py-2" value={data.hero.bg || ''} onChange={handleChange(['hero','bg'])} placeholder="https://..." />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">CTA text</label>
+              <input className="w-full border rounded px-3 py-2" value={data.hero.cta?.text || ''} onChange={(e)=>{const n={...data};n.hero.cta.text=e.target.value;setData(n)}} />
+              <label className="block text-sm text-neutral-600 mt-2 mb-1">CTA länk</label>
+              <input className="w-full border rounded px-3 py-2" value={data.hero.cta?.link || ''} onChange={(e)=>{const n={...data};n.hero.cta.link=e.target.value;setData(n)}} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-serif text-lg">Nästa Auktion(er)</h3>
+              <button className="btn-outline text-sm" onClick={addNextAuction}>Lägg till</button>
+            </div>
+            <div className="grid gap-3">
+              {(data.hero.nextAuctions||[]).map((a, idx) => (
+                <div key={idx} className="grid md:grid-cols-3 gap-3 items-end">
+                  <div>
+                    <label className="block text-sm text-neutral-600 mb-1">Namn</label>
+                    <input className="w-full border rounded px-3 py-2" value={a.name} onChange={(e)=>{const n={...data};n.hero.nextAuctions[idx].name=e.target.value;setData(n)}} />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-neutral-600 mb-1">Datum</label>
+                    <input type="date" className="w-full border rounded px-3 py-2" value={a.date} onChange={(e)=>{const n={...data};n.hero.nextAuctions[idx].date=e.target.value;setData(n)}} />
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="btn-outline" onClick={()=>removeNextAuction(idx)}>Ta bort</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Kommande Auktioner">
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
+            <span>Visa sektion</span>
+          </label>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-serif text-lg">Händelser</h3>
+            <button className="btn-outline text-sm" onClick={addAuction}>Lägg till auktion</button>
+          </div>
+          <div className="grid gap-4">
+            {(data.auctions.list||[]).map((a, idx) => (
+              <div key={idx} className="section-card p-4 grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-neutral-600 mb-1">Titel</label>
+                  <input className="w-full border rounded px-3 py-2" value={a.title} onChange={(e)=>updateAuction(idx,'title',e.target.value)} />
+                  <label className="block text-sm text-neutral-600 mt-2 mb-1">Adress</label>
+                  <input className="w-full border rounded px-3 py-2" value={a.address} onChange={(e)=>updateAuction(idx,'address',e.target.value)} />
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <div>
+                      <label className="block text-sm text-neutral-600 mb-1">Visning</label>
+                      <input className="w-full border rounded px-3 py-2" value={a.viewing} onChange={(e)=>updateAuction(idx,'viewing',e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-neutral-600 mb-1">Start</label>
+                      <input className="w-full border rounded px-3 py-2" value={a.start} onChange={(e)=>updateAuction(idx,'start',e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-neutral-600 mb-1">Google Maps Embed URL</label>
+                  <input className="w-full border rounded px-3 py-2" value={a.mapEmbed} onChange={(e)=>updateAuction(idx,'mapEmbed',e.target.value)} placeholder="https://www.google.com/maps?...&output=embed" />
+                  <div className="mt-3 flex gap-2">
+                    <button className="btn-outline" onClick={()=>removeAuction(idx)}>Ta bort</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Auktionsvaror">
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
+            <span>Visa sektion</span>
+          </label>
+          <p className="text-sm text-neutral-600">Lägg till objekt per kategori med bild-URL, namn, typ och storlek.</p>
+          {/* Minimal editor: demonstrates structure; can be expanded later. */}
+        </Section>
+
+        <Section title="Auktionsvillkor">
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
+            <span>Visa sektion</span>
+          </label>
+          {Object.entries(data.terms.blocks).map(([key, val]) => (
+            <div key={key} className="mb-4">
+              <label className="block text-sm text-neutral-600 mb-1">{key}</label>
+              <textarea className="w-full border rounded px-3 py-2 min-h-[100px]" value={val} onChange={(e)=>{const n={...data};n.terms.blocks[key]=e.target.value;setData(n)}} />
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Instagram">
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
+            <span>Visa sektion</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Användarnamn</label>
+              <input className="w-full border rounded px-3 py-2" value={data.instagram.username || ''} onChange={handleChange(['instagram','username'])} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Token</label>
+              <input className="w-full border rounded px-3 py-2" value={data.instagram.token || ''} onChange={handleChange(['instagram','token'])} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Layout</label>
+              <select className="w-full border rounded px-3 py-2" value={data.instagram.layout} onChange={(e)=>{const n={...data};n.instagram.layout=e.target.value;setData(n)}}>
+                <option value="grid">Grid</option>
+                <option value="carousel">Carousel</option>
+              </select>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Footer">
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
+            <span>Visa footer</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Telefon</label>
+              <input className="w-full border rounded px-3 py-2" value={data.footer.phone || ''} onChange={handleChange(['footer','phone'])} />
+              <label className="block text-sm text-neutral-600 mt-2 mb-1">Email</label>
+              <input className="w-full border rounded px-3 py-2" value={data.footer.email || ''} onChange={handleChange(['footer','email'])} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Adress</label>
+              <textarea className="w-full border rounded px-3 py-2 min-h-[100px]" value={data.footer.address || ''} onChange={handleChange(['footer','address'])} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">Nyhetsbrev</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={!!data.footer.newsletter} onChange={handleToggle(['footer','newsletter'])} />Aktivera</label>
+            </div>
+          </div>
+        </Section>
+
+        <div className="flex items-center gap-3">
+          <button className="btn-primary" onClick={save}>Spara</button>
+          <button className="btn-outline" onClick={hardReset}>Återställ standard</button>
+        </div>
+      </main>
+    </div>
+  )
+}
