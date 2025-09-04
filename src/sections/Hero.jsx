@@ -5,16 +5,11 @@ import { loadContent } from '../services/store'
 export default function Hero() {
   const { t } = useTranslation()
   const [content, setContent] = React.useState(loadContent())
-  const [now, setNow] = React.useState(() => Date.now())
 
   React.useEffect(() => {
     const onStorage = () => setContent(loadContent())
     window.addEventListener('storage', onStorage)
-    const tick = setInterval(() => setNow(Date.now()), 1000)
-    return () => {
-      window.removeEventListener('storage', onStorage)
-      clearInterval(tick)
-    }
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   if (!content.hero?.visible) return null
@@ -24,24 +19,6 @@ export default function Hero() {
   const preferred = localStorage.getItem('site_lang') || 'sv'
   const lang = active[preferred] ? preferred : (active.sv ? 'sv' : 'en')
   const ctaText = (content.hero?.cta?.text && (content.hero.cta.text[lang] || content.hero.cta.text.sv || content.hero.cta.text.en)) || t('hero.findUs')
-
-  // Compute next upcoming auction based on ISO date (YYYY-MM-DD)
-  const upcoming = (content.hero?.nextAuctions || [])
-    .map(a => ({ ...a, ts: a?.date ? Date.parse(a.date) : NaN }))
-    .filter(a => Number.isFinite(a.ts))
-    .sort((a, b) => a.ts - b.ts)
-
-  const next = upcoming.find(a => a.ts >= now)
-
-  const formatRemaining = (targetTs) => {
-    const diff = Math.max(0, targetTs - now)
-    const s = Math.floor(diff / 1000)
-    const d = Math.floor(s / 86400)
-    const h = Math.floor((s % 86400) / 3600)
-    const m = Math.floor((s % 3600) / 60)
-    const sec = s % 60
-    return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
-  }
 
   return (
     <section id="home" className="relative h-[60vh] min-h-[420px] flex items-center justify-center">
@@ -55,32 +32,9 @@ export default function Hero() {
         <h1 className="font-serif text-4xl md:text-5xl drop-shadow">Auktionsrundan</h1>
         <div className="mt-6 inline-block section-card bg-white/90 text-vintage-black px-6 py-4">
           <div className="font-serif text-xl mb-1">{t('hero.nextAuction')}</div>
-          {next && (
-            <div className="mb-3">
-              <div className="text-base font-medium">{next.name} — {new Date(next.ts).toLocaleDateString()}</div>
-              <div className="text-2xl font-mono">{formatRemaining(next.ts)}</div>
-            </div>
-          )}
           <ul className="text-sm">
             {(content.hero?.nextAuctions || []).map((a, idx) => (
-              <li key={idx} className="mt-2">
-                <div className="font-medium">{a.name} — {a.date}</div>
-                {a.mapEmbed && (
-                  <div className="mt-2">
-                    <div className="aspect-video w-full max-w-xl mx-auto border rounded overflow-hidden">
-                      <iframe
-                        src={a.mapEmbed}
-                        title={`Karta ${a.name}`}
-                        width="100%"
-                        height="100%"
-                        loading="lazy"
-                        allowFullScreen
-                        referrerPolicy="no-referrer-when-downgrade"
-                      />
-                    </div>
-                  </div>
-                )}
-              </li>
+              <li key={idx}>{a.name} — {a.date}</li>
             ))}
           </ul>
         </div>
