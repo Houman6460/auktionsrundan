@@ -72,7 +72,8 @@ export default function ShareMenu() {
     telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
   }
 
-  const itemBase = `${isLeft ? 'absolute top-1/2 left-1/2' : 'absolute top-1/2 right-1/2'} z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
+  // Anchor items near the button edge; higher z-index so they are visible above content
+  const itemBase = `${isLeft ? 'absolute top-[0.2em] left-[0.2em]' : 'absolute top-[0.2em] right-[0.2em]'} z-10 flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
 
   // Build ordered list of enabled keys
   const keys = []
@@ -82,27 +83,22 @@ export default function ShareMenu() {
   if (cfg.platforms?.telegram) keys.push('telegram')
   if (cfg.platforms?.copy) keys.push('copy')
 
-  // Arrange along a nice inward arc around the button
-  // For RIGHT side: angles roughly from -20deg (slightly above) to -160deg (below), evenly spaced
-  // For LEFT side: mirror horizontally by forcing x to positive (inward to the right)
-  const count = keys.length
-  const radius = 92 // px, adjust for tighter/looser arc
-  const startDeg = -20
-  const endDeg = -160
-  const step = count > 1 ? (endDeg - startDeg) / (count - 1) : 0
-
-  const items = keys.map((key, idx) => {
-    const deg = startDeg + idx * step
-    const rad = (Math.PI / 180) * deg
-    const cos = Math.cos(rad)
-    const sin = Math.sin(rad)
-    // Base local offsets
-    let x = radius * cos
-    const y = radius * sin
-    // Enforce inward direction only by sign, do not distort magnitude
+  // Place items along a consistent arc using a fixed set of angles
+  // Angles chosen to resemble the provided example spacing
+  const angles = [-20, -50, -80, -110, -140]
+  const radiusPx = 92
+  const polarToXY = (deg) => {
+    const r = (Math.PI / 180) * deg
+    let x = radiusPx * Math.cos(r)
+    const y = radiusPx * Math.sin(r)
+    // Inward: right side => negative x; left side => positive x
     x = isLeft ? Math.abs(x) : -Math.abs(x)
-    return { key, x: `${x.toFixed(1)}px`, y: `${y.toFixed(1)}px` }
-  })
+    return { x: `${x.toFixed(1)}px`, y: `${y.toFixed(1)}px` }
+  }
+
+  const order = ['facebook', 'twitter', 'linkedin', 'telegram', 'copy']
+  const enabledOrdered = order.filter(k => keys.includes(k))
+  const items = enabledOrdered.map((key, i) => ({ key, ...polarToXY(angles[i] ?? angles[angles.length - 1]) }))
 
   const handleCopy = async () => {
     try {
