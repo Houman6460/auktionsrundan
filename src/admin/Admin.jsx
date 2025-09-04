@@ -11,6 +11,41 @@ function Section({ id, title, children }) {
   )
 }
 
+// Helper: compress image files to data URL to avoid exceeding localStorage quota
+async function fileToCompressedDataUrl(file, maxDim = 1600, quality = 0.8) {
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = reject
+    const reader = new FileReader()
+    reader.onload = () => { image.src = reader.result }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+  const w = img.naturalWidth || img.width
+  const h = img.naturalHeight || img.height
+  let targetW = w
+  let targetH = h
+  if (w > h && w > maxDim) {
+    targetW = maxDim
+    targetH = Math.round(h * (maxDim / w))
+  } else if (h >= w && h > maxDim) {
+    targetH = maxDim
+    targetW = Math.round(w * (maxDim / h))
+  }
+  const canvas = document.createElement('canvas')
+  canvas.width = targetW
+  canvas.height = targetH
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(img, 0, 0, targetW, targetH)
+  // Use JPEG for better compression; fallback to PNG if canvas fails
+  try {
+    return canvas.toDataURL('image/jpeg', quality)
+  } catch {
+    return canvas.toDataURL()
+  }
+}
+
 export default function Admin() {
   const [data, setData] = React.useState(loadContent())
   const [saved, setSaved] = React.useState(false)
@@ -36,19 +71,20 @@ export default function Admin() {
     setData(next)
   }
 
-  // Convert an uploaded image to Data URL and store at given path
+  // Convert an uploaded image to compressed Data URL and store at given path
   const handleFileToDataUrl = (path) => async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file)
       const next = { ...data }
       let cur = next
       for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
-      cur[path[path.length - 1]] = reader.result
+      cur[path[path.length - 1]] = dataUrl
       setData(next)
+    } catch (err) {
+      alert('Kunde inte läsa bilden. Försök med en annan fil.')
     }
-    reader.readAsDataURL(file)
   }
 
   const clearField = (path) => () => {
@@ -99,11 +135,16 @@ export default function Admin() {
   }
 
   const save = () => {
-    saveContent(data)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 1500)
-    // notify other tabs
-    window.dispatchEvent(new StorageEvent('storage', { key: 'ar_site_content_v1' }))
+    try {
+      saveContent(data)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 1500)
+      // notify other tabs
+      window.dispatchEvent(new StorageEvent('storage', { key: 'ar_site_content_v1' }))
+    } catch (e) {
+      console.error('Save failed', e)
+      alert('Kunde inte spara innehållet. För många/breda bilder? Prova att ladda upp mindre bilder och försök igen.')
+    }
   }
 
   const hardReset = () => {
@@ -417,16 +458,17 @@ export default function Admin() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <input type="file" accept="image/*" onChange={(e)=>{
+                          <input type="file" accept="image/*" onChange={async (e)=>{
                             const file = e.target.files?.[0]
                             if (!file) return
-                            const reader = new FileReader()
-                            reader.onload = () => {
+                            try {
+                              const dataUrl = await fileToCompressedDataUrl(file)
                               const next = { ...data }
-                              next.items.categories[catName][idx].img = reader.result
+                              next.items.categories[catName][idx].img = dataUrl
                               setData(next)
+                            } catch (err) {
+                              alert('Kunde inte läsa bilden. Försök med en annan fil.')
                             }
-                            reader.readAsDataURL(file)
                           }} />
                           <button className="btn-outline text-xs" onClick={()=>{
                             const next = { ...data }
