@@ -36,12 +36,17 @@ function Icon({ name, className }) {
 export default function ShareMenu() {
   const { i18n } = useTranslation()
   const [cfg, setCfg] = React.useState(() => loadContent().share)
+  const [chat, setChat] = React.useState(() => loadContent().chat)
   const [open, setOpen] = React.useState(false)
 
   React.useEffect(() => {
     const handler = (e) => {
       if (!e || e.key === 'ar_site_content_v1') {
-        try { setCfg(loadContent().share) } catch {}
+        try {
+          const data = loadContent()
+          setCfg(data.share)
+          setChat(data.chat)
+        } catch {}
       }
     }
     window.addEventListener('storage', handler)
@@ -54,6 +59,12 @@ export default function ShareMenu() {
   const url = typeof window !== 'undefined' ? window.location.href : ''
   const text = (cfg.text?.[i18n.language] || cfg.text?.sv || cfg.text?.en || '').trim()
 
+  // Avoid overlap with WhatsApp chat widget if enabled on the same side
+  const chatEnabled = !!(chat && chat.enabled && chat.provider === 'whatsapp')
+  const sameSideAsChat = chatEnabled && ((chat.position === 'left') === isLeft)
+  // Default bottom spacing: 1rem; if overlapping, lift the share menu above chat button (~5.5rem)
+  const bottomSpace = sameSideAsChat ? '5.5rem' : '1rem'
+
   const links = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
@@ -61,7 +72,7 @@ export default function ShareMenu() {
     telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
   }
 
-  const itemBase = 'absolute top-[0.2em] right-[0.2em] z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-vintage-black transition-transform duration-300'
+  const itemBase = 'absolute top-[0.2em] right-[0.2em] z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300'
 
   const items = []
   if (cfg.platforms?.facebook) items.push({ key: 'facebook', x: isLeft ? '-7em' : '1em', y: '-7em' })
@@ -86,14 +97,14 @@ export default function ShareMenu() {
   return (
     <div
       className="fixed"
-      style={{ bottom: '1em', [isLeft ? 'left' : 'right']: '1em' }}
+      style={{ bottom: bottomSpace, [isLeft ? 'left' : 'right']: '1rem' }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
       <div className={`relative ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <button
           type="button"
-          className="floating-btn pointer-events-auto w-14 h-14 rounded-full bg-vintage-black text-white flex items-center justify-center shadow-lg focus:outline-none"
+          className="floating-btn pointer-events-auto w-14 h-14 rounded-full bg-earth-dark text-white flex items-center justify-center shadow-lg focus:outline-none"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Close share menu' : 'Open share menu'}
         >
