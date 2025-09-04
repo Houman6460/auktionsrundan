@@ -72,6 +72,20 @@ const defaults = {
     token: '',
     layout: 'grid',
   },
+  // Frequently Asked Questions (bilingual)
+  faq: {
+    visible: true,
+    items: [
+      {
+        q: { sv: 'Hur fungerar era auktioner?', en: 'How do your auctions work?' },
+        a: { sv: 'Vi håller löpande live-auktioner på plats. Du registrerar ett kundnummer i kundtjänst och ropar in varor på plats.', en: 'We run live in-person auctions. Register a customer number at customer service and bid on-site.' }
+      },
+      {
+        q: { sv: 'Vilka betalningsmetoder accepterar ni?', en: 'What payment methods do you accept?' },
+        a: { sv: 'Swish, kontanter eller enligt separat överenskommelse.', en: 'Swish, cash or by separate agreement.' }
+      },
+    ],
+  },
   // Global Google Maps settings configurable from Admin
   maps: {
     visible: true,
@@ -232,6 +246,24 @@ function normalize(content) {
       const dz = parseInt(out.maps.defaultZoom, 10)
       out.maps.defaultZoom = Number.isFinite(dz) ? dz : defaults.maps.defaultZoom
       out.maps.language = out.maps.language === 'en' ? 'en' : 'sv'
+    }
+    // Ensure FAQ section exists and normalize structure
+    if (!out.faq || typeof out.faq !== 'object') {
+      out.faq = deepClone(defaults.faq)
+    } else {
+      out.faq.visible = out.faq.visible ?? defaults.faq.visible
+      const arr = Array.isArray(out.faq.items) ? out.faq.items : []
+      out.faq.items = arr.map((it) => {
+        const next = { ...it }
+        const ensureBilingual = (val) => {
+          if (typeof val === 'string') return { sv: val, en: '' }
+          if (val && typeof val === 'object') return { sv: val.sv ?? '', en: val.en ?? '' }
+          return { sv: '', en: '' }
+        }
+        next.q = ensureBilingual(next.q)
+        next.a = ensureBilingual(next.a)
+        return next
+      })
     }
     // Ensure ratings section exists
     if (!out.ratings || typeof out.ratings !== 'object') {

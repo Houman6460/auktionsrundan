@@ -7,6 +7,7 @@ import Auctions from './sections/Auctions.jsx'
 import Items from './sections/Items.jsx'
 import Terms from './sections/Terms.jsx'
 import InstagramFeed from './sections/InstagramFeed.jsx'
+import FAQ from './sections/FAQ.jsx'
 import Footer from './components/Footer.jsx'
 import Admin from './admin/Admin.jsx'
 
@@ -55,6 +56,11 @@ export default function App() {
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">Instagram</h2>
                   <InstagramFeed />
+                </div>
+              </section>
+              <section id="faq" className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-16">
+                  <FAQ />
                 </div>
               </section>
               <Footer />

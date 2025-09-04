@@ -266,6 +266,7 @@ export default function Admin() {
                 <a href="#admin-items" className="hover:underline">{L('Auktionsvaror','Auction Items')}</a>
                 <a href="#admin-terms" className="hover:underline">{L('Auktionsvillkor','Terms')}</a>
                 <a href="#admin-instagram" className="hover:underline">{L('Instagram','Instagram')}</a>
+                <a href="#admin-faq" className="hover:underline">FAQ</a>
                 <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
                 <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
                 <a href="#admin-footer" className="hover:underline">{L('Footer','Footer')}</a>
@@ -324,6 +325,42 @@ export default function Admin() {
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvillkor','Terms')}</label>
               <input className="w-full border rounded px-3 py-2" value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
             </div>
+          </div>
+        </Section>
+
+        <Section id="admin-faq" title="FAQ">
+          <label className="flex items-center gap-2 mb-3">
+            <Toggle checked={!!data.faq?.visible} onChange={(e)=>{const n={...data}; n.faq = n.faq||{}; n.faq.visible = e.target.checked; setData(n)}} />
+            <span>{L('Visa sektion','Show section')}</span>
+          </label>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-serif text-lg">{L('Frågor & svar','Questions & Answers')}</h3>
+            <button className="btn-outline text-sm" onClick={()=>{const n={...data}; n.faq = n.faq||{}; n.faq.items = n.faq.items||[]; n.faq.items.push({ q:{sv:'',en:''}, a:{sv:'',en:''} }); setData(n)}}>{L('Lägg till','Add')}</button>
+          </div>
+          <div className="grid gap-3">
+            {(!(data.faq?.items)||data.faq.items.length===0) && (
+              <div className="text-neutral-600 text-sm">{L('Inga frågor ännu.','No questions yet.')}</div>
+            )}
+            {(data.faq?.items||[]).map((it, idx) => (
+              <div key={idx} className="section-card p-4">
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Fråga','Question')} ({currentLang.toUpperCase()})</label>
+                    <input className="w-full border rounded px-3 py-2" value={it.q?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.faq.items[idx].q = { ...(n.faq.items[idx].q||{}), [currentLang]: e.target.value }; setData(n)}} />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Svar','Answer')} ({currentLang.toUpperCase()})</label>
+                    <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={it.a?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.faq.items[idx].a = { ...(n.faq.items[idx].a||{}), [currentLang]: e.target.value }; setData(n)}} />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-3">
+                  <div className="text-xs text-neutral-500">{L('Redigerar språk:','Editing language:')} {currentLang.toUpperCase()}</div>
+                  <div className="flex gap-2">
+                    <button className="btn-outline" onClick={()=>{const n={...data}; n.faq.items.splice(idx,1); setData(n)}}>{L('Ta bort','Remove')}</button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </Section>
 
