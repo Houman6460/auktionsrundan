@@ -39,6 +39,7 @@ export default function ShareMenu() {
   const [chat, setChat] = React.useState(() => loadContent().chat)
   const [open, setOpen] = React.useState(false)
   const [hovered, setHovered] = React.useState(null)
+  const containerRef = React.useRef(null)
 
   React.useEffect(() => {
     const handler = (e) => {
@@ -52,6 +53,18 @@ export default function ShareMenu() {
     }
     window.addEventListener('storage', handler)
     return () => window.removeEventListener('storage', handler)
+  }, [])
+
+  // Close when clicking outside the share menu
+  React.useEffect(() => {
+    const onDocClick = (e) => {
+      if (!containerRef.current) return
+      if (!containerRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('click', onDocClick)
+    return () => document.removeEventListener('click', onDocClick)
   }, [])
 
   if (!cfg?.enabled) return null
@@ -119,10 +132,9 @@ export default function ShareMenu() {
 
   return (
     <div
+      ref={containerRef}
       className="fixed z-40"
       style={{ bottom: bottomSpace, [isLeft ? 'left' : 'right']: '1rem' }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
     >
       <div className={`relative ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <button
