@@ -111,11 +111,18 @@ export default function Hero() {
                     </>
                   )}
                 </div>
+        </div>
               </div>
             </div>
           </div>
         )}
-        <div ref={cardRef} className={`mt-6 inline-block section-card bg-white/90 text-vintage-black px-6 py-4 transition-transform duration-300 ${stuck ? 'scale-95 opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className="mt-6 inline-block relative">
+          {/* Shining edge behind the card before it transforms */}
+          <div
+            className={`absolute -inset-[3px] rounded-2xl bg-gradient-to-r from-yellow-200 via-white to-yellow-200 opacity-70 blur-sm animate-pulse transition-opacity duration-300 pointer-events-none ${stuck ? 'opacity-0' : 'opacity-80'}`}
+            aria-hidden="true"
+          />
+          <div ref={cardRef} className={`relative section-card bg-white/90 text-vintage-black px-6 py-4 transition-transform duration-300 ${stuck ? 'scale-95 opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="font-serif text-xl mb-1">{t('hero.nextAuction')}</div>
           {next && (
             <div className="mb-3">
