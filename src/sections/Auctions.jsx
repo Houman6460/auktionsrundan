@@ -1,7 +1,9 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 
 function AuctionCard({ a, idx, now }) {
+  const { t } = useTranslation()
   const toStartTs = (dateStr, timeStr) => {
     if (!dateStr || typeof dateStr !== 'string') return NaN
     const time = (typeof timeStr === 'string' && /\d{1,2}:\d{2}/.test(timeStr)) ? timeStr : '00:00'
@@ -28,19 +30,19 @@ function AuctionCard({ a, idx, now }) {
         <p className="text-sm text-neutral-700 mt-1">{a.address}</p>
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
           <div className="p-2 rounded bg-vintage-cream/60">
-            <div className="text-neutral-500">Visning</div>
+            <div className="text-neutral-500">{t('auctions.viewing')}</div>
             <div className="font-medium">{a.viewing}</div>
             {a.start && (
-              <div className="text-sm text-neutral-700">Start {a.start}</div>
+              <div className="text-sm text-neutral-700">{t('auctions.start')} {a.start}</div>
             )}
           </div>
           <div className="p-2 rounded bg-vintage-cream/60">
-            <div className="text-neutral-500">Datum</div>
+            <div className="text-neutral-500">{t('auctions.date')}</div>
             <div className="font-medium">{a.date || '-'}</div>
             {a.start && <div className="text-sm text-neutral-700">{a.start}</div>}
             {Number.isFinite(startTs) && (
               <div className="mt-1">
-                <div className="text-neutral-600 text-[11px] leading-none">Nedräkning</div>
+                <div className="text-neutral-600 text-[11px] leading-none">{t('auctions.countdown')}</div>
                 <div className="font-mono text-base">{remaining()}</div>
               </div>
             )}
@@ -59,7 +61,7 @@ function AuctionCard({ a, idx, now }) {
             referrerPolicy="no-referrer-when-downgrade"
           />
         ) : (
-          <div className="w-full h-full min-h-[220px] grid place-items-center text-neutral-500">Ingen karta</div>
+          <div className="w-full h-full min-h-[220px] grid place-items-center text-neutral-500">{t('auctions.noMap')}</div>
         )}
       </div>
     </div>
@@ -67,6 +69,7 @@ function AuctionCard({ a, idx, now }) {
 }
 
 export default function Auctions() {
+  const { t } = useTranslation()
   const [content, setContent] = React.useState(loadContent())
   const [now, setNow] = React.useState(() => Date.now())
   React.useEffect(() => {
@@ -79,7 +82,7 @@ export default function Auctions() {
     }
   }, [])
 
-  if (!content.auctions?.visible) return <div className="text-neutral-500">Sektionen är avstängd.</div>
+  if (!content.auctions?.visible) return <div className="text-neutral-500">{t('auctions.sectionOff')}</div>
 
   const list = content.auctions?.list || []
   return (
@@ -88,7 +91,7 @@ export default function Auctions() {
         <AuctionCard key={idx} a={a} idx={idx} now={now} />
       ))}
       {list.length === 0 && (
-        <div className="section-card p-4 text-neutral-600">Inga planerade auktioner.</div>
+        <div className="section-card p-4 text-neutral-600">{t('auctions.none')}</div>
       )}
     </div>
   )

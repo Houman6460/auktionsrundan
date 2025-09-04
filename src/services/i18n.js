@@ -14,6 +14,15 @@ const resources = {
       hero: {
         nextAuction: 'Nästa Auktion',
         findUs: 'Hitta Hit'
+      },
+      auctions: {
+        viewing: 'Visning',
+        start: 'Start',
+        date: 'Datum',
+        countdown: 'Nedräkning',
+        noMap: 'Ingen karta',
+        none: 'Inga planerade auktioner.',
+        sectionOff: 'Sektionen är avstängd.'
       }
     }
   },
@@ -29,6 +38,15 @@ const resources = {
       hero: {
         nextAuction: 'Next Auction',
         findUs: 'Find Us'
+      },
+      auctions: {
+        viewing: 'Viewing',
+        start: 'Start',
+        date: 'Date',
+        countdown: 'Countdown',
+        noMap: 'No map',
+        none: 'No scheduled auctions.',
+        sectionOff: 'This section is disabled.'
       }
     }
   }
