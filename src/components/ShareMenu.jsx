@@ -97,7 +97,7 @@ export default function ShareMenu() {
 
   // Anchor items at button center; higher z-index so they are visible above content
   // Gradient circle with shadow, dark icon by default (icon inherits currentColor)
-  const itemBase = `group absolute top-1/2 left-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-300 shadow-lg hover:shadow`
+  const itemBase = `group absolute top-1/2 left-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-300`
 
   // Build ordered list of enabled keys
   const keys = []
@@ -148,7 +148,7 @@ export default function ShareMenu() {
       <div className={`relative ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <button
           type="button"
-          className="floating-btn pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg focus:outline-none"
+          className="floating-btn pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center focus:outline-none"
           style={{ background: 'linear-gradient(0deg, #3a2f25, #584a3b)' }}
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Close share menu' : 'Open share menu'}
@@ -169,7 +169,6 @@ export default function ShareMenu() {
                 className="w-full h-full flex items-center justify-center rounded-full"
                 style={{
                   background: 'linear-gradient(0deg, #ddd, #fff)',
-                  boxShadow: '0 10px 15px rgba(0,0,0,0.3)',
                   color: hovered === it.key ? it.hoverColor : '#262626',
                 }}
                 aria-label={`Share via ${it.key}`}
@@ -183,12 +182,11 @@ export default function ShareMenu() {
       {/* Scroll-to-top button below WhatsApp, aligned to same side */}
       <button
         type="button"
-        className="fixed w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+        className="fixed w-14 h-14 rounded-full flex items-center justify-center"
         style={{
           [isLeft ? 'left' : 'right']: '1rem',
-          bottom: '0.25rem',
+          bottom: 'calc(1rem - 12px)',
           background: 'linear-gradient(0deg, #ddd, #fff)',
-          boxShadow: '0 10px 15px rgba(0,0,0,0.3)',
           color: '#262626',
           zIndex: 39,
         }}
