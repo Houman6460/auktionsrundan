@@ -72,8 +72,8 @@ export default function ShareMenu() {
     telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
   }
 
-  // Anchor items near the button edge; higher z-index so they are visible above content
-  const itemBase = `${isLeft ? 'absolute top-[0.2em] left-[0.2em]' : 'absolute top-[0.2em] right-[0.2em]'} z-10 flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
+  // Anchor items at button center; higher z-index so they are visible above content
+  const itemBase = `absolute top-1/2 left-1/2 z-10 flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
 
   // Build ordered list of enabled keys
   const keys = []
