@@ -72,6 +72,13 @@ const defaults = {
     token: '',
     layout: 'grid',
   },
+  // Global Google Maps settings configurable from Admin
+  maps: {
+    visible: true,
+    apiKey: '',
+    defaultZoom: 14,
+    language: 'sv', // 'sv' | 'en'
+  },
   footer: {
     visible: true,
     phone: '+46707221645',
@@ -187,6 +194,16 @@ function normalize(content) {
     // footer address bilingual
     if (out.footer) {
       out.footer.address = ensureBilingual(out.footer.address)
+    }
+    // Ensure maps section exists with sane defaults
+    if (!out.maps || typeof out.maps !== 'object') {
+      out.maps = deepClone(defaults.maps)
+    } else {
+      out.maps.visible = out.maps.visible ?? defaults.maps.visible
+      out.maps.apiKey = typeof out.maps.apiKey === 'string' ? out.maps.apiKey : ''
+      const dz = parseInt(out.maps.defaultZoom, 10)
+      out.maps.defaultZoom = Number.isFinite(dz) ? dz : defaults.maps.defaultZoom
+      out.maps.language = out.maps.language === 'en' ? 'en' : 'sv'
     }
   } catch {
     // noop normalization errors

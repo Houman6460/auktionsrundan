@@ -180,6 +180,7 @@ export default function Admin() {
                 <a href="#admin-items" className="hover:underline">{L('Auktionsvaror','Auction Items')}</a>
                 <a href="#admin-terms" className="hover:underline">{L('Auktionsvillkor','Terms')}</a>
                 <a href="#admin-instagram" className="hover:underline">{L('Instagram','Instagram')}</a>
+                <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
                 <a href="#admin-footer" className="hover:underline">{L('Footer','Footer')}</a>
                 <hr className="my-3" />
                 <button className="btn-primary w-full" onClick={save}>{L('Spara','Save')}</button>
@@ -379,6 +380,36 @@ export default function Admin() {
                 <option value="carousel">{L('Karusell','Carousel')}</option>
               </select>
             </div>
+          </div>
+        </Section>
+
+        <Section id="admin-maps" title={L('Google Maps','Google Maps')}>
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.maps?.visible} onChange={handleToggle(['maps','visible'])} />
+            <span>{L('Visa sektion','Show section')}</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">API Key</label>
+              <input className="w-full border rounded px-3 py-2" value={data.maps?.apiKey || ''} onChange={handleChange(['maps','apiKey'])} placeholder="AIza..." />
+              <p className="text-xs text-neutral-500 mt-1">{L('Sätts även som miljövariabel i produktion.','Also set as environment variable in production.')}</p>
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Standard Zoom','Default Zoom')}</label>
+              <input type="number" min="1" max="20" className="w-full border rounded px-3 py-2" value={data.maps?.defaultZoom ?? 14} onChange={(e)=>{const n={...data}; n.maps.defaultZoom = parseInt(e.target.value||'14',10); setData(n)}} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Språk','Language')}</label>
+              <select className="w-full border rounded px-3 py-2" value={data.maps?.language || 'sv'} onChange={(e)=>{const n={...data}; n.maps.language = e.target.value; setData(n)}}>
+                <option value="sv">Svenska</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+          <div className="mt-3">
+            <p className="text-xs text-neutral-600">
+              {L('Tips: Använd Google Cloud Console för att skapa en nyckel och begränsa den till Maps JavaScript & Places API.','Tip: Use Google Cloud Console to create a key and restrict it to Maps JavaScript & Places API.')}
+            </p>
           </div>
         </Section>
 
