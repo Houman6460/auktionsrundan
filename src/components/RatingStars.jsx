@@ -11,6 +11,7 @@ export default function RatingStars({ targetType, targetId, className }) {
   const [hover, setHover] = React.useState(0)
   const [pending, setPending] = React.useState(false)
   const [mine, setMine] = React.useState(0)
+  const [msg, setMsg] = React.useState('')
 
   const key = targetType === 'upcoming' ? 'upcoming' : `item:${targetId || ''}`
   const lsKey = `ar_rating_${key}`
@@ -26,7 +27,10 @@ export default function RatingStars({ targetType, targetId, className }) {
       setAvg(Number(data.average || 0))
       setCount(Number(data.totalVotes || 0))
     } catch {
-      // ignore network errors silently on UI
+      // If running locally without Functions, hint once
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        setMsg('Ratings API is unavailable in local dev. Deploy to Cloudflare Pages with D1 bound to use ratings.')
+      }
     }
   }
 
@@ -42,6 +46,7 @@ export default function RatingStars({ targetType, targetId, className }) {
   const submit = async (score) => {
     if (pending) return
     setPending(true)
+    setMsg('')
     try {
       const body = { type: targetType === 'upcoming' ? 'upcoming' : 'item', score }
       if (targetType === 'item') body.id = targetId || ''
@@ -50,15 +55,20 @@ export default function RatingStars({ targetType, targetId, className }) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body)
       })
-      const data = await res.json()
-      if (res.ok) {
+      const data = await res.json().catch(()=>({}))
+      if (res.status === 429) {
+        setMsg('Please wait before voting again.')
+      } else if (res.ok) {
         setAvg(Number(data.average || 0))
         setCount(Number(data.totalVotes || 0))
         setMine(score)
         try { localStorage.setItem(lsKey, String(score)) } catch {}
+        setMsg('Thanks for rating!')
+      } else {
+        setMsg('Could not submit rating. If this is production, ensure Cloudflare D1 is configured.')
       }
     } catch {
-      // ignore
+      setMsg('Network error while submitting rating.')
     } finally {
       setPending(false)
     }
@@ -87,6 +97,9 @@ export default function RatingStars({ targetType, targetId, className }) {
         ))}
         <span className="text-sm text-neutral-600 ml-2">{avg.toFixed(2)} ({count})</span>
       </div>
+      {msg && (
+        <div className="text-xs mt-1 ${pending ? 'text-neutral-500' : 'text-neutral-600'}">{msg}</div>
+      )}
     </div>
   )
 }

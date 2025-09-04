@@ -67,7 +67,10 @@ async function addVote(DB, target, score, ip) {
 export async function onRequest(context) {
   const { request, env } = context
   const { DB } = env
-  if (!DB) return jsonResponse({ error: 'D1 binding DB is missing' }, 500)
+  if (!DB) {
+    console.error('[ratings] Missing D1 binding "DB". Available env keys:', Object.keys(env||{}))
+    return jsonResponse({ error: 'D1 binding DB is missing' }, 500)
+  }
   await ensureSchema(DB)
 
   const { url, search } = parseUrl(request)
@@ -77,6 +80,7 @@ export async function onRequest(context) {
     if (method === 'GET') {
       const type = search.get('type')
       const id = search.get('id')
+      console.log('[ratings][GET]', { type, id })
       if (!type || (type !== 'upcoming' && type !== 'item')) {
         return jsonResponse({ error: 'Invalid type' }, 400)
       }
@@ -92,6 +96,7 @@ export async function onRequest(context) {
       const type = body?.type
       const score = Number(body?.score)
       const id = body?.id
+      console.log('[ratings][POST]', { type, score, id })
       if (!type || (type !== 'upcoming' && type !== 'item')) return jsonResponse({ error: 'Invalid type' }, 400)
       if (!Number.isFinite(score) || score < 1 || score > 5) return jsonResponse({ error: 'Invalid score' }, 400)
       const target = type === 'upcoming' ? 'upcoming' : `item:${id || ''}`
@@ -106,6 +111,9 @@ export async function onRequest(context) {
 
     return jsonResponse({ error: 'Method not allowed' }, 405)
   } catch (e) {
+    try {
+      console.error('[ratings][ERROR]', e && (e.stack || e.message || e))
+    } catch {}
     return jsonResponse({ error: e?.message || 'Server error' }, 500)
   }
 }
