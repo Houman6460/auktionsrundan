@@ -221,6 +221,7 @@ export default function Admin() {
                 <a href="#admin-items" className="hover:underline">{L('Auktionsvaror','Auction Items')}</a>
                 <a href="#admin-terms" className="hover:underline">{L('Auktionsvillkor','Terms')}</a>
                 <a href="#admin-instagram" className="hover:underline">{L('Instagram','Instagram')}</a>
+                <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
                 <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
                 <a href="#admin-footer" className="hover:underline">{L('Footer','Footer')}</a>
                 <hr className="my-3" />
@@ -512,6 +513,16 @@ export default function Admin() {
               ))}
             </div>
           </div>
+        </Section>
+
+        <Section id="admin-ratings" title={L('Betyg','Ratings')}>
+          <label className="flex items-center gap-2 mb-3">
+            <input type="checkbox" checked={!!data.ratings?.enabled} onChange={(e)=>{const n={...data}; n.ratings = n.ratings||{}; n.ratings.enabled = e.target.checked; setData(n)}} />
+            <span>{L('Aktivera betygssystem (stjärnor)','Enable ratings (stars)')}</span>
+          </label>
+          <p className="text-sm text-neutral-600">
+            {L('När detta är aktiverat visas stjärnbetyg i sektionen Kommande Auktioner och för varje auktionsvara. Backend använder Cloudflare D1.','When enabled, star ratings appear in Upcoming Auctions and for each Auction Item. Backend uses Cloudflare D1.')}
+          </p>
         </Section>
 
         <Section id="admin-terms" title={L('Auktionsvillkor','Terms')}>

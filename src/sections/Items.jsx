@@ -53,9 +53,11 @@ export default function Items() {
                         </div>
                       )}
                     </div>
-                    <div className="p-3 pt-2">
-                      <RatingStars targetType="item" targetId={`${cat}:${idx}`} />
-                    </div>
+                    {content?.ratings?.enabled && (
+                      <div className="p-3 pt-2">
+                        <RatingStars targetType="item" targetId={`${cat}:${idx}`} />
+                      </div>
+                    )}
                     {(() => {
                       const nameT = getText(it.name)
                       const sizeT = getText(it.size)
@@ -103,9 +105,11 @@ export default function Items() {
                     </div>
                   )}
                 </div>
-                <div className="p-3 pt-2">
-                  <RatingStars targetType="item" targetId={`${it._cat}:${it._idx}`} />
-                </div>
+                {content?.ratings?.enabled && (
+                  <div className="p-3 pt-2">
+                    <RatingStars targetType="item" targetId={`${it._cat}:${it._idx}`} />
+                  </div>
+                )}
                 {(() => {
                   const nameT = getText(it.name)
                   const sizeT = getText(it.size)

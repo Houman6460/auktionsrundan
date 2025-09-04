@@ -88,6 +88,9 @@ const defaults = {
     social: { instagram: '', facebook: '', website: '' },
     newsletter: true,
   },
+  ratings: {
+    enabled: true,
+  },
 }
 
 function deepClone(obj) {
@@ -229,6 +232,12 @@ function normalize(content) {
       const dz = parseInt(out.maps.defaultZoom, 10)
       out.maps.defaultZoom = Number.isFinite(dz) ? dz : defaults.maps.defaultZoom
       out.maps.language = out.maps.language === 'en' ? 'en' : 'sv'
+    }
+    // Ensure ratings section exists
+    if (!out.ratings || typeof out.ratings !== 'object') {
+      out.ratings = deepClone(defaults.ratings)
+    } else {
+      out.ratings.enabled = out.ratings.enabled ?? defaults.ratings.enabled
     }
   } catch {
     // noop normalization errors

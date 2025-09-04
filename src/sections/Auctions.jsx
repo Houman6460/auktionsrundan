@@ -124,10 +124,12 @@ export default function Auctions() {
   const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('lang') || 'sv')
   return (
     <div className="grid gap-6">
-      <div className="section-card p-3">
-        <div className="text-sm text-neutral-700 mb-1">{t('auctions.title') || 'Upcoming Auctions'}</div>
-        <RatingStars targetType="upcoming" />
-      </div>
+      {content?.ratings?.enabled && (
+        <div className="section-card p-3">
+          <div className="text-sm text-neutral-700 mb-1">{t('auctions.title') || 'Upcoming Auctions'}</div>
+          <RatingStars targetType="upcoming" />
+        </div>
+      )}
       {list.map((a, idx) => (
         <AuctionCard key={idx} a={a} idx={idx} now={now} lang={lang} />
       ))}
