@@ -4,6 +4,20 @@ import { loadContent } from '../services/store'
 
 function AuctionCard({ a, idx, now, lang }) {
   const { t } = useTranslation()
+  const toEmbedSrc = (url) => {
+    if (!url || typeof url !== 'string') return url
+    try {
+      const u = new URL(url)
+      const isGoogle = /(^|\.)google\./.test(u.hostname) && u.pathname.startsWith('/maps')
+      if (isGoogle) {
+        if (!u.searchParams.has('output')) u.searchParams.set('output', 'embed')
+        return u.toString()
+      }
+      return url
+    } catch {
+      return url
+    }
+  }
   const toStartTs = (dateStr, timeStr) => {
     if (!dateStr || typeof dateStr !== 'string') return NaN
     const time = (typeof timeStr === 'string' && /\d{1,2}:\d{2}/.test(timeStr)) ? timeStr : '00:00'
@@ -54,7 +68,7 @@ function AuctionCard({ a, idx, now, lang }) {
         {a.mapEmbed ? (
           <iframe
             title={`map-${idx}`}
-            src={a.mapEmbed}
+            src={toEmbedSrc(a.mapEmbed)}
             className="w-full h-full min-h-[220px]"
             style={{ border: 0 }}
             loading="lazy"

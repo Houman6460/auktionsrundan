@@ -6,6 +6,21 @@ export default function Hero() {
   const { t, i18n } = useTranslation()
   const [content, setContent] = React.useState(loadContent())
   const [now, setNow] = React.useState(() => Date.now())
+  const toEmbedSrc = (url) => {
+    if (!url || typeof url !== 'string') return url
+    try {
+      const u = new URL(url)
+      const isGoogle = /(^|\.)google\./.test(u.hostname) && u.pathname.startsWith('/maps')
+      if (isGoogle) {
+        if (!u.searchParams.has('output')) u.searchParams.set('output', 'embed')
+        return u.toString()
+      }
+      return url
+    } catch {
+      // If URL parsing fails, return original
+      return url
+    }
+  }
 
   React.useEffect(() => {
     const onStorage = () => setContent(loadContent())
@@ -75,7 +90,7 @@ export default function Hero() {
                   <div className="mt-2">
                     <div className="aspect-video w-full max-w-xl mx-auto border rounded overflow-hidden">
                       <iframe
-                        src={a.mapEmbed}
+                        src={toEmbedSrc(a.mapEmbed)}
                         title={`Karta ${(a.name && (a.name[lang] || a.name.sv || a.name.en)) || ''}`}
                         width="100%"
                         height="100%"
