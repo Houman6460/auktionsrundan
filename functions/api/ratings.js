@@ -9,18 +9,18 @@
 /** @typedef {import('@cloudflare/workers-types').Request} CFRequest */
 
 async function ensureSchema(DB) {
-  await DB.exec(`CREATE TABLE IF NOT EXISTS ratings (
+  await DB.prepare(`CREATE TABLE IF NOT EXISTS ratings (
     target TEXT PRIMARY KEY,
     total_votes INTEGER NOT NULL DEFAULT 0,
     total_score INTEGER NOT NULL DEFAULT 0,
     updated_at TEXT NOT NULL
-  );`)
-  await DB.exec(`CREATE TABLE IF NOT EXISTS votes (
+  );`).run()
+  await DB.prepare(`CREATE TABLE IF NOT EXISTS votes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     target TEXT NOT NULL,
     ip TEXT NOT NULL,
     ts INTEGER NOT NULL
-  );`)
+  );`).run()
 }
 
 function jsonResponse(data, init = 200) {
