@@ -50,16 +50,26 @@ export default function Items() {
                         <span className="text-neutral-500">Ingen bild</span>
                       )}
                     </div>
-                    <figcaption className="p-3">
-                      <div className="font-medium">{getText(it.name) || (lang==='en' ? 'Name missing' : 'Namn saknas')}</div>
-                      {!!getText(it.size) && <div className="text-sm mt-1">{getText(it.size)}</div>}
-                      {!!getText(it.type) && (
-                        <div className="text-sm">{lang==='en' ? 'Type' : 'Typ'}: {getText(it.type)}</div>
-                      )}
-                      {!!it.priceSek && (
-                        <div className="text-sm mt-1">{(lang==='en' ? 'Starting price' : 'Utropspris')}: {it.priceSek} SEK</div>
-                      )}
-                    </figcaption>
+                    {(() => {
+                      const nameT = getText(it.name)
+                      const sizeT = getText(it.size)
+                      const typeT = getText(it.type)
+                      const hasPrice = !!it.priceSek
+                      const hasAny = !!(nameT || sizeT || typeT || hasPrice)
+                      if (!hasAny) return null
+                      return (
+                        <figcaption className="p-3">
+                          {!!nameT && <div className="font-medium">{nameT}</div>}
+                          {!!sizeT && <div className="text-sm mt-1">{sizeT}</div>}
+                          {!!typeT && (
+                            <div className="text-sm">{lang==='en' ? 'Type' : 'Typ'}: {typeT}</div>
+                          )}
+                          {hasPrice && (
+                            <div className="text-sm mt-1">{(lang==='en' ? 'Starting price' : 'Utropspris')}: {it.priceSek} SEK</div>
+                          )}
+                        </figcaption>
+                      )
+                    })()}
                   </figure>
                 ))}
               </div>
@@ -85,16 +95,26 @@ export default function Items() {
                     <span className="text-neutral-500">Ingen bild</span>
                   )}
                 </div>
-                <figcaption className="p-3">
-                  <div className="font-medium">{getText(it.name) || (lang==='en' ? 'Name missing' : 'Namn saknas')}</div>
-                  {!!getText(it.size) && <div className="text-sm mt-1">{getText(it.size)}</div>}
-                  {!!getText(it.type) && (
-                    <div className="text-sm">{lang==='en' ? 'Type' : 'Typ'}: {getText(it.type)}</div>
-                  )}
-                  {!!it.priceSek && (
-                    <div className="text-sm mt-1">{(lang==='en' ? 'Starting price' : 'Utropspris')}: {it.priceSek} SEK</div>
-                  )}
-                </figcaption>
+                {(() => {
+                  const nameT = getText(it.name)
+                  const sizeT = getText(it.size)
+                  const typeT = getText(it.type)
+                  const hasPrice = !!it.priceSek
+                  const hasAny = !!(nameT || sizeT || typeT || hasPrice)
+                  if (!hasAny) return null
+                  return (
+                    <figcaption className="p-3">
+                      {!!nameT && <div className="font-medium">{nameT}</div>}
+                      {!!sizeT && <div className="text-sm mt-1">{sizeT}</div>}
+                      {!!typeT && (
+                        <div className="text-sm">{lang==='en' ? 'Type' : 'Typ'}: {typeT}</div>
+                      )}
+                      {hasPrice && (
+                        <div className="text-sm mt-1">{(lang==='en' ? 'Starting price' : 'Utropspris')}: {it.priceSek} SEK</div>
+                      )}
+                    </figcaption>
+                  )
+                })()}
               </figure>
             ))}
           </div>
