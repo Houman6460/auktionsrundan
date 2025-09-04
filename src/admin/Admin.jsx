@@ -312,7 +312,7 @@ export default function Admin() {
                     </div>
                     <div>
                       <label className="block text-sm text-neutral-600 mb-1">Start</label>
-                      <input className="w-full border rounded px-3 py-2" value={a.start} onChange={(e)=>updateAuction(idx,'start',e.target.value)} />
+                      <input type="time" className="w-full border rounded px-3 py-2" value={a.start} onChange={(e)=>updateAuction(idx,'start',e.target.value)} />
                     </div>
                   </div>
                 </div>

@@ -30,6 +30,9 @@ function AuctionCard({ a, idx, now }) {
           <div className="p-2 rounded bg-vintage-cream/60">
             <div className="text-neutral-500">Visning</div>
             <div className="font-medium">{a.viewing}</div>
+            {a.start && (
+              <div className="text-sm text-neutral-700">Start {a.start}</div>
+            )}
           </div>
           <div className="p-2 rounded bg-vintage-cream/60">
             <div className="text-neutral-500">Datum</div>
