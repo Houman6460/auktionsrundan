@@ -72,14 +72,24 @@ export default function ShareMenu() {
     telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
   }
 
-  const itemBase = 'absolute top-[0.2em] right-[0.2em] z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300'
+  const itemBase = `${isLeft ? 'absolute top-[0.2em] left-[0.2em]' : 'absolute top-[0.2em] right-[0.2em]'} z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
 
   const items = []
-  if (cfg.platforms?.facebook) items.push({ key: 'facebook', x: isLeft ? '-7em' : '1em', y: '-7em' })
-  if (cfg.platforms?.twitter) items.push({ key: 'twitter', x: isLeft ? '-6.3em' : '-3.5em', y: '-6.3em' })
-  if (cfg.platforms?.linkedin) items.push({ key: 'linkedin', x: isLeft ? '-3.2em' : '-6.5em', y: '-3.2em' })
-  if (cfg.platforms?.telegram) items.push({ key: 'telegram', x: isLeft ? '1em' : '-7em', y: '1em' })
-  if (cfg.platforms?.copy) items.push({ key: 'copy', x: isLeft ? '4.5em' : '-9.5em', y: '3.5em' })
+  // Define inward-expanding positions for RIGHT side; mirror X for LEFT side
+  const posRight = [
+    { key: 'facebook', x: '-7em',   y: '-7em' },
+    { key: 'twitter',  x: '-6.3em', y: '-6.3em' },
+    { key: 'linkedin', x: '-6.5em', y: '-3.2em' },
+    { key: 'telegram', x: '-7em',   y: '1em'   },
+    { key: 'copy',     x: '-9.5em', y: '3.5em' },
+  ]
+  const pushIfEnabled = (def) => {
+    if (cfg.platforms?.[def.key]) {
+      const x = isLeft ? def.x.replace('-', '') : def.x // mirror across vertical axis by flipping sign
+      items.push({ key: def.key, x, y: def.y })
+    }
+  }
+  posRight.forEach(pushIfEnabled)
 
   const handleCopy = async () => {
     try {
