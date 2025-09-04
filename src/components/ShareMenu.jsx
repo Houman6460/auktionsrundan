@@ -73,7 +73,7 @@ export default function ShareMenu() {
   }
 
   // Anchor items at button center; higher z-index so they are visible above content
-  const itemBase = `absolute top-1/2 left-1/2 z-10 flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
+  const itemBase = `absolute top-1/2 left-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full text-white bg-earth-dark transition-transform duration-300`
 
   // Build ordered list of enabled keys
   const keys = []
@@ -123,11 +123,11 @@ export default function ShareMenu() {
       <div className={`relative ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <button
           type="button"
-          className="floating-btn pointer-events-auto w-14 h-14 rounded-full bg-earth-dark text-white flex items-center justify-center shadow-lg focus:outline-none"
+          className="floating-btn pointer-events-auto w-12 h-12 rounded-full bg-earth-dark text-white flex items-center justify-center shadow-lg focus:outline-none"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Close share menu' : 'Open share menu'}
         >
-          <Icon name="plus" className={`w-6 h-6 transition-transform ${open ? '-rotate-45' : ''}`} />
+          <Icon name="plus" className={`w-5 h-5 transition-transform ${open ? '-rotate-45' : ''}`} />
         </button>
         <ul className="m-0 p-0 list-none">
           {items.map((it, idx) => (
@@ -141,7 +141,7 @@ export default function ShareMenu() {
                 className="w-full h-full flex items-center justify-center"
                 aria-label={`Share via ${it.key}`}
               >
-                <Icon name={it.key} className="w-5 h-5" />
+                <Icon name={it.key} className="w-4 h-4" />
               </button>
             </li>
           ))}
