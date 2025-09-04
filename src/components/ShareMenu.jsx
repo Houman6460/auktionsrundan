@@ -38,6 +38,7 @@ export default function ShareMenu() {
   const [cfg, setCfg] = React.useState(() => loadContent().share)
   const [chat, setChat] = React.useState(() => loadContent().chat)
   const [open, setOpen] = React.useState(false)
+  const [hovered, setHovered] = React.useState(null)
 
   React.useEffect(() => {
     const handler = (e) => {
@@ -73,7 +74,8 @@ export default function ShareMenu() {
   }
 
   // Anchor items at button center; higher z-index so they are visible above content
-  const itemBase = `absolute top-1/2 left-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full text-white bg-earth-dark transition-transform duration-300`
+  // Gradient circle with shadow, dark icon by default (icon inherits currentColor)
+  const itemBase = `group absolute top-1/2 left-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-300 shadow-lg hover:shadow`
 
   // Build ordered list of enabled keys
   const keys = []
@@ -88,10 +90,18 @@ export default function ShareMenu() {
   const enabledOrdered = order.filter(k => keys.includes(k))
   const gap = 56 // px vertical spacing between circles
   const sideOffset = isLeft ? 0 : 0 // keep centered above button; can tweak if needed
+  const hoverColors = {
+    facebook: '#3b5998',
+    twitter: '#1DA1F2',
+    linkedin: '#0077b5',
+    telegram: '#0088cc',
+    copy: '#262626',
+  }
   const items = enabledOrdered.map((key, i) => ({
     key,
     x: `${sideOffset}px`,
     y: `${-gap * (i + 1)}px`,
+    hoverColor: hoverColors[key] || '#262626',
   }))
 
   const handleCopy = async () => {
@@ -109,7 +119,7 @@ export default function ShareMenu() {
 
   return (
     <div
-      className="fixed"
+      className="fixed z-40"
       style={{ bottom: bottomSpace, [isLeft ? 'left' : 'right']: '1rem' }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
@@ -117,7 +127,8 @@ export default function ShareMenu() {
       <div className={`relative ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <button
           type="button"
-          className="floating-btn pointer-events-auto w-12 h-12 rounded-full bg-earth-dark text-white flex items-center justify-center shadow-lg focus:outline-none"
+          className="floating-btn pointer-events-auto w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg focus:outline-none"
+          style={{ background: 'linear-gradient(0deg, #3a2f25, #584a3b)' }}
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Close share menu' : 'Open share menu'}
         >
@@ -132,7 +143,14 @@ export default function ShareMenu() {
               <button
                 type="button"
                 onClick={() => handleItemClick(it.key)}
-                className="w-full h-full flex items-center justify-center"
+                onMouseEnter={() => setHovered(it.key)}
+                onMouseLeave={() => setHovered(null)}
+                className="w-full h-full flex items-center justify-center rounded-full"
+                style={{
+                  background: 'linear-gradient(0deg, #ddd, #fff)',
+                  boxShadow: '0 10px 15px rgba(0,0,0,0.3)',
+                  color: hovered === it.key ? it.hoverColor : '#262626',
+                }}
                 aria-label={`Share via ${it.key}`}
               >
                 <Icon name={it.key} className="w-4 h-4" />
