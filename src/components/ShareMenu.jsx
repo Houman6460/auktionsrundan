@@ -74,22 +74,32 @@ export default function ShareMenu() {
 
   const itemBase = `${isLeft ? 'absolute top-[0.2em] left-[0.2em]' : 'absolute top-[0.2em] right-[0.2em]'} z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
 
-  const items = []
-  // Define inward-expanding positions for RIGHT side; mirror X for LEFT side
-  const posRight = [
-    { key: 'facebook', x: '-7em',   y: '-7em' },
-    { key: 'twitter',  x: '-6.3em', y: '-6.3em' },
-    { key: 'linkedin', x: '-6.5em', y: '-3.2em' },
-    { key: 'telegram', x: '-7em',   y: '1em'   },
-    { key: 'copy',     x: '-9.5em', y: '3.5em' },
-  ]
-  const pushIfEnabled = (def) => {
-    if (cfg.platforms?.[def.key]) {
-      const x = isLeft ? def.x.replace('-', '') : def.x // mirror across vertical axis by flipping sign
-      items.push({ key: def.key, x, y: def.y })
-    }
-  }
-  posRight.forEach(pushIfEnabled)
+  // Build ordered list of enabled keys
+  const keys = []
+  if (cfg.platforms?.facebook) keys.push('facebook')
+  if (cfg.platforms?.twitter) keys.push('twitter')
+  if (cfg.platforms?.linkedin) keys.push('linkedin')
+  if (cfg.platforms?.telegram) keys.push('telegram')
+  if (cfg.platforms?.copy) keys.push('copy')
+
+  // Arrange along a nice inward arc around the button
+  // For RIGHT side: use angles roughly from -25deg (slightly above) to -145deg (below), evenly spaced
+  // For LEFT side: mirror across vertical axis by multiplying cos by -1
+  const count = keys.length
+  const radius = 92 // px, adjust for tighter/looser arc
+  const startDeg = -25
+  const endDeg = -145
+  const step = count > 1 ? (endDeg - startDeg) / (count - 1) : 0
+
+  const items = keys.map((key, idx) => {
+    const deg = startDeg + idx * step
+    const rad = (Math.PI / 180) * deg
+    const cos = Math.cos(rad)
+    const sin = Math.sin(rad)
+    const x = (isLeft ? 1 : -1) * radius * Math.abs(cos) // inward: left => +x, right => -x
+    const y = radius * sin
+    return { key, x: `${x.toFixed(1)}px`, y: `${y.toFixed(1)}px` }
+  })
 
   const handleCopy = async () => {
     try {
