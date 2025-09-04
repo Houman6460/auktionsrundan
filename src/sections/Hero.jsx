@@ -25,11 +25,15 @@ export default function Hero() {
   const lang = active[preferred] ? preferred : (active.sv ? 'sv' : 'en')
   const ctaText = (content.hero?.cta?.text && (content.hero.cta.text[lang] || content.hero.cta.text.sv || content.hero.cta.text.en)) || t('hero.findUs')
 
-  // Compute next upcoming auction based on ISO date (YYYY-MM-DD)
-  const upcoming = (content.hero?.nextAuctions || [])
-    .map(a => ({ ...a, ts: a?.date ? Date.parse(a.date) : NaN }))
-    .filter(a => Number.isFinite(a.ts))
-    .sort((a, b) => a.ts - b.ts)
+  // Compute next upcoming auction based on date + time (if time missing, default 00:00)
+  const withTs = (content.hero?.nextAuctions || []).map(a => {
+    const dateStr = a?.date
+    const timeStr = (typeof a?.time === 'string' && /\d{1,2}:\d{2}/.test(a.time)) ? a.time : '00:00'
+    const iso = dateStr ? `${dateStr}T${timeStr}:00` : ''
+    const ts = iso ? Date.parse(iso) : NaN
+    return { ...a, ts }
+  })
+  const upcoming = withTs.filter(a => Number.isFinite(a.ts)).sort((a, b) => a.ts - b.ts)
 
   const next = upcoming.find(a => a.ts >= now)
 
@@ -57,14 +61,16 @@ export default function Hero() {
           <div className="font-serif text-xl mb-1">{t('hero.nextAuction')}</div>
           {next && (
             <div className="mb-3">
-              <div className="text-base font-medium">{next.name} — {new Date(next.ts).toLocaleDateString()}</div>
+              <div className="text-base font-medium">
+                {next.name} — {new Date(next.ts).toLocaleDateString()} {next.time && <span className="text-neutral-700">{next.time}</span>}
+              </div>
               <div className="text-2xl font-mono">{formatRemaining(next.ts)}</div>
             </div>
           )}
           <ul className="text-sm">
             {(content.hero?.nextAuctions || []).map((a, idx) => (
               <li key={idx} className="mt-2">
-                <div className="font-medium">{a.name} — {a.date}</div>
+                <div className="font-medium">{a.name} — {a.date} {a.time && <span className="text-neutral-700">{a.time}</span>}</div>
                 {a.mapEmbed && (
                   <div className="mt-2">
                     <div className="aspect-video w-full max-w-xl mx-auto border rounded overflow-hidden">

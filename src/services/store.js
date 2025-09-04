@@ -19,8 +19,8 @@ const defaults = {
     visible: true,
     bg: '',
     nextAuctions: [
-      { name: 'Hindås Rotundan', date: '24/2-2024', mapEmbed: '' },
-      { name: 'Ullareds Bygdegård', date: '25/2-2024', mapEmbed: '' },
+      { name: 'Hindås Rotundan', date: '24/2-2024', time: '14:00', mapEmbed: '' },
+      { name: 'Ullareds Bygdegård', date: '25/2-2024', time: '14:00', mapEmbed: '' },
     ],
     // Bilingual CTA text with defaults (SV/EN)
     cta: { text: { sv: 'Hitta Hit', en: 'Get Directions' }, link: '#auctions' },
@@ -136,7 +136,7 @@ function normalize(content) {
       }
     }
 
-    // Normalize hero.nextAuctions date format to ISO (YYYY-MM-DD)
+    // Normalize hero.nextAuctions date format to ISO (YYYY-MM-DD) and ensure time exists
     if (out.hero && Array.isArray(out.hero.nextAuctions)) {
       out.hero.nextAuctions = out.hero.nextAuctions.map((it) => {
         const next = { ...it }
@@ -149,6 +149,9 @@ function normalize(content) {
             const iso = `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`
             next.date = iso
           } catch {}
+        }
+        if (typeof next.time !== 'string') {
+          next.time = ''
         }
         return next
       })

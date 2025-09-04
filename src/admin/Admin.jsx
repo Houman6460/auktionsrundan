@@ -80,7 +80,7 @@ export default function Admin() {
   const addNextAuction = () => {
     const next = { ...data }
     next.hero.nextAuctions = next.hero.nextAuctions || []
-    next.hero.nextAuctions.push({ name: 'Ny auktion', date: '2025-12-31' })
+    next.hero.nextAuctions.push({ name: 'Ny auktion', date: '2025-12-31', time: '' })
     setData(next)
   }
 
@@ -258,7 +258,7 @@ export default function Admin() {
             </div>
             <div className="grid gap-3">
               {(data.hero.nextAuctions||[]).map((a, idx) => (
-                <div key={idx} className="grid md:grid-cols-3 gap-3 items-end">
+                <div key={idx} className="grid md:grid-cols-4 gap-3 items-end">
                   <div>
                     <label className="block text-sm text-neutral-600 mb-1">Namn</label>
                     <input className="w-full border rounded px-3 py-2" value={a.name} onChange={(e)=>{const n={...data};n.hero.nextAuctions[idx].name=e.target.value;setData(n)}} />
@@ -267,7 +267,11 @@ export default function Admin() {
                     <label className="block text-sm text-neutral-600 mb-1">Datum</label>
                     <input type="date" className="w-full border rounded px-3 py-2" value={a.date} onChange={(e)=>{const n={...data};n.hero.nextAuctions[idx].date=e.target.value;setData(n)}} />
                   </div>
-                  <div className="flex gap-2">
+                  <div>
+                    <label className="block text-sm text-neutral-600 mb-1">Tid</label>
+                    <input type="time" className="w-full border rounded px-3 py-2" value={a.time || ''} onChange={(e)=>{const n={...data};n.hero.nextAuctions[idx].time=e.target.value;setData(n)}} />
+                  </div>
+                  <div className="flex gap-2 items-end">
                     <button className="btn-outline" onClick={()=>removeNextAuction(idx)}>Ta bort</button>
                   </div>
                   <div className="md:col-span-3">
