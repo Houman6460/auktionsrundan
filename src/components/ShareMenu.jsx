@@ -83,22 +83,16 @@ export default function ShareMenu() {
   if (cfg.platforms?.telegram) keys.push('telegram')
   if (cfg.platforms?.copy) keys.push('copy')
 
-  // Place items along a consistent arc using a fixed set of angles
-  // Angles chosen to resemble the provided example spacing
-  const angles = [-20, -50, -80, -110, -140]
-  const radiusPx = 92
-  const polarToXY = (deg) => {
-    const r = (Math.PI / 180) * deg
-    let x = radiusPx * Math.cos(r)
-    const y = radiusPx * Math.sin(r)
-    // Inward: right side => negative x; left side => positive x
-    x = isLeft ? Math.abs(x) : -Math.abs(x)
-    return { x: `${x.toFixed(1)}px`, y: `${y.toFixed(1)}px` }
-  }
-
+  // Vertical stack layout: items appear above the + button, evenly spaced
   const order = ['facebook', 'twitter', 'linkedin', 'telegram', 'copy']
   const enabledOrdered = order.filter(k => keys.includes(k))
-  const items = enabledOrdered.map((key, i) => ({ key, ...polarToXY(angles[i] ?? angles[angles.length - 1]) }))
+  const gap = 56 // px vertical spacing between circles
+  const sideOffset = isLeft ? 0 : 0 // keep centered above button; can tweak if needed
+  const items = enabledOrdered.map((key, i) => ({
+    key,
+    x: `${sideOffset}px`,
+    y: `${-gap * (i + 1)}px`,
+  }))
 
   const handleCopy = async () => {
     try {
