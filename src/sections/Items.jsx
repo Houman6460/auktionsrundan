@@ -4,6 +4,14 @@ import { loadContent } from '../services/store'
 export default function Items() {
   const [content, setContent] = React.useState(loadContent())
   const [filter, setFilter] = React.useState('Alla')
+  const lang = content?.language === 'en' ? 'en' : 'sv'
+
+  const getText = (val, fallback = '') => {
+    if (!val) return fallback
+    if (typeof val === 'string') return val
+    if (typeof val === 'object') return val[lang] || val.sv || val.en || fallback
+    return fallback
+  }
 
   React.useEffect(() => {
     const onStorage = () => setContent(loadContent())
@@ -37,15 +45,20 @@ export default function Items() {
                   <figure key={idx} className="section-card overflow-hidden">
                     <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center">
                       {it.img ? (
-                        <img src={it.img} alt={it.name || 'Auktionsvara'} className="w-full h-full object-cover" />
+                        <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-neutral-500">Ingen bild</span>
                       )}
                     </div>
                     <figcaption className="p-3">
-                      <div className="font-medium">{it.name || 'Namn saknas'}</div>
-                      {it.size && <div className="text-sm mt-1">{it.size}</div>}
-                      {it.type && <div className="text-sm">Typ: {it.type}</div>}
+                      <div className="font-medium">{getText(it.name) || (lang==='en' ? 'Name missing' : 'Namn saknas')}</div>
+                      {!!getText(it.size) && <div className="text-sm mt-1">{getText(it.size)}</div>}
+                      {!!getText(it.type) && (
+                        <div className="text-sm">{lang==='en' ? 'Type' : 'Typ'}: {getText(it.type)}</div>
+                      )}
+                      {!!it.priceSek && (
+                        <div className="text-sm mt-1">{(lang==='en' ? 'Starting price' : 'Utropspris')}: {it.priceSek} SEK</div>
+                      )}
                     </figcaption>
                   </figure>
                 ))}
@@ -67,15 +80,20 @@ export default function Items() {
               <figure key={idx} className="section-card overflow-hidden">
                 <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center">
                   {it.img ? (
-                    <img src={it.img} alt={it.name || 'Auktionsvara'} className="w-full h-full object-cover" />
+                    <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-neutral-500">Ingen bild</span>
                   )}
                 </div>
                 <figcaption className="p-3">
-                  <div className="font-medium">{it.name || 'Namn saknas'}</div>
-                  {it.size && <div className="text-sm mt-1">{it.size}</div>}
-                  {it.type && <div className="text-sm">Typ: {it.type}</div>}
+                  <div className="font-medium">{getText(it.name) || (lang==='en' ? 'Name missing' : 'Namn saknas')}</div>
+                  {!!getText(it.size) && <div className="text-sm mt-1">{getText(it.size)}</div>}
+                  {!!getText(it.type) && (
+                    <div className="text-sm">{lang==='en' ? 'Type' : 'Typ'}: {getText(it.type)}</div>
+                  )}
+                  {!!it.priceSek && (
+                    <div className="text-sm mt-1">{(lang==='en' ? 'Starting price' : 'Utropspris')}: {it.priceSek} SEK</div>
+                  )}
                 </figcaption>
               </figure>
             ))}

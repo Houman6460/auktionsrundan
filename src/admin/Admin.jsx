@@ -442,7 +442,10 @@ export default function Admin() {
                       className="btn-outline"
                       onClick={() => {
                         const next = { ...data }
-                        next.items.categories[catName] = [...(itemsArr||[]), { img: '', name: '', type: '', size: '' }]
+                        next.items.categories[catName] = [
+                          ...(itemsArr||[]),
+                          { img: '', name: { sv: '', en: '' }, type: { sv: '', en: '' }, size: { sv: '', en: '' }, priceSek: '' }
+                        ]
                         setData(next)
                       }}
                     >{L('Lägg till objekt','Add item')}</button>
@@ -476,17 +479,21 @@ export default function Admin() {
                             setData(next)
                           }}>{L('Rensa','Clear')}</button>
                         </div>
-                        <label className="block text-xs text-neutral-600 mb-1">{L('Namn','Name')}</label>
-                        <input className="w-full border rounded px-2 py-1 mb-2" value={it.name || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].name=e.target.value; setData(next)}} />
+                        <label className="block text-xs text-neutral-600 mb-1">{L('Namn','Name')} ({currentLang.toUpperCase()})</label>
+                        <input className="w-full border rounded px-2 py-1 mb-2" value={it.name?.[currentLang] || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].name = { ...(next.items.categories[catName][idx].name||{}), [currentLang]: e.target.value }; setData(next)}} />
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="block text-xs text-neutral-600 mb-1">{L('Typ','Type')}</label>
-                            <input className="w-full border rounded px-2 py-1" value={it.type || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].type=e.target.value; setData(next)}} />
+                            <label className="block text-xs text-neutral-600 mb-1">{L('Typ','Type')} ({currentLang.toUpperCase()})</label>
+                            <input className="w-full border rounded px-2 py-1" value={it.type?.[currentLang] || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].type = { ...(next.items.categories[catName][idx].type||{}), [currentLang]: e.target.value }; setData(next)}} />
                           </div>
                           <div>
-                            <label className="block text-xs text-neutral-600 mb-1">{L('Storlek','Size')}</label>
-                            <input className="w-full border rounded px-2 py-1" value={it.size || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].size=e.target.value; setData(next)}} />
+                            <label className="block text-xs text-neutral-600 mb-1">{L('Storlek','Size')} ({currentLang.toUpperCase()})</label>
+                            <input className="w-full border rounded px-2 py-1" value={it.size?.[currentLang] || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].size = { ...(next.items.categories[catName][idx].size||{}), [currentLang]: e.target.value }; setData(next)}} />
                           </div>
+                        </div>
+                        <div className="mt-2">
+                          <label className="block text-xs text-neutral-600 mb-1">{L('Utropspris (SEK)','Starting price (SEK)')}</label>
+                          <input type="number" inputMode="numeric" min="0" className="w-full border rounded px-2 py-1" value={it.priceSek || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].priceSek = e.target.value; setData(next)}} />
                         </div>
                         <div className="flex justify-end mt-2">
                           <button className="btn-outline" onClick={()=>{

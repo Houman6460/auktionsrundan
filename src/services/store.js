@@ -203,6 +203,22 @@ function normalize(content) {
         out.items.categories = deepClone(defaults.items.categories)
       }
       out.items.visible = out.items.visible ?? defaults.items.visible
+      // Normalize each item inside categories to bilingual fields and priceSek
+      try {
+        const cats = out.items.categories || {}
+        for (const catName of Object.keys(cats)) {
+          const arr = Array.isArray(cats[catName]) ? cats[catName] : []
+          out.items.categories[catName] = arr.map((it) => {
+            const next = { ...it }
+            next.name = ensureBilingual(next.name)
+            next.type = ensureBilingual(next.type)
+            next.size = ensureBilingual(next.size)
+            if (next.priceSek == null) next.priceSek = ''
+            if (typeof next.priceSek === 'number') next.priceSek = String(next.priceSek)
+            return next
+          })
+        }
+      } catch {}
     }
     // Ensure maps section exists with sane defaults
     if (!out.maps || typeof out.maps !== 'object') {
