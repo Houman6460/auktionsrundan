@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 
-function AuctionCard({ a, idx, now }) {
+function AuctionCard({ a, idx, now, lang }) {
   const { t } = useTranslation()
   const toStartTs = (dateStr, timeStr) => {
     if (!dateStr || typeof dateStr !== 'string') return NaN
@@ -26,12 +26,12 @@ function AuctionCard({ a, idx, now }) {
   return (
     <div className="section-card p-4 grid md:grid-cols-2 gap-4">
       <div>
-        <h3 className="font-serif text-xl">{a.title}</h3>
-        <p className="text-sm text-neutral-700 mt-1">{a.address}</p>
+        <h3 className="font-serif text-xl">{(a.title && (a.title[lang] || a.title.sv || a.title.en)) || ''}</h3>
+        <p className="text-sm text-neutral-700 mt-1">{(a.address && (a.address[lang] || a.address.sv || a.address.en)) || ''}</p>
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
           <div className="p-2 rounded bg-vintage-cream/60">
             <div className="text-neutral-500">{t('auctions.viewing')}</div>
-            <div className="font-medium">{a.viewing}</div>
+            <div className="font-medium">{(a.viewing && (a.viewing[lang] || a.viewing.sv || a.viewing.en)) || ''}</div>
             {a.start && (
               <div className="text-sm text-neutral-700">{t('auctions.start')} {a.start}</div>
             )}
@@ -69,7 +69,7 @@ function AuctionCard({ a, idx, now }) {
 }
 
 export default function Auctions() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [content, setContent] = React.useState(loadContent())
   const [now, setNow] = React.useState(() => Date.now())
   React.useEffect(() => {
@@ -85,10 +85,11 @@ export default function Auctions() {
   if (!content.auctions?.visible) return <div className="text-neutral-500">{t('auctions.sectionOff')}</div>
 
   const list = content.auctions?.list || []
+  const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('lang') || 'sv')
   return (
     <div className="grid gap-6">
       {list.map((a, idx) => (
-        <AuctionCard key={idx} a={a} idx={idx} now={now} />
+        <AuctionCard key={idx} a={a} idx={idx} now={now} lang={lang} />
       ))}
       {list.length === 0 && (
         <div className="section-card p-4 text-neutral-600">{t('auctions.none')}</div>

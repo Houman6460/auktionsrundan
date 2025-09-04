@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 
 export default function Hero() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [content, setContent] = React.useState(loadContent())
   const [now, setNow] = React.useState(() => Date.now())
 
@@ -21,7 +21,7 @@ export default function Hero() {
 
   const bg = content.hero?.bg
   const active = content.header?.languages || { sv: true, en: true }
-  const preferred = localStorage.getItem('site_lang') || 'sv'
+  const preferred = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('site_lang') || 'sv')
   const lang = active[preferred] ? preferred : (active.sv ? 'sv' : 'en')
   const ctaText = (content.hero?.cta?.text && (content.hero.cta.text[lang] || content.hero.cta.text.sv || content.hero.cta.text.en)) || t('hero.findUs')
 
@@ -62,7 +62,7 @@ export default function Hero() {
           {next && (
             <div className="mb-3">
               <div className="text-base font-medium">
-                {next.name} — {new Date(next.ts).toLocaleDateString()} {next.time && <span className="text-neutral-700">{next.time}</span>}
+                {(next.name && (next.name[lang] || next.name.sv || next.name.en)) || ''} — {new Date(next.ts).toLocaleDateString()} {next.time && <span className="text-neutral-700">{next.time}</span>}
               </div>
               <div className="text-2xl font-mono">{formatRemaining(next.ts)}</div>
             </div>
@@ -70,13 +70,13 @@ export default function Hero() {
           <ul className="text-sm">
             {(content.hero?.nextAuctions || []).map((a, idx) => (
               <li key={idx} className="mt-2">
-                <div className="font-medium">{a.name} — {a.date} {a.time && <span className="text-neutral-700">{a.time}</span>}</div>
+                <div className="font-medium">{(a.name && (a.name[lang] || a.name.sv || a.name.en)) || ''} — {a.date} {a.time && <span className="text-neutral-700">{a.time}</span>}</div>
                 {a.mapEmbed && (
                   <div className="mt-2">
                     <div className="aspect-video w-full max-w-xl mx-auto border rounded overflow-hidden">
                       <iframe
                         src={a.mapEmbed}
-                        title={`Karta ${a.name}`}
+                        title={`Karta ${(a.name && (a.name[lang] || a.name.sv || a.name.en)) || ''}`}
                         width="100%"
                         height="100%"
                         loading="lazy"
