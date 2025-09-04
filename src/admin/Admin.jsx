@@ -305,6 +305,7 @@ export default function Admin() {
                       <a href="#admin-newsletter" className="hover:underline">{L('Nyhetsbrev','Newsletter')}</a>
                       <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
                       <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
+                      <a href="#admin-chat" className="hover:underline">{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
                     </div>
                   )}
                 </div>
@@ -374,6 +375,39 @@ export default function Admin() {
               <input className="w-full border rounded px-3 py-2" value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
             </div>
           </div>
+        </Section>
+
+        <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')}>
+          <label className="flex items-center gap-2 mb-3">
+            <Toggle checked={!!data.chat?.enabled} onChange={(e)=>{const n={...data}; n.chat = n.chat||{}; n.chat.enabled = e.target.checked; setData(n)}} />
+            <span>{L('Aktivera WhatsApp-chat','Enable WhatsApp chat')}</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Telefon (E.164, t.ex. +46701234567)','Phone (E.164, e.g. +46701234567)')}</label>
+              <input className="w-full border rounded px-3 py-2" value={data.chat?.phoneE164||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.phoneE164=e.target.value; setData(n)}} placeholder="+4670..." />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Position','Position')}</label>
+              <select className="w-full border rounded px-3 py-2" value={data.chat?.position||'right'} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.position = e.target.value==='left'?'left':'right'; setData(n)}}>
+                <option value="right">{L('Höger','Right')}</option>
+                <option value="left">{L('Vänster','Left')}</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Hälsning (SV)','Greeting (SV)')}</label>
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.chat?.greeting?.sv||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), sv: e.target.value }; setData(n)}} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Hälsning (EN)','Greeting (EN)')}</label>
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.chat?.greeting?.en||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), en: e.target.value }; setData(n)}} />
+            </div>
+          </div>
+          <p className="text-xs text-neutral-600 mt-3">
+            {L('Knappen öppnar WhatsApp i en ny flik och förifyller ditt meddelande.','The button opens WhatsApp in a new tab and pre-fills your message.')}
+          </p>
         </Section>
 
         <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')}>

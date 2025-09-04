@@ -11,6 +11,7 @@ import InstagramFeed from './sections/InstagramFeed.jsx'
 import FAQ from './sections/FAQ.jsx'
 import Footer from './components/Footer.jsx'
 import Admin from './admin/Admin.jsx'
+import ChatWidget from './components/ChatWidget.jsx'
 
 function ScrollToHash() {
   const { hash } = useLocation()
@@ -114,6 +115,7 @@ export default function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<div className="p-8">Not Found. <Link to="/" className="underline">{t('nav.home')}</Link></div>} />
       </Routes>
+      <ChatWidget />
     </div>
   )
 }

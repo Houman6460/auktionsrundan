@@ -102,6 +102,14 @@ const defaults = {
     social: { instagram: '', facebook: '', website: '' },
     newsletter: true,
   },
+  // Simple chat config (WhatsApp)
+  chat: {
+    enabled: true,
+    provider: 'whatsapp', // only 'whatsapp' supported for now
+    phoneE164: '+46707221645',
+    greeting: { sv: 'Hej! Jag har en fråga om auktionen.', en: 'Hello! I have a question about the auction.' },
+    position: 'right', // 'right' | 'left'
+  },
   // Newsletter popup configuration and defaults
   newsletter: {
     popupEnabled: true,
@@ -132,6 +140,23 @@ function normalize(content) {
       if (typeof val === 'string') return { sv: val, en: enDefault }
       if (val && typeof val === 'object') return { sv: val.sv ?? '', en: val.en ?? enDefault }
       return { sv: '', en: enDefault }
+    }
+    // Ensure chat section exists and normalize
+    if (!out.chat || typeof out.chat !== 'object') {
+      out.chat = deepClone(defaults.chat)
+    } else {
+      out.chat.enabled = out.chat.enabled ?? defaults.chat.enabled
+      out.chat.provider = 'whatsapp'
+      out.chat.phoneE164 = typeof out.chat.phoneE164 === 'string' ? out.chat.phoneE164 : defaults.chat.phoneE164
+      const g = out.chat.greeting
+      if (typeof g === 'string') {
+        out.chat.greeting = { sv: g, en: g }
+      } else if (g && typeof g === 'object') {
+        out.chat.greeting = { sv: g.sv ?? defaults.chat.greeting.sv, en: g.en ?? defaults.chat.greeting.en }
+      } else {
+        out.chat.greeting = deepClone(defaults.chat.greeting)
+      }
+      out.chat.position = out.chat.position === 'left' ? 'left' : 'right'
     }
     // Ensure newsletter config exists and normalize shape
     if (!out.newsletter || typeof out.newsletter !== 'object') {
