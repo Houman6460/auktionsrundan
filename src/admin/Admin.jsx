@@ -98,6 +98,8 @@ export default function Admin() {
   const [authed, setAuthed] = React.useState(() => localStorage.getItem('ar_admin_authed') === '1')
   const [pw, setPw] = React.useState('')
   const [currentLang, setCurrentLang] = React.useState(() => localStorage.getItem('ar_admin_lang') || 'sv')
+  const [activeTab, setActiveTab] = React.useState('design') // 'design' | 'settings' | 'subscribers'
+  const [subscribers, setSubscribers] = React.useState(loadSubscribers())
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
 
   const handleToggle = (path) => (e) => {
@@ -199,6 +201,19 @@ export default function Admin() {
     setData(loadContent())
   }
 
+  // Live-update subscribers list when stored from popup or other tabs
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (!e || e.key === 'ar_newsletter_subscribers_v1') {
+        setSubscribers(loadSubscribers())
+      }
+    }
+    window.addEventListener('storage', handler)
+    // Also poll once after mount to ensure fresh state
+    setSubscribers(loadSubscribers())
+    return () => window.removeEventListener('storage', handler)
+  }, [])
+
   if (!authed) {
     return (
       <div className="min-h-screen grid place-items-center bg-vintage-cream px-4">
@@ -247,6 +262,11 @@ export default function Admin() {
                 title={!data.header.languages?.en ? 'EN inaktiverat' : 'English'}
               >EN</button>
             </div>
+            <div className="hidden md:flex items-center gap-2 mr-2">
+              <button className={`px-3 py-1 rounded ${activeTab==='design' ? 'bg-earth-dark text-white' : 'btn-outline'}`} onClick={()=>setActiveTab('design')}>{L('Design','Design')}</button>
+              <button className={`px-3 py-1 rounded ${activeTab==='settings' ? 'bg-earth-dark text-white' : 'btn-outline'}`} onClick={()=>setActiveTab('settings')}>{L('Inställningar','Settings')}</button>
+              <button className={`px-3 py-1 rounded ${activeTab==='subscribers' ? 'bg-earth-dark text-white' : 'btn-outline'}`} onClick={()=>setActiveTab('subscribers')}>{L('Prenumeranter','Subscribers')}</button>
+            </div>
             <Link to="/" className="btn-outline text-sm">{L('Till webbplatsen','View site')}</Link>
             <button className="btn-primary text-sm" onClick={save}>{L('Spara','Save')}</button>
           </nav>
@@ -261,17 +281,30 @@ export default function Admin() {
           <aside className="col-span-12 md:col-span-3 lg:col-span-3">
             <div className="section-card p-4 sticky top-4 max-h-[80vh] overflow-auto">
               <nav className="flex flex-col gap-2 text-sm">
-                <a href="#admin-header" className="hover:underline">{L('Header','Header')}</a>
-                <a href="#admin-hero" className="hover:underline">{L('Hero (Hem)','Hero (Home)')}</a>
-                <a href="#admin-auctions" className="hover:underline">{L('Kommande Auktioner','Upcoming Auctions')}</a>
-                <a href="#admin-items" className="hover:underline">{L('Auktionsvaror','Auction Items')}</a>
-                <a href="#admin-terms" className="hover:underline">{L('Auktionsvillkor','Terms')}</a>
-                <a href="#admin-instagram" className="hover:underline">{L('Instagram','Instagram')}</a>
-                <a href="#admin-faq" className="hover:underline">FAQ</a>
-                <a href="#admin-newsletter" className="hover:underline">{L('Nyhetsbrev','Newsletter')}</a>
-                <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
-                <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
-                <a href="#admin-footer" className="hover:underline">{L('Footer','Footer')}</a>
+                {activeTab==='design' && (
+                  <>
+                    <a href="#admin-header" className="hover:underline">{L('Header','Header')}</a>
+                    <a href="#admin-hero" className="hover:underline">{L('Hero (Hem)','Hero (Home)')}</a>
+                    <a href="#admin-auctions" className="hover:underline">{L('Kommande Auktioner','Upcoming Auctions')}</a>
+                    <a href="#admin-items" className="hover:underline">{L('Auktionsvaror','Auction Items')}</a>
+                    <a href="#admin-terms" className="hover:underline">{L('Auktionsvillkor','Terms')}</a>
+                    <a href="#admin-instagram" className="hover:underline">{L('Instagram','Instagram')}</a>
+                    <a href="#admin-faq" className="hover:underline">FAQ</a>
+                    <a href="#admin-footer" className="hover:underline">{L('Footer','Footer')}</a>
+                  </>
+                )}
+                {activeTab==='settings' && (
+                  <>
+                    <a href="#admin-newsletter" className="hover:underline">{L('Nyhetsbrev','Newsletter')}</a>
+                    <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
+                    <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
+                  </>
+                )}
+                {activeTab==='subscribers' && (
+                  <>
+                    <a href="#admin-subscribers" className="hover:underline">{L('Prenumeranter','Subscribers')}</a>
+                  </>
+                )}
                 <hr className="my-3" />
                 <button className="btn-primary w-full" onClick={save}>{L('Spara','Save')}</button>
                 <button className="btn-outline w-full" onClick={hardReset}>{L('Återställ standard','Reset to defaults')}</button>
@@ -282,6 +315,7 @@ export default function Admin() {
           {/* Content */}
           <div className="col-span-12 md:col-span-9 lg:col-span-9 grid gap-6">
 
+        {activeTab==='design' && (
         <Section id="admin-header" title={L('Header','Header')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
@@ -329,7 +363,9 @@ export default function Admin() {
             </div>
           </div>
         </Section>
+        )}
 
+        {activeTab==='settings' && (
         <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
@@ -374,7 +410,9 @@ export default function Admin() {
             </div>
           </div>
         </Section>
+        )}
 
+        {activeTab==='design' && (
         <Section id="admin-faq" title="FAQ">
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.faq?.visible} onChange={(e)=>{const n={...data}; n.faq = n.faq||{}; n.faq.visible = e.target.checked; setData(n)}} />
@@ -410,7 +448,9 @@ export default function Admin() {
             ))}
           </div>
         </Section>
+        )}
 
+        {activeTab==='design' && (
         <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
@@ -469,7 +509,9 @@ export default function Admin() {
             </div>
           </div>
         </Section>
+        )}
 
+        {activeTab==='design' && (
         <Section id="admin-auctions" title={L('Kommande Auktioner','Upcoming Auctions')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
@@ -513,7 +555,9 @@ export default function Admin() {
             ))}
           </div>
         </Section>
+        )}
 
+        {activeTab==='design' && (
         <Section id="admin-items" title={L('Auktionsvaror','Auction Items')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
@@ -649,7 +693,9 @@ export default function Admin() {
             </div>
           </div>
         </Section>
+        )}
 
+        {activeTab==='settings' && (
         <Section id="admin-ratings" title={L('Betyg','Ratings')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.ratings?.enabled} onChange={(e)=>{const n={...data}; n.ratings = n.ratings||{}; n.ratings.enabled = e.target.checked; setData(n)}} />
@@ -659,7 +705,9 @@ export default function Admin() {
             {L('När detta är aktiverat visas stjärnbetyg i sektionen Kommande Auktioner och för varje auktionsvara. Backend använder Cloudflare D1.','When enabled, star ratings appear in Upcoming Auctions and for each Auction Item. Backend uses Cloudflare D1.')}
           </p>
         </Section>
+        )}
 
+        {activeTab==='design' && (
         <Section id="admin-terms" title={L('Auktionsvillkor','Terms')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
@@ -672,7 +720,9 @@ export default function Admin() {
             </div>
           ))}
         </Section>
+        )}
 
+        {activeTab==='design' && (
         <Section id="admin-instagram" title={L('Instagram','Instagram')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
@@ -696,7 +746,9 @@ export default function Admin() {
             </div>
           </div>
         </Section>
+        )}
 
+        {activeTab==='settings' && (
         <Section id="admin-maps" title={L('Google Maps','Google Maps')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.maps?.visible} onChange={handleToggle(['maps','visible'])} />
@@ -726,7 +778,9 @@ export default function Admin() {
             </p>
           </div>
         </Section>
+        )}
 
+        {activeTab==='design' && (
         <Section id="admin-footer" title={L('Footer','Footer')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
@@ -749,6 +803,41 @@ export default function Admin() {
             </div>
           </div>
         </Section>
+        )}
+
+        {activeTab==='subscribers' && (
+        <Section id="admin-subscribers" title={L('Prenumeranter','Subscribers')}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-sm text-neutral-600">{L('Totalt','Total')}: {subscribers.length}</div>
+            <button type="button" className="btn-outline" onClick={exportCsv}>{L('Exportera CSV','Export CSV')}</button>
+          </div>
+          <div className="overflow-auto border rounded bg-white">
+            <table className="min-w-full text-sm">
+              <thead className="bg-neutral-50">
+                <tr>
+                  <th className="text-left px-3 py-2">{L('Namn','Name')}</th>
+                  <th className="text-left px-3 py-2">Email</th>
+                  <th className="text-left px-3 py-2">{L('Telefon','Phone')}</th>
+                  <th className="text-left px-3 py-2">{L('Tid','Time')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subscribers.length === 0 && (
+                  <tr><td className="px-3 py-3 text-neutral-500" colSpan={4}>{L('Inga prenumeranter ännu.','No subscribers yet.')}</td></tr>
+                )}
+                {subscribers.map((s, i) => (
+                  <tr key={i} className="border-t">
+                    <td className="px-3 py-2">{s.name||''}</td>
+                    <td className="px-3 py-2">{s.email||''}</td>
+                    <td className="px-3 py-2">{s.tel||''}</td>
+                    <td className="px-3 py-2">{s.ts ? new Date(s.ts).toLocaleString() : ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+        )}
 
         {/* Bottom actions (duplicate for convenience) */}
         <div className="flex items-center gap-3">
