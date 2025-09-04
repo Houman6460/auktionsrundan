@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Header from './components/Header.jsx'
+import NewsletterPopup from './components/NewsletterPopup.jsx'
 import Hero from './sections/Hero.jsx'
 import Auctions from './sections/Auctions.jsx'
 import Items from './sections/Items.jsx'
@@ -27,6 +28,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-vintage-cream text-vintage-black">
       <Header />
+      <NewsletterPopup />
       <ScrollToHash />
       <Routes>
         <Route

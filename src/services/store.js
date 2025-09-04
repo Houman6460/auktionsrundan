@@ -102,6 +102,19 @@ const defaults = {
     social: { instagram: '', facebook: '', website: '' },
     newsletter: true,
   },
+  // Newsletter popup configuration and defaults
+  newsletter: {
+    popupEnabled: true,
+    title: { sv: 'Håll dig uppdaterad', en: 'Stay informed' },
+    subtitle: { sv: 'Vi informerar dig om nästa auktion.', en: 'We will inform you about the next auction.' },
+    fields: { name: true, email: true, tel: false },
+    triggers: {
+      mode: 'timer', // 'timer' | 'scroll'
+      delayMs: 5000, // used when mode === 'timer'
+      scrollPercent: 50, // used when mode === 'scroll'
+      oncePerSession: true,
+    },
+  },
   ratings: {
     enabled: true,
   },
@@ -119,6 +132,28 @@ function normalize(content) {
       if (typeof val === 'string') return { sv: val, en: enDefault }
       if (val && typeof val === 'object') return { sv: val.sv ?? '', en: val.en ?? enDefault }
       return { sv: '', en: enDefault }
+    }
+    // Ensure newsletter config exists and normalize shape
+    if (!out.newsletter || typeof out.newsletter !== 'object') {
+      out.newsletter = deepClone(defaults.newsletter)
+    } else {
+      out.newsletter.popupEnabled = out.newsletter.popupEnabled ?? defaults.newsletter.popupEnabled
+      const ensureBilingual = (val, enDefault='') => {
+        if (typeof val === 'string') return { sv: val, en: enDefault }
+        if (val && typeof val === 'object') return { sv: val.sv ?? '', en: val.en ?? enDefault }
+        return { sv: '', en: enDefault }
+      }
+      out.newsletter.title = ensureBilingual(out.newsletter.title, defaults.newsletter.title.en)
+      out.newsletter.subtitle = ensureBilingual(out.newsletter.subtitle, defaults.newsletter.subtitle.en)
+      const f = out.newsletter.fields || {}
+      out.newsletter.fields = { name: !!f.name, email: f.email !== false, tel: !!f.tel }
+      const t = out.newsletter.triggers || {}
+      out.newsletter.triggers = {
+        mode: t.mode === 'scroll' ? 'scroll' : 'timer',
+        delayMs: Number.isFinite(parseInt(t.delayMs,10)) ? parseInt(t.delayMs,10) : defaults.newsletter.triggers.delayMs,
+        scrollPercent: Number.isFinite(parseInt(t.scrollPercent,10)) ? parseInt(t.scrollPercent,10) : defaults.newsletter.triggers.scrollPercent,
+        oncePerSession: t.oncePerSession !== false,
+      }
     }
     // header.nav.* may be strings from older data; convert to {sv, en}
     if (out.header && out.header.nav) {

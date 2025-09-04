@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { loadContent, saveContent, resetContent } from '../services/store'
+import { exportCsv, loadSubscribers } from '../services/newsletter'
 
 function Section({ id, title, children }) {
   return (
@@ -267,6 +268,7 @@ export default function Admin() {
                 <a href="#admin-terms" className="hover:underline">{L('Auktionsvillkor','Terms')}</a>
                 <a href="#admin-instagram" className="hover:underline">{L('Instagram','Instagram')}</a>
                 <a href="#admin-faq" className="hover:underline">FAQ</a>
+                <a href="#admin-newsletter" className="hover:underline">{L('Nyhetsbrev','Newsletter')}</a>
                 <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
                 <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
                 <a href="#admin-footer" className="hover:underline">{L('Footer','Footer')}</a>
@@ -324,6 +326,51 @@ export default function Admin() {
               <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvillkor','Terms')}</label>
               <input className="w-full border rounded px-3 py-2" value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
+            </div>
+          </div>
+        </Section>
+
+        <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')}>
+          <label className="flex items-center gap-2 mb-3">
+            <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
+            <span>{L('Aktivera popup','Enable popup')}</span>
+          </label>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
+              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.title = { ...(n.newsletter.title||{}), [currentLang]: e.target.value }; setData(n)}} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
+              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.subtitle = { ...(n.newsletter.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
+            </div>
+          </div>
+          <div className="mt-4 grid md:grid-cols-3 gap-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Fält','Fields')}</h3>
+              <label className="flex items-center gap-2 mb-1"><Toggle checked={!!data.newsletter?.fields?.name} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.name=e.target.checked; setData(n)}} />{L('Namn','Name')}</label>
+              <label className="flex items-center gap-2 mb-1"><Toggle checked={data.newsletter?.fields?.email !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.email=e.target.checked; setData(n)}} />Email</label>
+              <label className="flex items-center gap-2"><Toggle checked={!!data.newsletter?.fields?.tel} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.tel=e.target.checked; setData(n)}} />{L('Telefon','Phone')}</label>
+            </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Utlösare','Triggers')}</h3>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Läge','Mode')}</label>
+              <select className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.mode || 'timer'} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), mode: e.target.value }; setData(n)}}>
+                <option value="timer">{L('Timer','Timer')}</option>
+                <option value="scroll">{L('Skroll','Scroll')}</option>
+              </select>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Fördröjning (ms)','Delay (ms)')}</label>
+              <input type="number" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.delayMs ?? 5000} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), delayMs: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <label className="block text-sm text-neutral-600 mb-1">{L('Scroll %','Scroll %')}</label>
+              <input type="number" min="0" max="100" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.scrollPercent ?? 50} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), scrollPercent: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <label className="flex items-center gap-2"><Toggle checked={data.newsletter?.triggers?.oncePerSession !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), oncePerSession: e.target.checked }; setData(n)}} />{L('Visa en gång per session','Show once per session')}</label>
+            </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Prenumeranter','Subscribers')}</h3>
+              <div className="section-card p-3">
+                <div className="text-sm mb-2">{L('Antal','Count')}: {loadSubscribers().length}</div>
+                <button type="button" className="btn-outline" onClick={exportCsv}>{L('Exportera CSV','Export CSV')}</button>
+              </div>
             </div>
           </div>
         </Section>
