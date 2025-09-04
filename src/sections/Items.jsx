@@ -1,5 +1,6 @@
 import React from 'react'
 import { loadContent } from '../services/store'
+import RatingStars from '../components/RatingStars'
 
 export default function Items() {
   const [content, setContent] = React.useState(loadContent())
@@ -24,7 +25,7 @@ export default function Items() {
   const categories = content.items?.categories || {}
   const categoryNames = ['Alla', ...Object.keys(categories)]
   const items = Object.entries(categories).flatMap(([cat, arr]) =>
-    (arr||[]).map((it) => ({ ...it, _cat: cat }))
+    (arr||[]).map((it, i) => ({ ...it, _cat: cat, _idx: i }))
   )
   const shown = filter === 'Alla' ? items : items.filter((i) => i._cat === filter)
 
@@ -51,6 +52,9 @@ export default function Items() {
                           <span className="text-neutral-500">Ingen bild</span>
                         </div>
                       )}
+                    </div>
+                    <div className="p-3 pt-2">
+                      <RatingStars targetType="item" targetId={`${cat}:${idx}`} />
                     </div>
                     {(() => {
                       const nameT = getText(it.name)
@@ -98,6 +102,9 @@ export default function Items() {
                       <span className="text-neutral-500">Ingen bild</span>
                     </div>
                   )}
+                </div>
+                <div className="p-3 pt-2">
+                  <RatingStars targetType="item" targetId={`${it._cat}:${it._idx}`} />
                 </div>
                 {(() => {
                   const nameT = getText(it.name)

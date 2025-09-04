@@ -51,6 +51,21 @@ Single Page Application with an Admin dashboard for Auktionsrundan.
 2. In Cloudflare Pages, create project → Connect to GitHub → select repo.
 3. Framework preset: Vite. Build command `npm run build`, output `dist`.
 
+#### Ratings with Cloudflare D1 (API under `functions/api/ratings.js`)
+1. In Cloudflare Pages → Your Project → Settings → Functions → D1 Bindings:
+   - Add a D1 binding with name `DB` and select/create a D1 database.
+2. First request auto-creates tables `ratings` and `votes`.
+3. API endpoints:
+   - GET `/api/ratings?type=upcoming` → `{ average, totalVotes }`
+   - GET `/api/ratings?type=item&id=<category:index>` → per-item aggregate
+   - POST `/api/ratings` JSON body: `{ type: 'upcoming'|'item', id?: string, score: 1..5 }`
+4. The site integrates a `RatingStars` component in:
+   - `src/sections/Auctions.jsx` (section-wide rating)
+   - `src/sections/Items.jsx` (per item ratings)
+5. Basic abuse protection:
+   - Per-IP cooldown of 120s for the same target
+   - LocalStorage stores the last score per target on the client
+
 ### Vercel / Netlify
 - New Project → Import Git Repository → Framework: Vite → Build: `npm run build` → Output: `dist`.
 
