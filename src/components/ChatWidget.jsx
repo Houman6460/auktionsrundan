@@ -34,13 +34,13 @@ export default function ChatWidget() {
   const isLeft = cfg.position === 'left'
 
   return (
-    <div className="fixed z-40" style={{ bottom: '20px', [isLeft ? 'left' : 'right']: '20px' }}>
+    <div className="fixed z-40" style={{ bottom: 'calc(1rem + 56px + 12px)', [isLeft ? 'left' : 'right']: '1rem' }}>
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Open WhatsApp chat"
-        className="group inline-flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-600"
+        className="group inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-600"
       >
         <WhatsAppIcon className="w-7 h-7" />
       </a>

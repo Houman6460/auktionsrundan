@@ -84,9 +84,8 @@ export default function ShareMenu() {
   // Avoid overlap with WhatsApp chat widget if enabled on the same side
   const chatEnabled = !!(chat && chat.enabled && chat.provider === 'whatsapp')
   const sameSideAsChat = chatEnabled && ((chat.position === 'left') === isLeft)
-  // Align vertically with WhatsApp: place Share (+) above chat button by a fixed distance
-  // WhatsApp assumed at bottom: 1rem; Share sits above by chat size (56px) + gap (12px)
-  const bottomSpace = sameSideAsChat ? 'calc(1rem + 56px + 12px)' : '1rem'
+  // Equal spacing: ScrollTop at 1rem, WhatsApp at 1rem + (56+12), Share at 1rem + 2*(56+12)
+  const bottomSpace = sameSideAsChat ? 'calc(1rem + 2*(56px + 12px))' : '1rem'
 
   const links = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
@@ -185,7 +184,7 @@ export default function ShareMenu() {
         className="fixed w-14 h-14 rounded-full flex items-center justify-center"
         style={{
           [isLeft ? 'left' : 'right']: '1rem',
-          bottom: 'calc(1rem - 12px)',
+          bottom: '1rem',
           background: 'linear-gradient(0deg, #ddd, #fff)',
           color: '#262626',
           zIndex: 39,
