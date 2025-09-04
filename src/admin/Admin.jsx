@@ -23,8 +23,8 @@ function Toggle({ checked, onChange, disabled, id }) {
         onChange={onChange}
         disabled={disabled}
       />
-      <div className="relative w-12 h-7 rounded-full bg-neutral-300 transition-colors peer-checked:bg-earth-dark peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-earth-dark/30">
-        <span className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></span>
+      <div className="relative w-10 h-6 rounded-full bg-neutral-300 transition-colors peer-checked:bg-earth-dark peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-earth-dark/30">
+        <span className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"></span>
       </div>
     </label>
   )
@@ -645,7 +645,7 @@ export default function Admin() {
 
         <Section id="admin-footer" title={L('Footer','Footer')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
+            <Toggle checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
             <span>{L('Visa footer','Show footer')}</span>
           </label>
           <div className="grid md:grid-cols-3 gap-3">
@@ -661,7 +661,7 @@ export default function Admin() {
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Nyhetsbrev','Newsletter')}</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={!!data.footer.newsletter} onChange={handleToggle(['footer','newsletter'])} />{L('Aktivera','Enable')}</label>
+              <label className="flex items-center gap-2"><Toggle checked={!!data.footer.newsletter} onChange={handleToggle(['footer','newsletter'])} />{L('Aktivera','Enable')}</label>
             </div>
           </div>
         </Section>
