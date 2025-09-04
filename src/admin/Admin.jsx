@@ -61,7 +61,7 @@ export default function Admin() {
   const addAuction = () => {
     const next = { ...data }
     next.auctions.list = next.auctions.list || []
-    next.auctions.list.push({ title: 'Ny auktion', address: '', mapEmbed: '', viewing: '', start: '' })
+    next.auctions.list.push({ title: 'Ny auktion', address: '', mapEmbed: '', viewing: '', date: '', start: '' })
     setData(next)
   }
 
@@ -270,6 +270,10 @@ export default function Admin() {
                   <div className="flex gap-2">
                     <button className="btn-outline" onClick={()=>removeNextAuction(idx)}>Ta bort</button>
                   </div>
+                  <div className="md:col-span-3">
+                    <label className="block text-sm text-neutral-600 mb-1">Google Maps Embed URL</label>
+                    <input className="w-full border rounded px-3 py-2" placeholder="https://www.google.com/maps?....&output=embed" value={a.mapEmbed || ''} onChange={(e)=>{const n={...data};n.hero.nextAuctions[idx].mapEmbed=e.target.value;setData(n)}} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -293,10 +297,14 @@ export default function Admin() {
                   <input className="w-full border rounded px-3 py-2" value={a.title} onChange={(e)=>updateAuction(idx,'title',e.target.value)} />
                   <label className="block text-sm text-neutral-600 mt-2 mb-1">Adress</label>
                   <input className="w-full border rounded px-3 py-2" value={a.address} onChange={(e)=>updateAuction(idx,'address',e.target.value)} />
-                  <div className="grid grid-cols-2 gap-3 mt-2">
+                  <div className="grid grid-cols-3 gap-3 mt-2">
                     <div>
                       <label className="block text-sm text-neutral-600 mb-1">Visning</label>
                       <input className="w-full border rounded px-3 py-2" value={a.viewing} onChange={(e)=>updateAuction(idx,'viewing',e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-neutral-600 mb-1">Datum</label>
+                      <input type="date" className="w-full border rounded px-3 py-2" value={a.date || ''} onChange={(e)=>updateAuction(idx,'date',e.target.value)} />
                     </div>
                     <div>
                       <label className="block text-sm text-neutral-600 mb-1">Start</label>

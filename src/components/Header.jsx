@@ -23,12 +23,23 @@ export default function Header() {
   const changeLang = (lng) => {
     i18n.changeLanguage(lng)
     localStorage.setItem('lang', lng)
+    localStorage.setItem('site_lang', lng) // keep legacy key in sync
   }
 
   if (content?.header?.visible === false) return null
 
   const activeLangs = content?.header?.languages || { sv: true, en: true }
   const logo = content?.header?.logo
+
+  const nav = content?.header?.nav || {}
+  const getLabel = (key) => {
+    const v = nav[key]
+    if (v && typeof v === 'object') {
+      return v[i18n.language] || v.sv || v.en || t(`nav.${key}`)
+    }
+    if (typeof v === 'string') return v
+    return t(`nav.${key}`)
+  }
 
   return (
     <header className={`sticky top-0 z-50 border-b bg-white/80 backdrop-blur ${visible ? '' : 'opacity-0'}`}>
@@ -44,10 +55,10 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#home" className="hover:underline">{t('nav.home')}</a>
-            <a href="#auctions" className="hover:underline">{t('nav.auctions')}</a>
-            <a href="#items" className="hover:underline">{t('nav.items')}</a>
-            <a href="#terms" className="hover:underline">{t('nav.terms')}</a>
+            <a href="#home" className="hover:underline">{getLabel('home')}</a>
+            <a href="#auctions" className="hover:underline">{getLabel('auctions')}</a>
+            <a href="#items" className="hover:underline">{getLabel('items')}</a>
+            <a href="#terms" className="hover:underline">{getLabel('terms')}</a>
             <NavLink to="/admin" className="text-sm text-earth-dark/80 hover:text-earth-dark">{t('nav.admin')}</NavLink>
             <div className="flex items-center gap-2">
               {activeLangs.sv && <button onClick={() => changeLang('sv')} className="btn-outline text-xs">SV</button>}
@@ -63,10 +74,10 @@ export default function Header() {
       {open && (
         <div id="mobile-nav" className="md:hidden border-t bg-white">
           <div className="container mx-auto px-4 py-3 flex flex-col gap-3">
-            <a href="#home" onClick={()=>setOpen(false)}>{t('nav.home')}</a>
-            <a href="#auctions" onClick={()=>setOpen(false)}>{t('nav.auctions')}</a>
-            <a href="#items" onClick={()=>setOpen(false)}>{t('nav.items')}</a>
-            <a href="#terms" onClick={()=>setOpen(false)}>{t('nav.terms')}</a>
+            <a href="#home" onClick={()=>setOpen(false)}>{getLabel('home')}</a>
+            <a href="#auctions" onClick={()=>setOpen(false)}>{getLabel('auctions')}</a>
+            <a href="#items" onClick={()=>setOpen(false)}>{getLabel('items')}</a>
+            <a href="#terms" onClick={()=>setOpen(false)}>{getLabel('terms')}</a>
             <NavLink to="/admin" onClick={()=>setOpen(false)}>{t('nav.admin')}</NavLink>
             <div className="flex items-center gap-2 pt-2">
               {activeLangs.sv && <button onClick={() => changeLang('sv')} className="btn-outline text-xs">SV</button>}

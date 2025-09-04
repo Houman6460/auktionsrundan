@@ -33,6 +33,7 @@ const defaults = {
         address: 'Rävlandavägen 15, 438 53 Hindås',
         mapEmbed: '',
         viewing: '13:00 - 14:00',
+        date: '2024-02-24',
         start: '14:00',
       },
       {
@@ -40,6 +41,7 @@ const defaults = {
         address: 'Ullareds bygdegård, Skolvägen 12, 311 60 Ullared',
         mapEmbed: '',
         viewing: '13:00 - 14:00',
+        date: '2024-02-25',
         start: '14:00',
       },
     ],
@@ -103,6 +105,21 @@ function normalize(content) {
         } else if (v == null) {
           out.header.nav[key] = deepClone(defaults.header.nav[key])
         }
+
+    // Normalize auctions.list date: if missing, try extract from title like "... 24/2-2024"
+    if (out.auctions && Array.isArray(out.auctions.list)) {
+      out.auctions.list = out.auctions.list.map((it) => {
+        const next = { ...it }
+        if (!next.date && typeof next.title === 'string') {
+          const m = next.title.match(/(\d{1,2})\/(\d{1,2})-(\d{4})/) // dd/m-YYYY
+          if (m) {
+            const dd = m[1], mm = m[2], yyyy = m[3]
+            next.date = `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`
+          }
+        }
+        return next
+      })
+    }
       }
     }
 

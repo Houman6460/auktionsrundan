@@ -2,12 +2,14 @@ import React from 'react'
 import { loadContent } from '../services/store'
 
 function AuctionCard({ a, idx, now }) {
-  const parseTs = (val) => {
-    if (!val || typeof val !== 'string') return NaN
-    const ts = Date.parse(val)
+  const toStartTs = (dateStr, timeStr) => {
+    if (!dateStr || typeof dateStr !== 'string') return NaN
+    const time = (typeof timeStr === 'string' && /\d{1,2}:\d{2}/.test(timeStr)) ? timeStr : '00:00'
+    const iso = `${dateStr}T${time}:00`
+    const ts = Date.parse(iso)
     return Number.isFinite(ts) ? ts : NaN
   }
-  const startTs = parseTs(a.start || a.date)
+  const startTs = toStartTs(a.date, a.start)
   const remaining = () => {
     if (!Number.isFinite(startTs)) return null
     const diff = Math.max(0, startTs - now)
@@ -31,7 +33,8 @@ function AuctionCard({ a, idx, now }) {
           </div>
           <div className="p-2 rounded bg-vintage-cream/60">
             <div className="text-neutral-500">Datum</div>
-            <div className="font-medium">{a.start}</div>
+            <div className="font-medium">{a.date || '-'}</div>
+            {a.start && <div className="text-sm text-neutral-700">{a.start}</div>}
             {Number.isFinite(startTs) && (
               <div className="mt-1">
                 <div className="text-neutral-600 text-[11px] leading-none">Nedräkning</div>
