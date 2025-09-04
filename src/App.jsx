@@ -12,6 +12,7 @@ import FAQ from './sections/FAQ.jsx'
 import Footer from './components/Footer.jsx'
 import Admin from './admin/Admin.jsx'
 import ChatWidget from './components/ChatWidget.jsx'
+import ShareMenu from './components/ShareMenu.jsx'
 
 function ScrollToHash() {
   const { hash } = useLocation()
@@ -116,6 +117,7 @@ export default function App() {
         <Route path="*" element={<div className="p-8">Not Found. <Link to="/" className="underline">{t('nav.home')}</Link></div>} />
       </Routes>
       <ChatWidget />
+      <ShareMenu />
     </div>
   )
 }

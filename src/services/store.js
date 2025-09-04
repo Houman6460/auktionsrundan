@@ -126,6 +126,14 @@ const defaults = {
   ratings: {
     enabled: true,
   },
+  // Social share settings
+  share: {
+    enabled: true,
+    coverUrl: '',
+    text: { sv: 'Kolla in Auktionsrundan!', en: 'Check out Auktionsrundan!' },
+    position: 'right', // 'right' | 'left'
+    platforms: { facebook: true, twitter: true, linkedin: true, telegram: true, copy: true },
+  },
 }
 
 function deepClone(obj) {
@@ -330,6 +338,30 @@ function normalize(content) {
       out.ratings = deepClone(defaults.ratings)
     } else {
       out.ratings.enabled = out.ratings.enabled ?? defaults.ratings.enabled
+    }
+    // Ensure share section exists and normalize
+    if (!out.share || typeof out.share !== 'object') {
+      out.share = deepClone(defaults.share)
+    } else {
+      out.share.enabled = out.share.enabled ?? defaults.share.enabled
+      out.share.coverUrl = typeof out.share.coverUrl === 'string' ? out.share.coverUrl : ''
+      const t = out.share.text
+      if (typeof t === 'string') {
+        out.share.text = { sv: t, en: t }
+      } else if (t && typeof t === 'object') {
+        out.share.text = { sv: t.sv ?? defaults.share.text.sv, en: t.en ?? defaults.share.text.en }
+      } else {
+        out.share.text = deepClone(defaults.share.text)
+      }
+      out.share.position = out.share.position === 'left' ? 'left' : 'right'
+      const p = out.share.platforms || {}
+      out.share.platforms = {
+        facebook: p.facebook !== false,
+        twitter: p.twitter !== false,
+        linkedin: p.linkedin !== false,
+        telegram: p.telegram !== false,
+        copy: p.copy !== false,
+      }
     }
   } catch {
     // noop normalization errors

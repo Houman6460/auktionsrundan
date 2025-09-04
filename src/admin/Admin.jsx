@@ -306,6 +306,7 @@ export default function Admin() {
                       <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
                       <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
                       <a href="#admin-chat" className="hover:underline">{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
+                      <a href="#admin-share" className="hover:underline">{L('Dela (Social)','Share (Social)')}</a>
                     </div>
                   )}
                 </div>
@@ -375,6 +376,47 @@ export default function Admin() {
               <input className="w-full border rounded px-3 py-2" value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
             </div>
           </div>
+        </Section>
+
+        <Section id="admin-share" title={L('Dela (Social)','Share (Social)')}>
+          <label className="flex items-center gap-2 mb-3">
+            <Toggle checked={!!data.share?.enabled} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.enabled=e.target.checked; setData(n)}} />
+            <span>{L('Aktivera delningsmeny','Enable share menu')}</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Position','Position')}</label>
+              <select className="w-full border rounded px-3 py-2" value={data.share?.position||'right'} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.position = e.target.value==='left'?'left':'right'; setData(n)}}>
+                <option value="right">{L('Höger','Right')}</option>
+                <option value="left">{L('Vänster','Left')}</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm text-neutral-600 mb-1">{L('Omslagsbild (URL)','Cover image (URL)')}</label>
+              <input className="w-full border rounded px-3 py-2" value={data.share?.coverUrl||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.coverUrl=e.target.value; setData(n)}} placeholder="https://..." />
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Delningstext (SV)','Share text (SV)')}</label>
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.share?.text?.sv||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), sv: e.target.value }; setData(n)}} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Delningstext (EN)','Share text (EN)')}</label>
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.share?.text?.en||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), en: e.target.value }; setData(n)}} />
+            </div>
+          </div>
+          <div className="grid md:grid-cols-5 gap-4 mt-4">
+            {['facebook','twitter','linkedin','telegram','copy'].map((k)=> (
+              <label key={k} className="flex items-center gap-2">
+                <input type="checkbox" checked={data.share?.platforms?.[k]!==false} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.platforms = { ...(n.share.platforms||{}), [k]: e.target.checked }; setData(n)}} />
+                <span className="capitalize">{k}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-neutral-600 mt-3">
+            {L('Omslagsbild används av sociala medier vid delning (Open Graph). Se till att din domän har rätt meta-taggar.','Cover image is used by social platforms (Open Graph). Ensure proper meta tags on your domain.')}
+          </p>
         </Section>
 
         <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')}>
