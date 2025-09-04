@@ -6,6 +6,8 @@ export default function Hero() {
   const { t, i18n } = useTranslation()
   const [content, setContent] = React.useState(loadContent())
   const [now, setNow] = React.useState(() => Date.now())
+  const [loaded, setLoaded] = React.useState(false)
+  const [loadedMaps, setLoadedMaps] = React.useState(() => new Set())
   const toEmbedSrc = (url) => {
     if (!url || typeof url !== 'string') return url
     try {
@@ -26,9 +28,12 @@ export default function Hero() {
     const onStorage = () => setContent(loadContent())
     window.addEventListener('storage', onStorage)
     const tick = setInterval(() => setNow(Date.now()), 1000)
+    // trigger fade-in once mounted
+    const t = setTimeout(() => setLoaded(true), 10)
     return () => {
       window.removeEventListener('storage', onStorage)
       clearInterval(tick)
+      clearTimeout(t)
     }
   }, [])
 
@@ -70,7 +75,7 @@ export default function Hero() {
         aria-hidden="true"
       />
       <div className="absolute inset-0 bg-black/30" aria-hidden="true" />
-      <div className="relative container mx-auto px-4 text-center text-white">
+      <div className={`relative container mx-auto px-4 text-center text-white transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
         <h1 className="font-serif text-4xl md:text-5xl drop-shadow">Auktionsrundan</h1>
         <div className="mt-6 inline-block section-card bg-white/90 text-vintage-black px-6 py-4">
           <div className="font-serif text-xl mb-1">{t('hero.nextAuction')}</div>
@@ -88,7 +93,10 @@ export default function Hero() {
                 <div className="font-medium">{(a.name && (a.name[lang] || a.name.sv || a.name.en)) || ''} — {a.date} {a.time && <span className="text-neutral-700">{a.time}</span>}</div>
                 {a.mapEmbed && (
                   <div className="mt-2">
-                    <div className="aspect-video w-full max-w-xl mx-auto border rounded overflow-hidden">
+                    <div className="aspect-video w-full max-w-xl mx-auto border rounded overflow-hidden relative">
+                      {!loadedMaps.has(idx) && (
+                        <div className="absolute inset-0 bg-neutral-200 animate-pulse" aria-hidden="true" />
+                      )}
                       <iframe
                         src={toEmbedSrc(a.mapEmbed)}
                         title={`Karta ${(a.name && (a.name[lang] || a.name.sv || a.name.en)) || ''}`}
@@ -97,6 +105,12 @@ export default function Hero() {
                         loading="lazy"
                         allowFullScreen
                         referrerPolicy="no-referrer-when-downgrade"
+                        onLoad={() => setLoadedMaps(prev => {
+                          const next = new Set(prev)
+                          next.add(idx)
+                          return next
+                        })}
+                        className={`transition-opacity duration-500 ${loadedMaps.has(idx) ? 'opacity-100' : 'opacity-0'}`}
                       />
                     </div>
                   </div>
@@ -106,7 +120,12 @@ export default function Hero() {
           </ul>
         </div>
         <div className="mt-6">
-          <a href={content.hero?.cta?.link || '#auctions'} className="btn-primary">{ctaText}</a>
+          <a
+            href={content.hero?.cta?.link || '#auctions'}
+            className="btn-primary transition-all will-change-transform hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
+          >
+            {ctaText}
+          </a>
         </div>
       </div>
     </section>
