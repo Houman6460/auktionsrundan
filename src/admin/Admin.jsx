@@ -270,6 +270,10 @@ export default function Admin() {
                   <div className="flex gap-2">
                     <button className="btn-outline" onClick={()=>removeNextAuction(idx)}>Ta bort</button>
                   </div>
+                  <div className="md:col-span-3">
+                    <label className="block text-sm text-neutral-600 mb-1">Google Maps Embed URL</label>
+                    <input className="w-full border rounded px-3 py-2" placeholder="https://www.google.com/maps?....&output=embed" value={a.mapEmbed || ''} onChange={(e)=>{const n={...data};n.hero.nextAuctions[idx].mapEmbed=e.target.value;setData(n)}} />
+                  </div>
                 </div>
               ))}
             </div>

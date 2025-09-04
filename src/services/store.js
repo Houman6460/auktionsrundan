@@ -19,8 +19,8 @@ const defaults = {
     visible: true,
     bg: '',
     nextAuctions: [
-      { name: 'Hindås Rotundan', date: '24/2-2024' },
-      { name: 'Ullareds Bygdegård', date: '25/2-2024' },
+      { name: 'Hindås Rotundan', date: '24/2-2024', mapEmbed: '' },
+      { name: 'Ullareds Bygdegård', date: '25/2-2024', mapEmbed: '' },
     ],
     // Bilingual CTA text with defaults (SV/EN)
     cta: { text: { sv: 'Hitta Hit', en: 'Get Directions' }, link: '#auctions' },
@@ -117,6 +117,24 @@ function normalize(content) {
       } else if (t == null) {
         out.hero.cta.text = deepClone(defaults.hero.cta.text)
       }
+    }
+
+    // Normalize hero.nextAuctions date format to ISO (YYYY-MM-DD)
+    if (out.hero && Array.isArray(out.hero.nextAuctions)) {
+      out.hero.nextAuctions = out.hero.nextAuctions.map((it) => {
+        const next = { ...it }
+        if (typeof next.date === 'string' && /\d{1,2}\/\d{1,2}-\d{4}/.test(next.date)) {
+          // Format like 24/2-2024 => 2024-02-24
+          try {
+            const [dPart, yPart] = next.date.split('-')
+            const [dd, mm] = dPart.split('/')
+            const yyyy = yPart
+            const iso = `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`
+            next.date = iso
+          } catch {}
+        }
+        return next
+      })
     }
   } catch {
     // noop normalization errors
