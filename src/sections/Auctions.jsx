@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
+import GoogleMap from '../components/GoogleMap'
 
 function AuctionCard({ a, idx, now, lang }) {
   const { t } = useTranslation()
@@ -65,18 +66,38 @@ function AuctionCard({ a, idx, now, lang }) {
         
       </div>
       <div className="rounded overflow-hidden border border-amber-900/10 min-h-[220px]">
-        {a.mapEmbed ? (
-          <iframe
-            title={`map-${idx}`}
-            src={toEmbedSrc(a.mapEmbed)}
-            className="w-full h-full min-h-[220px]"
-            style={{ border: 0 }}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        ) : (
-          <div className="w-full h-full min-h-[220px] grid place-items-center text-neutral-500">{t('auctions.noMap')}</div>
-        )}
+        {/* Prefer real Google Map if API key set and we have an address; fallback to iframe if provided */}
+        {(() => {
+          const addr = a.address && (a.address[lang] || a.address.sv || a.address.en)
+          try {
+            const raw = localStorage.getItem('ar_site_content_v1')
+            const parsed = raw ? JSON.parse(raw) : {}
+            const apiKey = parsed?.maps?.apiKey || ''
+            if (apiKey && typeof addr === 'string' && addr.trim()) {
+              return (
+                <GoogleMap
+                  query={addr}
+                  className="w-full h-full min-h-[220px]"
+                />
+              )
+            }
+          } catch {}
+          if (a.mapEmbed) {
+            return (
+              <iframe
+                title={`map-${idx}`}
+                src={toEmbedSrc(a.mapEmbed)}
+                className="w-full h-full min-h-[220px]"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            )
+          }
+          return (
+            <div className="w-full h-full min-h-[220px] grid place-items-center text-neutral-500">{t('auctions.noMap')}</div>
+          )
+        })()}
       </div>
     </div>
   )
