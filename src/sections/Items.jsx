@@ -15,11 +15,9 @@ export default function Items() {
 
   const categories = content.items?.categories || {}
   const categoryNames = ['Alla', ...Object.keys(categories)]
-
   const items = Object.entries(categories).flatMap(([cat, arr]) =>
-    arr.map((it) => ({ ...it, _cat: cat }))
+    (arr||[]).map((it) => ({ ...it, _cat: cat }))
   )
-
   const shown = filter === 'Alla' ? items : items.filter((i) => i._cat === filter)
 
   return (
@@ -29,27 +27,64 @@ export default function Items() {
           <button key={c} onClick={() => setFilter(c)} className={`btn-outline text-sm ${filter===c? 'bg-earth-light/30' : ''}`}>{c}</button>
         ))}
       </div>
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {shown.map((it, idx) => (
-          <figure key={idx} className="section-card overflow-hidden">
-            <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center">
-              {it.img ? (
-                <img src={it.img} alt={it.name || 'Auktionsvara'} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-neutral-500">Ingen bild</span>
+      {filter === 'Alla' ? (
+        <div className="grid gap-8">
+          {Object.entries(categories).map(([cat, arr]) => (
+            <div key={cat}>
+              <h3 className="font-serif text-xl mb-3">{cat}</h3>
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {(arr||[]).map((it, idx) => (
+                  <figure key={idx} className="section-card overflow-hidden">
+                    <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center">
+                      {it.img ? (
+                        <img src={it.img} alt={it.name || 'Auktionsvara'} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-neutral-500">Ingen bild</span>
+                      )}
+                    </div>
+                    <figcaption className="p-3">
+                      <div className="font-medium">{it.name || 'Namn saknas'}</div>
+                      {it.size && <div className="text-sm mt-1">{it.size}</div>}
+                      {it.type && <div className="text-sm">Typ: {it.type}</div>}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+              {(arr||[]).length === 0 && (
+                <div className="section-card p-4 text-neutral-600">Inga varor i denna kategori.</div>
               )}
             </div>
-            <figcaption className="p-3">
-              <div className="font-medium">{it.name || 'Namn saknas'}</div>
-              <div className="text-xs text-neutral-500">{it._cat}</div>
-              {it.size && <div className="text-sm mt-1">{it.size}</div>}
-              {it.type && <div className="text-sm">Typ: {it.type}</div>}
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-      {shown.length === 0 && (
-        <div className="section-card p-4 text-neutral-600">Inga varor att visa.</div>
+          ))}
+          {Object.keys(categories).length === 0 && (
+            <div className="section-card p-4 text-neutral-600">Inga kategorier att visa.</div>
+          )}
+        </div>
+      ) : (
+        <>
+          <h3 className="font-serif text-xl mb-3">{filter}</h3>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {shown.map((it, idx) => (
+              <figure key={idx} className="section-card overflow-hidden">
+                <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center">
+                  {it.img ? (
+                    <img src={it.img} alt={it.name || 'Auktionsvara'} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-neutral-500">Ingen bild</span>
+                  )}
+                </div>
+                <figcaption className="p-3">
+                  <div className="font-medium">{it.name || 'Namn saknas'}</div>
+                  {it.size && <div className="text-sm mt-1">{it.size}</div>}
+                  {it.type && <div className="text-sm">Typ: {it.type}</div>}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          {shown.length === 0 && (
+            <div className="section-card p-4 text-neutral-600">Inga varor att visa.</div>
+          )}
+        </>
       )}
     </div>
-  )}
+  )
+}

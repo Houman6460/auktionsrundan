@@ -195,6 +195,15 @@ function normalize(content) {
     if (out.footer) {
       out.footer.address = ensureBilingual(out.footer.address)
     }
+    // Ensure items.categories object exists
+    if (!out.items || typeof out.items !== 'object') {
+      out.items = deepClone(defaults.items)
+    } else {
+      if (!out.items.categories || typeof out.items.categories !== 'object') {
+        out.items.categories = deepClone(defaults.items.categories)
+      }
+      out.items.visible = out.items.visible ?? defaults.items.visible
+    }
     // Ensure maps section exists with sane defaults
     if (!out.maps || typeof out.maps !== 'object') {
       out.maps = deepClone(defaults.maps)

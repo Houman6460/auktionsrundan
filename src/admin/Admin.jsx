@@ -342,8 +342,127 @@ export default function Admin() {
             <input type="checkbox" checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
-          <p className="text-sm text-neutral-600">{L('Lägg till objekt per kategori med bild-URL, namn, typ och storlek.','Add items per category with image URL, name, type, and size.')}</p>
-          {/* Minimal editor: demonstrates structure; can be expanded later. */}
+          <p className="text-sm text-neutral-600 mb-3">{L('Hantera kategorier och lägg upp bilder för varje kategori. På framsidan visas en flik för Alla samt per kategori.','Manage categories and upload pictures per category. The frontend shows an All tab and per-category tabs.')}</p>
+          <div className="section-card p-4 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-serif text-lg">{L('Kategorier','Categories')}</h3>
+              <button
+                className="btn-outline text-sm"
+                onClick={() => {
+                  const next = { ...data }
+                  next.items.categories = next.items.categories || {}
+                  // Generate unique default name
+                  let base = L('Ny kategori','New category')
+                  let name = base
+                  let i = 1
+                  while (Object.prototype.hasOwnProperty.call(next.items.categories, name)) {
+                    name = `${base} ${i++}`
+                  }
+                  next.items.categories[name] = []
+                  setData(next)
+                }}
+              >{L('Lägg till kategori','Add category')}</button>
+            </div>
+            <div className="grid gap-3">
+              {Object.keys(data.items.categories||{}).length === 0 && (
+                <div className="text-neutral-600 text-sm">{L('Inga kategorier ännu. Lägg till en.','No categories yet. Add one.')}</div>
+              )}
+              {Object.entries(data.items.categories || {}).map(([catName, itemsArr], cidx) => (
+                <div key={catName} className="border rounded p-3 bg-white">
+                  <div className="flex items-center gap-2 mb-3">
+                    <input
+                      className="border rounded px-2 py-1 flex-1"
+                      value={catName}
+                      onChange={(e) => {
+                        const newName = e.target.value
+                        if (!newName) return
+                        const next = { ...data }
+                        if (newName === catName) return
+                        if (Object.prototype.hasOwnProperty.call(next.items.categories, newName)) {
+                          alert(L('Ett kategori-namn med samma namn finns redan.','A category with the same name already exists.'))
+                          return
+                        }
+                        const entries = next.items.categories[catName]
+                        delete next.items.categories[catName]
+                        next.items.categories[newName] = entries
+                        setData(next)
+                      }}
+                    />
+                    <button
+                      className="btn-outline"
+                      onClick={() => {
+                        if (!confirm(L('Ta bort kategorin och alla dess objekt?','Delete the category and all its items?'))) return
+                        const next = { ...data }
+                        delete next.items.categories[catName]
+                        setData(next)
+                      }}
+                    >{L('Ta bort','Remove')}</button>
+                    <button
+                      className="btn-outline"
+                      onClick={() => {
+                        const next = { ...data }
+                        next.items.categories[catName] = [...(itemsArr||[]), { img: '', name: '', type: '', size: '' }]
+                        setData(next)
+                      }}
+                    >{L('Lägg till objekt','Add item')}</button>
+                  </div>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {(itemsArr||[]).map((it, idx) => (
+                      <div key={idx} className="section-card p-3">
+                        <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center rounded overflow-hidden mb-2">
+                          {it.img ? (
+                            <img src={it.img} alt={it.name||'Item'} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-neutral-500 text-sm">{L('Ingen bild','No image')}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <input type="file" accept="image/*" onChange={(e)=>{
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            const reader = new FileReader()
+                            reader.onload = () => {
+                              const next = { ...data }
+                              next.items.categories[catName][idx].img = reader.result
+                              setData(next)
+                            }
+                            reader.readAsDataURL(file)
+                          }} />
+                          <button className="btn-outline text-xs" onClick={()=>{
+                            const next = { ...data }
+                            next.items.categories[catName][idx].img = ''
+                            setData(next)
+                          }}>{L('Rensa','Clear')}</button>
+                        </div>
+                        <label className="block text-xs text-neutral-600 mb-1">{L('Namn','Name')}</label>
+                        <input className="w-full border rounded px-2 py-1 mb-2" value={it.name || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].name=e.target.value; setData(next)}} />
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-xs text-neutral-600 mb-1">{L('Typ','Type')}</label>
+                            <input className="w-full border rounded px-2 py-1" value={it.type || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].type=e.target.value; setData(next)}} />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-neutral-600 mb-1">{L('Storlek','Size')}</label>
+                            <input className="w-full border rounded px-2 py-1" value={it.size || ''} onChange={(e)=>{const next={...data}; next.items.categories[catName][idx].size=e.target.value; setData(next)}} />
+                          </div>
+                        </div>
+                        <div className="flex justify-end mt-2">
+                          <button className="btn-outline" onClick={()=>{
+                            const next = { ...data }
+                            next.items.categories[catName].splice(idx,1)
+                            setData(next)
+                          }}>{L('Ta bort','Remove')}</button>
+                        </div>
+                      </div>
+                    ))}
+                    {(itemsArr||[]).length === 0 && (
+                      <div className="section-card p-3 text-neutral-600 text-sm">{L('Inga objekt i denna kategori ännu.','No items in this category yet.')}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </Section>
 
         <Section id="admin-terms" title={L('Auktionsvillkor','Terms')}>
