@@ -41,14 +41,25 @@ function AuctionCard({ a, idx, now, lang }) {
   }
 
   const titleT = (a.title && (a.title[lang] || a.title.sv || a.title.en)) || ''
+  const addrT = a.address && (a.address[lang] || a.address.sv || a.address.en) || ''
   const anchorId = `auction-${idx}`
   const shareUrl = (typeof window !== 'undefined') ? new URL(`/auctions#${anchorId}`, window.location.origin).toString() : ''
+  const mapUrl = addrT ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addrT)}` : ''
+  const datePart = a.date ? a.date : ''
+  const timePart = a.start ? a.start : ''
+  const dateTimeLine = [datePart, timePart].filter(Boolean).join(' ')
+  const shareText = [
+    titleT,
+    dateTimeLine && `${t('auctions.date')}: ${dateTimeLine}`,
+    addrT && `${t('auctions.address') || 'Adress'}: ${addrT}`,
+    mapUrl && `${t('auctions.map') || 'Karta'}: ${mapUrl}`,
+  ].filter(Boolean).join('\n')
 
   return (
     <div id={anchorId} className="section-card p-4 grid md:grid-cols-2 gap-4">
       <div>
         <h3 className="font-serif text-xl">{titleT}</h3>
-        <p className="text-sm text-neutral-700 mt-1">{(a.address && (a.address[lang] || a.address.sv || a.address.en)) || ''}</p>
+        <p className="text-sm text-neutral-700 mt-1">{addrT}</p>
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
           <div className="p-2 rounded bg-vintage-cream/60">
             <div className="text-neutral-500">{t('auctions.viewing')}</div>
@@ -70,7 +81,7 @@ function AuctionCard({ a, idx, now, lang }) {
           </div>
         </div>
         <div className="mt-3">
-          <ShareButtons title={titleT} url={shareUrl} />
+          <ShareButtons title={titleT} url={shareUrl} text={shareText} />
         </div>
       </div>
       <div className="rounded overflow-hidden border border-amber-900/10 min-h-[220px]">

@@ -1,16 +1,17 @@
 import React from 'react'
 
-export default function ShareButtons({ title, url, image }) {
+export default function ShareButtons({ title, url, text, image }) {
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '')
   const shareTitle = title || 'Auktionsrundan'
+  const shareText = text || shareTitle
 
   const doWebShare = async () => {
     try {
       if (navigator.share) {
-        await navigator.share({ title: shareTitle, text: shareTitle, url: shareUrl })
+        await navigator.share({ title: shareTitle, text: shareText, url: shareUrl })
       } else {
         // Fallback: open twitter share
-        const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`
+        const tw = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
         window.open(tw, '_blank', 'noopener,noreferrer')
       }
     } catch {}
@@ -18,9 +19,9 @@ export default function ShareButtons({ title, url, image }) {
 
   const links = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
-    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`,
-    mail: `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(shareTitle + '\n' + shareUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
+    mail: `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(shareText + '\n' + shareUrl)}`,
   }
 
   return (
