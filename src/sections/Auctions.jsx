@@ -30,16 +30,17 @@ function AuctionCard({ a, idx, now }) {
             <div className="font-medium">{a.viewing}</div>
           </div>
           <div className="p-2 rounded bg-vintage-cream/60">
-            <div className="text-neutral-500">Start</div>
+            <div className="text-neutral-500">Datum</div>
             <div className="font-medium">{a.start}</div>
+            {Number.isFinite(startTs) && (
+              <div className="mt-1">
+                <div className="text-neutral-600 text-[11px] leading-none">Nedräkning</div>
+                <div className="font-mono text-base">{remaining()}</div>
+              </div>
+            )}
           </div>
         </div>
-        {Number.isFinite(startTs) && (
-          <div className="mt-3 p-2 rounded bg-amber-50 border border-amber-200 inline-block">
-            <div className="text-neutral-600 text-xs">Nedräkning</div>
-            <div className="font-mono text-lg">{remaining()}</div>
-          </div>
-        )}
+        
       </div>
       <div className="rounded overflow-hidden border border-amber-900/10 min-h-[220px]">
         {a.mapEmbed ? (
