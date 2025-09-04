@@ -1,6 +1,7 @@
 import React from 'react'
 import { loadContent } from '../services/store'
 import RatingStars from '../components/RatingStars'
+import ShareButtons from '../components/ShareButtons'
 
 export default function Items() {
   const [content, setContent] = React.useState(loadContent())
@@ -43,7 +44,7 @@ export default function Items() {
               <h3 className="font-serif text-xl mb-3">{cat}</h3>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {(arr||[]).map((it, idx) => (
-                  <figure key={idx} className="section-card overflow-hidden">
+                  <figure key={idx} id={`item-${cat}-${idx}`} className="section-card overflow-hidden">
                     <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                       {it.img ? (
                         <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" />
@@ -52,6 +53,12 @@ export default function Items() {
                           <span className="text-neutral-500">Ingen bild</span>
                         </div>
                       )}
+                    </div>
+                    <div className="p-3 pt-2">
+                      <ShareButtons
+                        title={getText(it.name) || 'Auktionsvara'}
+                        url={(typeof window !== 'undefined') ? new URL(`/items#item-${encodeURIComponent(cat)}-${idx}`, window.location.origin).toString() : ''}
+                      />
                     </div>
                     {content?.ratings?.enabled && (
                       <div className="p-3 pt-2">
@@ -95,7 +102,7 @@ export default function Items() {
           <h3 className="font-serif text-xl mb-3">{filter}</h3>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {shown.map((it, idx) => (
-              <figure key={idx} className="section-card overflow-hidden">
+              <figure key={idx} id={`item-${it._cat}-${it._idx}`} className="section-card overflow-hidden">
                 <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                   {it.img ? (
                     <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" />
@@ -104,6 +111,12 @@ export default function Items() {
                       <span className="text-neutral-500">Ingen bild</span>
                     </div>
                   )}
+                </div>
+                <div className="p-3 pt-2">
+                  <ShareButtons
+                    title={getText(it.name) || 'Auktionsvara'}
+                    url={(typeof window !== 'undefined') ? new URL(`/items#item-${encodeURIComponent(it._cat)}-${it._idx}`, window.location.origin).toString() : ''}
+                  />
                 </div>
                 {content?.ratings?.enabled && (
                   <div className="p-3 pt-2">

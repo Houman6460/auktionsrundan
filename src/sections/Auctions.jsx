@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 import GoogleMap from '../components/GoogleMap'
 import RatingStars from '../components/RatingStars'
+import ShareButtons from '../components/ShareButtons'
 
 function AuctionCard({ a, idx, now, lang }) {
   const { t } = useTranslation()
@@ -39,10 +40,14 @@ function AuctionCard({ a, idx, now, lang }) {
     return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
   }
 
+  const titleT = (a.title && (a.title[lang] || a.title.sv || a.title.en)) || ''
+  const anchorId = `auction-${idx}`
+  const shareUrl = (typeof window !== 'undefined') ? new URL(`/auctions#${anchorId}`, window.location.origin).toString() : ''
+
   return (
-    <div className="section-card p-4 grid md:grid-cols-2 gap-4">
+    <div id={anchorId} className="section-card p-4 grid md:grid-cols-2 gap-4">
       <div>
-        <h3 className="font-serif text-xl">{(a.title && (a.title[lang] || a.title.sv || a.title.en)) || ''}</h3>
+        <h3 className="font-serif text-xl">{titleT}</h3>
         <p className="text-sm text-neutral-700 mt-1">{(a.address && (a.address[lang] || a.address.sv || a.address.en)) || ''}</p>
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
           <div className="p-2 rounded bg-vintage-cream/60">
@@ -64,7 +69,9 @@ function AuctionCard({ a, idx, now, lang }) {
             )}
           </div>
         </div>
-        
+        <div className="mt-3">
+          <ShareButtons title={titleT} url={shareUrl} />
+        </div>
       </div>
       <div className="rounded overflow-hidden border border-amber-900/10 min-h-[220px]">
         {/* Prefer real Google Map if API key set and we have an address; fallback to iframe if provided */}
