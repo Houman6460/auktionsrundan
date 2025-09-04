@@ -548,6 +548,27 @@ export default function Admin() {
               <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
               <input className="w-full border rounded px-3 py-2" value={data.hero.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.subtitle = { ...(n.hero.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm text-neutral-600 mb-1">{L('Bakgrundsbild (URL)','Background image (URL)')}</label>
+              <input
+                className="w-full border rounded px-3 py-2"
+                value={data.hero.bg || ''}
+                onChange={(e)=>{const n={...data}; n.hero.bg = e.target.value; setData(n)}}
+                placeholder="https://..."
+              />
+              <div className="mt-2 flex items-center gap-2">
+                <input type="file" accept="image/*" onChange={handleFileToDataUrl(['hero','bg'])} />
+                <button type="button" className="btn-outline text-xs" onClick={clearField(['hero','bg'])}>{L('Rensa','Clear')}</button>
+              </div>
+              {data.hero.bg && (
+                <div className="mt-2">
+                  <img src={data.hero.bg} alt={L('Hero bakgrund','Hero background')} className="h-32 w-auto border rounded bg-white object-cover" />
+                </div>
+              )}
+              <p className="text-xs text-neutral-600 mt-2">
+                {L('Tips: Använd en bred bild för bästa resultat (t.ex. 1600×900).','Tip: Use a wide image for best results (e.g., 1600×900).')}
+              </p>
+            </div>
           </div>
         </Section>
 
