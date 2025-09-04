@@ -55,10 +55,10 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#home" className="hover:underline">{getLabel('home')}</a>
-            <a href="#auctions" className="hover:underline">{getLabel('auctions')}</a>
-            <a href="#items" className="hover:underline">{getLabel('items')}</a>
-            <a href="#terms" className="hover:underline">{getLabel('terms')}</a>
+            <NavLink to="/" className="hover:underline">{getLabel('home')}</NavLink>
+            <NavLink to="/auctions" className="hover:underline">{getLabel('auctions')}</NavLink>
+            <NavLink to="/items" className="hover:underline">{getLabel('items')}</NavLink>
+            <NavLink to="/terms" className="hover:underline">{getLabel('terms')}</NavLink>
             <NavLink to="/admin" className="text-sm text-earth-dark/80 hover:text-earth-dark">{t('nav.admin')}</NavLink>
             <div className="flex items-center gap-2">
               {activeLangs.sv && <button onClick={() => changeLang('sv')} className="btn-outline text-xs">SV</button>}
@@ -74,10 +74,10 @@ export default function Header() {
       {open && (
         <div id="mobile-nav" className="md:hidden border-t bg-white">
           <div className="container mx-auto px-4 py-3 flex flex-col gap-3">
-            <a href="#home" onClick={()=>setOpen(false)}>{getLabel('home')}</a>
-            <a href="#auctions" onClick={()=>setOpen(false)}>{getLabel('auctions')}</a>
-            <a href="#items" onClick={()=>setOpen(false)}>{getLabel('items')}</a>
-            <a href="#terms" onClick={()=>setOpen(false)}>{getLabel('terms')}</a>
+            <NavLink to="/" onClick={()=>setOpen(false)}>{getLabel('home')}</NavLink>
+            <NavLink to="/auctions" onClick={()=>setOpen(false)}>{getLabel('auctions')}</NavLink>
+            <NavLink to="/items" onClick={()=>setOpen(false)}>{getLabel('items')}</NavLink>
+            <NavLink to="/terms" onClick={()=>setOpen(false)}>{getLabel('terms')}</NavLink>
             <NavLink to="/admin" onClick={()=>setOpen(false)}>{t('nav.admin')}</NavLink>
             <div className="flex items-center gap-2 pt-2">
               {activeLangs.sv && <button onClick={() => changeLang('sv')} className="btn-outline text-xs">SV</button>}

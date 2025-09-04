@@ -69,6 +69,48 @@ export default function App() {
             </main>
           }
         />
+        <Route
+          path="/auctions"
+          element={
+            <main>
+              <section className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-16">
+                  <h2 className="text-3xl font-serif mb-6">{t('nav.auctions')}</h2>
+                  <Auctions />
+                </div>
+              </section>
+              <Footer />
+            </main>
+          }
+        />
+        <Route
+          path="/items"
+          element={
+            <main>
+              <section className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-16">
+                  <h2 className="text-3xl font-serif mb-6">{t('nav.items')}</h2>
+                  <Items />
+                </div>
+              </section>
+              <Footer />
+            </main>
+          }
+        />
+        <Route
+          path="/terms"
+          element={
+            <main>
+              <section className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-16">
+                  <h2 className="text-3xl font-serif mb-6">{t('nav.terms')}</h2>
+                  <Terms />
+                </div>
+              </section>
+              <Footer />
+            </main>
+          }
+        />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<div className="p-8">Not Found. <Link to="/" className="underline">{t('nav.home')}</Link></div>} />
       </Routes>
