@@ -84,8 +84,9 @@ export default function ShareMenu() {
   // Avoid overlap with WhatsApp chat widget if enabled on the same side
   const chatEnabled = !!(chat && chat.enabled && chat.provider === 'whatsapp')
   const sameSideAsChat = chatEnabled && ((chat.position === 'left') === isLeft)
-  // Equal spacing baseline: ScrollTop: 1rem; WhatsApp: 1rem + (56+12); Share: 1rem + 2*(56+12)
-  const bottomSpace = sameSideAsChat ? 'calc(1rem + 2*(56px + 12px))' : '1rem'
+  // Equal spacing baseline with safe area: ScrollTop: safe + 1rem; WhatsApp: safe + 1rem + (56+12); Share: safe + 1rem + 2*(56+12)
+  const safe = 'env(safe-area-inset-bottom)'
+  const bottomSpace = sameSideAsChat ? `calc(${safe} + 1rem + 2*(56px + 12px))` : `calc(${safe} + 1rem)`
 
   const links = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
@@ -184,7 +185,7 @@ export default function ShareMenu() {
         className="fixed w-14 h-14 rounded-full flex items-center justify-center"
         style={{
           [isLeft ? 'left' : 'right']: '1rem',
-          bottom: '1rem',
+          bottom: 'calc(env(safe-area-inset-bottom) + 1rem)',
           background: 'linear-gradient(0deg, #ddd, #fff)',
           color: '#262626',
           zIndex: 39,

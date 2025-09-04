@@ -38,9 +38,9 @@ export default function Footer() {
         <div>
           <h4 className="font-serif text-lg mb-2">Nyhetsbrev</h4>
           {f.newsletter !== false ? (
-            <form onSubmit={(e)=>e.preventDefault()} className="flex gap-2">
-              <input type="email" placeholder="Din e-post" className="flex-1 border rounded-md px-3 py-2" />
-              <button className="btn-primary" type="submit">Skicka</button>
+            <form onSubmit={(e)=>e.preventDefault()} className="flex flex-col sm:flex-row gap-2">
+              <input type="email" placeholder="Din e-post" className="w-full sm:flex-1 border rounded-md px-3 py-2" />
+              <button className="btn-primary w-full sm:w-auto" type="submit">Skicka</button>
             </form>
           ) : (
             <p className="text-sm text-neutral-600">Avstängt</p>
