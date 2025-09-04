@@ -12,6 +12,9 @@ function Section({ id, title, children }) {
 }
 
 // Helper: compress image files to data URL to avoid exceeding localStorage quota
+// - SVG: return as-is (preserve vector)
+// - PNG: preserve alpha by exporting as PNG
+// - Others (JPEG/webp): draw onto white background and export as JPEG
 async function fileToCompressedDataUrl(file, maxDim = 1600, quality = 0.8) {
   const img = await new Promise((resolve, reject) => {
     const image = new Image()
@@ -37,8 +40,31 @@ async function fileToCompressedDataUrl(file, maxDim = 1600, quality = 0.8) {
   canvas.width = targetW
   canvas.height = targetH
   const ctx = canvas.getContext('2d')
+  // Decide output format based on original file type
+  const type = (file && file.type) ? file.type.toLowerCase() : ''
+  if (type.includes('svg')) {
+    // Return original data URL for SVG to preserve vector/sharpness
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.readAsDataURL(file)
+    })
+  }
+  if (type.includes('png')) {
+    // Preserve transparency for PNG
+    ctx.drawImage(img, 0, 0, targetW, targetH)
+    try {
+      return canvas.toDataURL('image/png')
+    } catch {
+      return canvas.toDataURL()
+    }
+  }
+  // For JPEG/WebP/etc: fill white background to avoid black squares when alpha is dropped
+  ctx.save()
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, targetW, targetH)
+  ctx.restore()
   ctx.drawImage(img, 0, 0, targetW, targetH)
-  // Use JPEG for better compression; fallback to PNG if canvas fails
   try {
     return canvas.toDataURL('image/jpeg', quality)
   } catch {
