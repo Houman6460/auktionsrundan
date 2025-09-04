@@ -11,6 +11,25 @@ function Section({ id, title, children }) {
   )
 }
 
+// Accessible toggle switch built on a native checkbox using Tailwind's peer utilities
+function Toggle({ checked, onChange, disabled, id }) {
+  return (
+    <label htmlFor={id} className={`inline-flex items-center cursor-pointer ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
+      <input
+        id={id}
+        type="checkbox"
+        className="sr-only peer"
+        checked={!!checked}
+        onChange={onChange}
+        disabled={disabled}
+      />
+      <div className="relative w-12 h-7 rounded-full bg-neutral-300 transition-colors peer-checked:bg-earth-dark peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-earth-dark/30">
+        <span className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></span>
+      </div>
+    </label>
+  )
+}
+
 // Helper: compress image files to data URL to avoid exceeding localStorage quota
 // - SVG: return as-is (preserve vector)
 // - PNG: preserve alpha by exporting as PNG
@@ -262,7 +281,7 @@ export default function Admin() {
 
         <Section id="admin-header" title={L('Header','Header')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
+            <Toggle checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
             <span>{L('Visa header','Show header')}</span>
           </label>
           <div className="grid md:grid-cols-2 gap-4">
@@ -281,9 +300,15 @@ export default function Admin() {
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Språk aktiva (SV/EN)','Languages enabled (SV/EN)')}</label>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2"><input type="checkbox" checked={!!data.header.languages.sv} onChange={(e)=>{const n={...data};n.header.languages.sv=e.target.checked;setData(n)}} />SV</label>
-                <label className="flex items-center gap-2"><input type="checkbox" checked={!!data.header.languages.en} onChange={(e)=>{const n={...data};n.header.languages.en=e.target.checked;setData(n)}} />EN</label>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <Toggle checked={!!data.header.languages.sv} onChange={(e)=>{const n={...data};n.header.languages.sv=e.target.checked;setData(n)}} />
+                  <span>SV</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <Toggle checked={!!data.header.languages.en} onChange={(e)=>{const n={...data};n.header.languages.en=e.target.checked;setData(n)}} />
+                  <span>EN</span>
+                </label>
               </div>
             </div>
           </div>
@@ -304,7 +329,7 @@ export default function Admin() {
 
         <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
+            <Toggle checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
             <span>{L('Visa hero','Show hero')}</span>
           </label>
           <div className="grid md:grid-cols-2 gap-4">
@@ -363,7 +388,7 @@ export default function Admin() {
 
         <Section id="admin-auctions" title={L('Kommande Auktioner','Upcoming Auctions')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
+            <Toggle checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
           <div className="flex items-center justify-between mb-2">
@@ -407,7 +432,7 @@ export default function Admin() {
 
         <Section id="admin-items" title={L('Auktionsvaror','Auction Items')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
+            <Toggle checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
           <p className="text-sm text-neutral-600 mb-3">{L('Hantera kategorier och lägg upp bilder för varje kategori. På framsidan visas en flik för Alla samt per kategori.','Manage categories and upload pictures per category. The frontend shows an All tab and per-category tabs.')}</p>
@@ -543,7 +568,7 @@ export default function Admin() {
 
         <Section id="admin-ratings" title={L('Betyg','Ratings')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.ratings?.enabled} onChange={(e)=>{const n={...data}; n.ratings = n.ratings||{}; n.ratings.enabled = e.target.checked; setData(n)}} />
+            <Toggle checked={!!data.ratings?.enabled} onChange={(e)=>{const n={...data}; n.ratings = n.ratings||{}; n.ratings.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera betygssystem (stjärnor)','Enable ratings (stars)')}</span>
           </label>
           <p className="text-sm text-neutral-600">
@@ -553,7 +578,7 @@ export default function Admin() {
 
         <Section id="admin-terms" title={L('Auktionsvillkor','Terms')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
+            <Toggle checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
           {Object.entries(data.terms.blocks).map(([key, val]) => (
@@ -566,7 +591,7 @@ export default function Admin() {
 
         <Section id="admin-instagram" title={L('Instagram','Instagram')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
+            <Toggle checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
           <div className="grid md:grid-cols-3 gap-3">
@@ -590,7 +615,7 @@ export default function Admin() {
 
         <Section id="admin-maps" title={L('Google Maps','Google Maps')}>
           <label className="flex items-center gap-2 mb-3">
-            <input type="checkbox" checked={!!data.maps?.visible} onChange={handleToggle(['maps','visible'])} />
+            <Toggle checked={!!data.maps?.visible} onChange={handleToggle(['maps','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
           <div className="grid md:grid-cols-3 gap-3">
