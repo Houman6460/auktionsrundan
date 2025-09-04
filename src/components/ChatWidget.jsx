@@ -34,7 +34,7 @@ export default function ChatWidget() {
   const isLeft = cfg.position === 'left'
 
   return (
-    <div className="fixed z-40" style={{ bottom: 'calc(1rem + 56px + 12px + 65px)', [isLeft ? 'left' : 'right']: '1rem' }}>
+    <div className="fixed z-40" style={{ bottom: 'calc(1rem + 56px + 12px)', [isLeft ? 'left' : 'right']: '1rem' }}>
       <a
         href={href}
         target="_blank"
