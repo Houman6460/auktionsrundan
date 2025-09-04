@@ -26,7 +26,15 @@ function Icon({ name, className }) {
       )
     case 'copy':
       return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1Zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2Zm0 16H8V7h11v14Z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
+      )
+    case 'arrow-up':
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+          <path d="M12 4l-7 7h4v7h6v-7h4l-7-7z" />
+        </svg>
       )
     default:
       return null
@@ -76,8 +84,9 @@ export default function ShareMenu() {
   // Avoid overlap with WhatsApp chat widget if enabled on the same side
   const chatEnabled = !!(chat && chat.enabled && chat.provider === 'whatsapp')
   const sameSideAsChat = chatEnabled && ((chat.position === 'left') === isLeft)
-  // Default bottom spacing: 1rem; if overlapping, lift the share menu above chat button (~5.5rem)
-  const bottomSpace = sameSideAsChat ? '5.5rem' : '1rem'
+  // Align vertically with WhatsApp: place Share (+) above chat button by a fixed distance
+  // WhatsApp assumed at bottom: 1rem; Share sits above by chat size (56px) + gap (12px)
+  const bottomSpace = sameSideAsChat ? 'calc(1rem + 56px + 12px)' : '1rem'
 
   const links = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
@@ -139,7 +148,7 @@ export default function ShareMenu() {
       <div className={`relative ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <button
           type="button"
-          className="floating-btn pointer-events-auto w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg focus:outline-none"
+          className="floating-btn pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg focus:outline-none"
           style={{ background: 'linear-gradient(0deg, #3a2f25, #584a3b)' }}
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Close share menu' : 'Open share menu'}
@@ -171,6 +180,23 @@ export default function ShareMenu() {
           ))}
         </ul>
       </div>
+      {/* Scroll-to-top button below WhatsApp, aligned to same side */}
+      <button
+        type="button"
+        className="fixed w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+        style={{
+          [isLeft ? 'left' : 'right']: '1rem',
+          bottom: '0.25rem',
+          background: 'linear-gradient(0deg, #ddd, #fff)',
+          boxShadow: '0 10px 15px rgba(0,0,0,0.3)',
+          color: '#262626',
+          zIndex: 39,
+        }}
+        aria-label="Scroll to top"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
+        <Icon name="arrow-up" className="w-6 h-6" />
+      </button>
     </div>
   )
 }
