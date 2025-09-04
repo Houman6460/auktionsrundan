@@ -43,11 +43,13 @@ export default function Items() {
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {(arr||[]).map((it, idx) => (
                   <figure key={idx} className="section-card overflow-hidden">
-                    <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center">
+                    <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                       {it.img ? (
-                        <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="w-full h-full object-cover" />
+                        <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" />
                       ) : (
-                        <span className="text-neutral-500">Ingen bild</span>
+                        <div className="w-full h-full grid place-items-center">
+                          <span className="text-neutral-500">Ingen bild</span>
+                        </div>
                       )}
                     </div>
                     {(() => {
@@ -88,11 +90,13 @@ export default function Items() {
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {shown.map((it, idx) => (
               <figure key={idx} className="section-card overflow-hidden">
-                <div className="aspect-[4/3] bg-vintage-cream/70 grid place-items-center">
+                <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                   {it.img ? (
-                    <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="w-full h-full object-cover" />
+                    <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" />
                   ) : (
-                    <span className="text-neutral-500">Ingen bild</span>
+                    <div className="w-full h-full grid place-items-center">
+                      <span className="text-neutral-500">Ingen bild</span>
+                    </div>
                   )}
                 </div>
                 {(() => {
