@@ -111,7 +111,6 @@ export default function Hero() {
                     </>
                   )}
                 </div>
-        </div>
               </div>
             </div>
           </div>
@@ -163,6 +162,7 @@ export default function Hero() {
               </li>
             ))}
           </ul>
+        </div>
         </div>
         <div className="mt-6">
           <a
