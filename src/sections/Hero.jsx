@@ -8,6 +8,9 @@ export default function Hero() {
   const [now, setNow] = React.useState(() => Date.now())
   const [loaded, setLoaded] = React.useState(false)
   const [loadedMaps, setLoadedMaps] = React.useState(() => new Set())
+  const [stuck, setStuck] = React.useState(false)
+  const sectionRef = React.useRef(null)
+  const cardRef = React.useRef(null)
   const toEmbedSrc = (url) => {
     if (!url || typeof url !== 'string') return url
     try {
@@ -30,10 +33,23 @@ export default function Hero() {
     const tick = setInterval(() => setNow(Date.now()), 1000)
     // trigger fade-in once mounted
     const t = setTimeout(() => setLoaded(true), 10)
+    const onScroll = () => {
+      try {
+        const sec = sectionRef.current
+        if (!sec) return
+        const rect = sec.getBoundingClientRect()
+        // Header height is h-16 (~64px). When the top of the hero content approaches header, toggle compact band.
+        const trigger = 72 // px threshold just under header
+        setStuck(rect.top <= trigger)
+      } catch {}
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
     return () => {
       window.removeEventListener('storage', onStorage)
       clearInterval(tick)
       clearTimeout(t)
+      window.removeEventListener('scroll', onScroll)
     }
   }, [])
 
@@ -75,9 +91,31 @@ export default function Hero() {
         aria-hidden="true"
       />
       <div className="absolute inset-0 bg-black/30" aria-hidden="true" />
-      <div className={`relative container mx-auto px-4 text-center text-white transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+      <div ref={sectionRef} className={`relative container mx-auto px-4 text-center text-white transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
         <h1 className="font-serif text-4xl md:text-5xl drop-shadow">Auktionsrundan</h1>
-        <div className="mt-6 inline-block section-card bg-white/90 text-vintage-black px-6 py-4">
+        {/* Floating compact band under header when stuck */}
+        {stuck && (
+          <div className="fixed top-16 left-0 right-0 z-40">
+            <div className="container mx-auto px-4">
+              <div className="bg-white/90 backdrop-blur border rounded-md px-3 py-2 shadow-sm overflow-hidden whitespace-nowrap">
+                <div className="flex items-center gap-3 text-vintage-black text-sm">
+                  <span className="font-serif text-base">{t('hero.nextAuction')}</span>
+                  {next && (
+                    <>
+                      <span className="text-neutral-400">•</span>
+                      <span className="font-medium truncate">
+                        {(next.name && (next.name[lang] || next.name.sv || next.name.en)) || ''} — {new Date(next.ts).toLocaleDateString()} {next.time && <span className="text-neutral-700">{next.time}</span>}
+                      </span>
+                      <span className="text-neutral-400">•</span>
+                      <span className="font-mono">{formatRemaining(next.ts)}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={cardRef} className={`mt-6 inline-block section-card bg-white/90 text-vintage-black px-6 py-4 transition-transform duration-300 ${stuck ? 'scale-95 opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="font-serif text-xl mb-1">{t('hero.nextAuction')}</div>
           {next && (
             <div className="mb-3">
