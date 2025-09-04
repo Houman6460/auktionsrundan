@@ -72,7 +72,7 @@ export default function ShareMenu() {
     telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
   }
 
-  const itemBase = `${isLeft ? 'absolute top-[0.2em] left-[0.2em]' : 'absolute top-[0.2em] right-[0.2em]'} z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
+  const itemBase = `${isLeft ? 'absolute top-1/2 left-1/2' : 'absolute top-1/2 right-1/2'} z-[-1] flex items-center justify-center w-12 h-12 rounded-full text-white bg-earth-dark transition-transform duration-300`
 
   // Build ordered list of enabled keys
   const keys = []
@@ -83,12 +83,12 @@ export default function ShareMenu() {
   if (cfg.platforms?.copy) keys.push('copy')
 
   // Arrange along a nice inward arc around the button
-  // For RIGHT side: use angles roughly from -25deg (slightly above) to -145deg (below), evenly spaced
-  // For LEFT side: mirror across vertical axis by multiplying cos by -1
+  // For RIGHT side: angles roughly from -20deg (slightly above) to -160deg (below), evenly spaced
+  // For LEFT side: mirror horizontally by forcing x to positive (inward to the right)
   const count = keys.length
   const radius = 92 // px, adjust for tighter/looser arc
-  const startDeg = -25
-  const endDeg = -145
+  const startDeg = -20
+  const endDeg = -160
   const step = count > 1 ? (endDeg - startDeg) / (count - 1) : 0
 
   const items = keys.map((key, idx) => {
@@ -96,8 +96,11 @@ export default function ShareMenu() {
     const rad = (Math.PI / 180) * deg
     const cos = Math.cos(rad)
     const sin = Math.sin(rad)
-    const x = (isLeft ? 1 : -1) * radius * Math.abs(cos) // inward: left => +x, right => -x
+    // Base local offsets
+    let x = radius * cos
     const y = radius * sin
+    // Enforce inward direction only by sign, do not distort magnitude
+    x = isLeft ? Math.abs(x) : -Math.abs(x)
     return { key, x: `${x.toFixed(1)}px`, y: `${y.toFixed(1)}px` }
   })
 
@@ -134,7 +137,7 @@ export default function ShareMenu() {
           {items.map((it, idx) => (
             <li key={it.key}
                 className={`${itemBase} ${open ? 'transition-[transform] ease-[cubic-bezier(0.175,0.885,0.32,1.275)]' : ''}`}
-                style={{ transform: open ? `translate3d(${it.x}, ${it.y}, 0)` : 'translate3d(0,0,0)' }}
+                style={{ transform: open ? `translate(-50%, -50%) translate3d(${it.x}, ${it.y}, 0)` : 'translate(-50%, -50%) translate3d(0,0,0)' }}
             >
               <button
                 type="button"
