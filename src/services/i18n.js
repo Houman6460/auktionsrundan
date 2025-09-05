@@ -23,6 +23,9 @@ const resources = {
         noMap: 'Ingen karta',
         none: 'Inga planerade auktioner.',
         sectionOff: 'Sektionen är avstängd.'
+      },
+      footer: {
+        follow: 'Följ oss i sociala medier'
       }
     }
   },
@@ -47,6 +50,9 @@ const resources = {
         noMap: 'No map',
         none: 'No scheduled auctions.',
         sectionOff: 'This section is disabled.'
+      },
+      footer: {
+        follow: 'Follow us on social media'
       }
     }
   }
