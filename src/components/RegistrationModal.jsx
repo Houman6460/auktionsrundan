@@ -58,52 +58,53 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
 
   return (
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/30 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-lg bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="w-full max-w-lg max-h-[85vh] bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
         <div className="px-4 py-3 border-b flex items-center justify-between gap-2">
           <h3 className="font-serif text-lg flex-1">{t('auctions.reg_title')} — {title}</h3>
           <button className="btn-outline text-xs" onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <form id={`reg-form-${auctionId}`} onSubmit={submit} className="grid gap-3 max-h-[70vh] overflow-y-auto p-4">
-          {settings?.fields?.name && (
-            <div>
-              <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_name')}</label>
-              <input className="w-full border rounded px-3 py-2" value={form.name} onChange={onChange('name')} />
-            </div>
-          )}
-          {settings?.fields?.email && (
-            <div>
-              <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_email')}</label>
-              <input type="email" required className="w-full border rounded px-3 py-2" value={form.email} onChange={onChange('email')} />
-            </div>
-          )}
-          {settings?.fields?.tel && (
-            <div>
-              <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_tel')}</label>
-              <input className="w-full border rounded px-3 py-2" value={form.tel} onChange={onChange('tel')} />
-            </div>
-          )}
-          {settings?.fields?.notes && (
-            <div>
-              <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_notes')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={form.notes} onChange={onChange('notes')} />
-            </div>
-          )}
-
-          {(settings?.questions || []).map((q) => (
-            <div key={q.id} className="border-t pt-3">
-              <div className="font-medium mb-2">{(q.label && (q.label[lang] || q.label.sv || q.label.en)) || q.id}</div>
-              <div className="flex flex-wrap gap-2">
-                {(q.options || []).map((opt, i) => (
-                  <label key={i} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" onChange={onAnswer(q.id, opt)} checked={Array.isArray(form.answers[q.id]) && form.answers[q.id].includes(opt)} />
-                    <span>{opt}</span>
-                  </label>
-                ))}
+        <form id={`reg-form-${auctionId}`} onSubmit={submit} className="flex-1 grid grid-rows-[1fr_auto]">
+          <div className="p-4 grid gap-3 overflow-y-auto">
+            {settings?.fields?.name && (
+              <div>
+                <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_name')}</label>
+                <input className="w-full border rounded px-3 py-2" value={form.name} onChange={onChange('name')} />
               </div>
-            </div>
-          ))}
+            )}
+            {settings?.fields?.email && (
+              <div>
+                <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_email')}</label>
+                <input type="email" required className="w-full border rounded px-3 py-2" value={form.email} onChange={onChange('email')} />
+              </div>
+            )}
+            {settings?.fields?.tel && (
+              <div>
+                <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_tel')}</label>
+                <input className="w-full border rounded px-3 py-2" value={form.tel} onChange={onChange('tel')} />
+              </div>
+            )}
+            {settings?.fields?.notes && (
+              <div>
+                <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_notes')}</label>
+                <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={form.notes} onChange={onChange('notes')} />
+              </div>
+            )}
 
-          <div className="sticky bottom-0 bg-white pt-2 border-t px-4 py-3 flex items-center justify-end gap-2">
+            {(settings?.questions || []).map((q) => (
+              <div key={q.id} className="border-t pt-3">
+                <div className="font-medium mb-2">{(q.label && (q.label[lang] || q.label.sv || q.label.en)) || q.id}</div>
+                <div className="flex flex-wrap gap-2">
+                  {(q.options || []).map((opt, i) => (
+                    <label key={i} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" onChange={onAnswer(q.id, opt)} checked={Array.isArray(form.answers[q.id]) && form.answers[q.id].includes(opt)} />
+                      <span>{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-white border-t px-4 py-3 flex items-center justify-end gap-2">
             <button type="button" className="btn-outline" onClick={onClose}>Avbryt</button>
             <button type="submit" className="btn-primary">{t('auctions.reg_submit')}</button>
           </div>
