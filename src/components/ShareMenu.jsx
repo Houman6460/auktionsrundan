@@ -88,14 +88,6 @@ export default function ShareMenu() {
   const safe = 'env(safe-area-inset-bottom)'
   const bottomSpace = sameSideAsChat ? `calc(${safe} + 1rem + 2*(56px + 12px))` : `calc(${safe} + 1rem)`
 
-  // Mobile detection for responsive positioning (< md = 768px)
-  const [isMobile, setIsMobile] = React.useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
-  React.useEffect(() => {
-    const onResize = () => setIsMobile(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-
   const links = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
@@ -151,13 +143,7 @@ export default function ShareMenu() {
     <div
       ref={containerRef}
       className="fixed z-40"
-      style={{
-        bottom: bottomSpace,
-        ...(isLeft
-          ? { left: isMobile ? 'calc(1rem + 10px)' : '1rem' }
-          : { right: isMobile ? 'calc(1rem + 10px)' : '1rem' }
-        ),
-      }}
+      style={{ bottom: bottomSpace, [isLeft ? 'left' : 'right']: '1rem' }}
     >
       <div className={`relative ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <button
@@ -198,7 +184,7 @@ export default function ShareMenu() {
         type="button"
         className="fixed w-14 h-14 rounded-full flex items-center justify-center"
         style={{
-          ...(isMobile ? { left: '1rem', right: 'auto' } : { [isLeft ? 'left' : 'right']: '1rem' }),
+          [isLeft ? 'left' : 'right']: '1rem',
           bottom: 'calc(env(safe-area-inset-bottom) + 1rem)',
           background: 'linear-gradient(0deg, #ddd, #fff)',
           color: '#262626',
