@@ -59,11 +59,12 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
   return (
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/30 p-4" role="dialog" aria-modal="true">
       <div className="w-full max-w-lg bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="px-4 py-3 border-b flex items-center justify-between">
-          <h3 className="font-serif text-lg">{t('auctions.reg_title')} — {title}</h3>
+        <div className="px-4 py-3 border-b flex items-center justify-between gap-2">
+          <h3 className="font-serif text-lg flex-1">{t('auctions.reg_title')} — {title}</h3>
+          <button type="submit" form={`reg-form-${auctionId}`} className="btn-primary text-xs px-3 py-1">{t('auctions.reg_submit')}</button>
           <button className="btn-outline text-xs" onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <form onSubmit={submit} className="p-4 grid gap-3">
+        <form id={`reg-form-${auctionId}`} onSubmit={submit} className="grid gap-3 max-h-[70vh] overflow-y-auto p-4">
           {settings?.fields?.name && (
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_name')}</label>
@@ -103,7 +104,7 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
             </div>
           ))}
 
-          <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="sticky bottom-0 bg-white pt-2 border-t -mx-4 px-4 py-3 flex items-center justify-end gap-2">
             <button type="button" className="btn-outline" onClick={onClose}>Avbryt</button>
             <button type="submit" className="btn-primary">{t('auctions.reg_submit')}</button>
           </div>

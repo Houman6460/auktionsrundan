@@ -95,9 +95,10 @@ function AuctionCard({ a, idx, now, lang }) {
         <div className="mt-3 flex items-center gap-2 flex-wrap">
           <ShareButtons title={titleT} url={shareUrl} text={shareText} />
           {/* Register button styled like the social buttons */}
-          <button type="button" className="btn-outline text-xs relative" onClick={()=>setOpenReg(true)} title={t('auctions.registerBtn')} aria-label={t('auctions.registerBtn')}>
+          <button type="button" className="btn-outline text-xs relative flex items-center gap-1" onClick={()=>setOpenReg(true)} title={t('auctions.registerBtn')} aria-label={t('auctions.registerBtn')}>
             {/* User-plus icon */}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+            <span>{t('auctions.registerBtn')}</span>
             {regCount>0 && (<span className="absolute -top-2 -right-2 bg-earth-dark text-white rounded-full text-[10px] leading-none px-1 py-0.5">{regCount}</span>)}
           </button>
           <RegistrationModal open={openReg} onClose={()=>setOpenReg(false)} auctionId={anchorId} title={titleT} />
