@@ -61,7 +61,6 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
       <div className="w-full max-w-lg bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="px-4 py-3 border-b flex items-center justify-between gap-2">
           <h3 className="font-serif text-lg flex-1">{t('auctions.reg_title')} — {title}</h3>
-          <button type="submit" form={`reg-form-${auctionId}`} className="btn-primary text-xs px-3 py-1">{t('auctions.reg_submit')}</button>
           <button className="btn-outline text-xs" onClick={onClose} aria-label="Close">✕</button>
         </div>
         <form id={`reg-form-${auctionId}`} onSubmit={submit} className="grid gap-3 max-h-[70vh] overflow-y-auto p-4">
