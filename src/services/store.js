@@ -134,6 +134,20 @@ const defaults = {
     position: 'right', // 'right' | 'left'
     platforms: { facebook: true, twitter: true, linkedin: true, telegram: true, copy: true },
   },
+  // Registration settings and collected submissions
+  registration: {
+    enabled: true,
+    fields: { name: true, email: true, tel: true, notes: false },
+    questions: [
+      {
+        id: 'looking',
+        label: { sv: 'Vad letar du efter?', en: 'What are you looking for?' },
+        options: ['Möbler','Mattor','Skulpturer'],
+      }
+    ],
+    // submissions keyed by auction anchor id (e.g., "auction-0"): array of entries
+    submissions: {}
+  },
 }
 
 function deepClone(obj) {
@@ -186,6 +200,28 @@ function normalize(content) {
         delayMs: Number.isFinite(parseInt(t.delayMs,10)) ? parseInt(t.delayMs,10) : defaults.newsletter.triggers.delayMs,
         scrollPercent: Number.isFinite(parseInt(t.scrollPercent,10)) ? parseInt(t.scrollPercent,10) : defaults.newsletter.triggers.scrollPercent,
         oncePerSession: t.oncePerSession !== false,
+      }
+    }
+    // Ensure registration section exists and normalize
+    if (!out.registration || typeof out.registration !== 'object') {
+      out.registration = deepClone(defaults.registration)
+    } else {
+      out.registration.enabled = out.registration.enabled ?? defaults.registration.enabled
+      const f = out.registration.fields || {}
+      out.registration.fields = {
+        name: f.name !== false,
+        email: f.email !== false,
+        tel: !!f.tel,
+        notes: !!f.notes,
+      }
+      const q = Array.isArray(out.registration.questions) ? out.registration.questions : []
+      out.registration.questions = q.map((it, i) => ({
+        id: it.id || `q${i+1}`,
+        label: (typeof it.label === 'object') ? { sv: it.label.sv ?? '', en: it.label.en ?? '' } : { sv: String(it.label||''), en: String(it.label||'') },
+        options: Array.isArray(it.options) ? it.options : [],
+      }))
+      if (!out.registration.submissions || typeof out.registration.submissions !== 'object') {
+        out.registration.submissions = {}
       }
     }
     // header.nav.* may be strings from older data; convert to {sv, en}

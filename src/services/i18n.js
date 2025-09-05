@@ -22,7 +22,15 @@ const resources = {
         countdown: 'Nedräkning',
         noMap: 'Ingen karta',
         none: 'Inga planerade auktioner.',
-        sectionOff: 'Sektionen är avstängd.'
+        sectionOff: 'Sektionen är avstängd.',
+        registerBtn: 'Registrera besök',
+        reg_title: 'Registrering',
+        reg_name: 'Namn',
+        reg_email: 'E-post',
+        reg_tel: 'Telefon',
+        reg_notes: 'Meddelande',
+        reg_submit: 'Skicka',
+        reg_thanks: 'Tack! Vi har registrerat din intresseanmälan.'
       },
       footer: {
         follow: 'Följ oss i sociala medier',
@@ -50,7 +58,15 @@ const resources = {
         countdown: 'Countdown',
         noMap: 'No map',
         none: 'No scheduled auctions.',
-        sectionOff: 'This section is disabled.'
+        sectionOff: 'This section is disabled.',
+        registerBtn: 'Register to visit',
+        reg_title: 'Registration',
+        reg_name: 'Name',
+        reg_email: 'Email',
+        reg_tel: 'Phone',
+        reg_notes: 'Message',
+        reg_submit: 'Submit',
+        reg_thanks: 'Thanks! Your registration has been recorded.'
       },
       footer: {
         follow: 'Follow us on social media',

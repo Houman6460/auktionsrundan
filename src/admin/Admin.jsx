@@ -303,6 +303,7 @@ export default function Admin() {
                   {expandSettings && (
                     <div className="pl-3 flex flex-col gap-1">
                       <a href="#admin-newsletter" className="hover:underline">{L('Nyhetsbrev','Newsletter')}</a>
+                      <a href="#admin-registration" className="hover:underline">{L('Registrering','Registration')}</a>
                       <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
                       <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
                       <a href="#admin-chat" className="hover:underline">{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
@@ -374,6 +375,82 @@ export default function Admin() {
               <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvillkor','Terms')}</label>
               <input className="w-full border rounded px-3 py-2" value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
+            </div>
+          </div>
+        </Section>
+
+        <Section id="admin-registration" title={L('Registrering','Registration')}>
+          <label className="flex items-center gap-2 mb-3">
+            <Toggle checked={!!data.registration?.enabled} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.enabled=e.target.checked; setData(n)}} />
+            <span>{L('Aktivera registrering','Enable registration')}</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Fält','Fields')}</h3>
+              {['name','email','tel','notes'].map((k)=> (
+                <label key={k} className="flex items-center gap-2 mb-1">
+                  <Toggle checked={data.registration?.fields?.[k] !== false} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.fields={...(n.registration.fields||{}) ,[k]: e.target.checked}; setData(n)}} />
+                  <span className="capitalize">{k}</span>
+                </label>
+              ))}
+            </div>
+            <div className="md:col-span-2">
+              <h3 className="font-serif text-lg mb-2">{L('Frågor','Questions')}</h3>
+              <button type="button" className="btn-outline text-sm mb-2" onClick={()=>{const n={...data}; n.registration=n.registration||{}; n.registration.questions = [...(n.registration.questions||[]), { id: `q${(n.registration.questions?.length||0)+1}`, label:{sv:'',en:''}, options: [] }]; setData(n)}}>{L('Lägg till fråga','Add question')}</button>
+              <div className="grid gap-3">
+                {(data.registration?.questions||[]).map((q, i)=> (
+                  <div key={q.id||i} className="section-card p-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-neutral-600 mb-1">Label (SV)</label>
+                        <input className="w-full border rounded px-3 py-2" value={q.label?.sv||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), sv: e.target.value }; setData(n)}} />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-neutral-600 mb-1">Label (EN)</label>
+                        <input className="w-full border rounded px-3 py-2" value={q.label?.en||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), en: e.target.value }; setData(n)}} />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm text-neutral-600 mb-1">{L('Svarsalternativ (komma-separerade)','Options (comma-separated)')}</label>
+                        <input className="w-full border rounded px-3 py-2" value={(q.options||[]).join(', ')} onChange={(e)=>{const n={...data}; n.registration.questions[i].options = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); setData(n)}} />
+                      </div>
+                    </div>
+                    <div className="mt-2 flex justify-end">
+                      <button type="button" className="btn-outline text-xs" onClick={()=>{const n={...data}; n.registration.questions.splice(i,1); setData(n)}}>{L('Ta bort','Remove')}</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="font-serif text-lg mb-2">{L('Inkomna anmälningar','Submissions')}</h3>
+            <div className="section-card p-3 overflow-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-neutral-100 text-left">
+                    <th className="px-2 py-1">ID</th>
+                    <th className="px-2 py-1">{L('Titel','Title')}</th>
+                    <th className="px-2 py-1">Email</th>
+                    <th className="px-2 py-1">{L('Telefon','Phone')}</th>
+                    <th className="px-2 py-1">{L('Tid','Time')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(data.registration?.submissions||{}).flatMap(([aid, arr]) => (arr||[]).map((it, idx)=> (
+                    <tr key={`${aid}-${idx}`} className="border-t">
+                      <td className="px-2 py-1 whitespace-nowrap">{aid}</td>
+                      <td className="px-2 py-1">{it.title||''}</td>
+                      <td className="px-2 py-1">{it.email||''}</td>
+                      <td className="px-2 py-1">{it.tel||''}</td>
+                      <td className="px-2 py-1 whitespace-nowrap">{it.ts ? new Date(it.ts).toLocaleString() : ''}</td>
+                    </tr>
+                  )))}
+                  {(!data.registration || !data.registration.submissions || Object.keys(data.registration.submissions).length===0) && (
+                    <tr><td className="px-2 py-2 text-neutral-600" colSpan={5}>{L('Inga anmälningar ännu.','No submissions yet.')}</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </Section>

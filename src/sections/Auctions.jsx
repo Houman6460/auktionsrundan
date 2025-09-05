@@ -4,9 +4,12 @@ import { loadContent } from '../services/store'
 import GoogleMap from '../components/GoogleMap'
 import RatingStars from '../components/RatingStars'
 import ShareButtons from '../components/ShareButtons'
+import RegistrationModal from '../components/RegistrationModal'
 
 function AuctionCard({ a, idx, now, lang }) {
   const { t } = useTranslation()
+  const [openReg, setOpenReg] = React.useState(false)
+  const [regCount, setRegCount] = React.useState(0)
   const toEmbedSrc = (url) => {
     if (!url || typeof url !== 'string') return url
     try {
@@ -55,6 +58,15 @@ function AuctionCard({ a, idx, now, lang }) {
     mapUrl && `${t('auctions.map') || 'Karta'}: ${mapUrl}`,
   ].filter(Boolean).join('\n')
 
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('ar_site_content_v1')
+      const parsed = raw ? JSON.parse(raw) : {}
+      const cnt = parsed?.registration?.submissions?.[anchorId]?.length || 0
+      setRegCount(cnt)
+    } catch {}
+  }, [anchorId, openReg])
+
   return (
     <div id={anchorId} className="section-card p-4 grid md:grid-cols-2 gap-4">
       <div>
@@ -80,8 +92,15 @@ function AuctionCard({ a, idx, now, lang }) {
             )}
           </div>
         </div>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
           <ShareButtons title={titleT} url={shareUrl} text={shareText} />
+          {/* Register button styled like the social buttons */}
+          <button type="button" className="btn-outline text-xs relative" onClick={()=>setOpenReg(true)} title={t('auctions.registerBtn')} aria-label={t('auctions.registerBtn')}>
+            {/* User-plus icon */}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+            {regCount>0 && (<span className="absolute -top-2 -right-2 bg-earth-dark text-white rounded-full text-[10px] leading-none px-1 py-0.5">{regCount}</span>)}
+          </button>
+          <RegistrationModal open={openReg} onClose={()=>setOpenReg(false)} auctionId={anchorId} title={titleT} />
         </div>
       </div>
       <div className="rounded overflow-hidden border border-amber-900/10 min-h-[220px]">
