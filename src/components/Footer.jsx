@@ -53,10 +53,9 @@ export default function Footer() {
           ) : (
             <p className="text-sm text-neutral-600">Avstängt</p>
           )}
-          {anySocial && (
-            <div className="mt-6">
-              <h5 className="text-sm font-medium text-neutral-700 mb-2">{t('footer.follow')}</h5>
-              <div className="flex items-center gap-3">
+          <div className="mt-6">
+            <h5 className="text-sm font-medium text-neutral-700 mb-2">{t('footer.follow')}</h5>
+            <div className="flex items-center gap-3 flex-wrap">
                 {isOn('facebook') && (
                   <a href={social.facebook} target="_blank" rel="noopener noreferrer" className="btn-outline text-xs" aria-label="Facebook" title="Facebook">
                     {/* Facebook icon */}
@@ -87,9 +86,11 @@ export default function Footer() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 00-7.07-7.07L10 5"/><path d="M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 007.07 7.07L14 19"/></svg>
                   </a>
                 )}
-              </div>
+                {!anySocial && (
+                  <span className="text-xs text-neutral-500">—</span>
+                )}
             </div>
-          )}
+          </div>
         </div>
       </div>
       <div className="text-xs text-center py-4 text-neutral-500 border-t">© {new Date().getFullYear()} Auktionsrundan</div>

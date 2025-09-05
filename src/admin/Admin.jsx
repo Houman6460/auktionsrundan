@@ -690,6 +690,43 @@ export default function Admin() {
               <label className="flex items-center gap-2"><Toggle checked={!!data.footer.newsletter} onChange={handleToggle(['footer','newsletter'])} />{L('Aktivera','Enable')}</label>
             </div>
           </div>
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Sociala medier','Social media')}</h3>
+              {[
+                { key: 'facebook', label: 'Facebook' },
+                { key: 'instagram', label: 'Instagram' },
+                { key: 'tiktok', label: 'TikTok' },
+                { key: 'youtube', label: 'YouTube' },
+                { key: 'website', label: L('Webbplats','Website') },
+              ].map(({key,label}) => (
+                <div key={key} className="mb-3">
+                  <label className="block text-sm text-neutral-600 mb-1">{label} URL</label>
+                  <input
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="https://..."
+                    value={data.footer?.social?.[key] || ''}
+                    onChange={(e)=>{const n={...data}; n.footer=n.footer||{}; n.footer.social = { ...(n.footer.social||{}), [key]: e.target.value }; setData(n)}}
+                  />
+                </div>
+              ))}
+            </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Kanaler','Channels')}</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {['facebook','instagram','tiktok','youtube','website'].map((k)=> (
+                  <label key={k} className="flex items-center gap-2">
+                    <Toggle
+                      checked={(data.footer?.socialEnabled?.[k] !== false)}
+                      onChange={(e)=>{const n={...data}; n.footer=n.footer||{}; n.footer.socialEnabled = { ...(n.footer.socialEnabled||{}), [k]: e.target.checked }; setData(n)}}
+                    />
+                    <span className="capitalize">{k}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-neutral-600 mt-2">{L('Visa/ dölj varje kanal oberoende. Kanalen visas endast om URL är ifylld.','Show/hide each channel independently. A channel is shown only if its URL is provided.')}</p>
+            </div>
+          </div>
         </Section>
 
         <Section id="admin-subscribers" title={L('Prenumeranter','Subscribers')}>
