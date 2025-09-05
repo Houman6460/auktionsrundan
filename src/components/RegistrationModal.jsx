@@ -103,7 +103,7 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
             </div>
           ))}
 
-          <div className="sticky bottom-0 bg-white pt-2 border-t -mx-4 px-4 py-3 flex items-center justify-end gap-2">
+          <div className="sticky bottom-0 bg-white pt-2 border-t px-4 py-3 flex items-center justify-end gap-2">
             <button type="button" className="btn-outline" onClick={onClose}>Avbryt</button>
             <button type="submit" className="btn-primary">{t('auctions.reg_submit')}</button>
           </div>

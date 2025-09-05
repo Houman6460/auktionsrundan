@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function ShareButtons({ title, url, text, image }) {
+export default function ShareButtons({ title, url, text, image, children }) {
   const absoluteUrl = (u) => {
     if (!u && typeof window !== 'undefined') return window.location.href
     try {
@@ -83,7 +83,7 @@ export default function ShareButtons({ title, url, text, image }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-2 flex-nowrap overflow-x-auto">
       <button type="button" className="btn-outline text-xs" onClick={doWebShare} aria-label="System share" title="System share">
         {/* Share icon */}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49"/></svg>
@@ -112,6 +112,7 @@ export default function ShareButtons({ title, url, text, image }) {
         {/* Mail icon */}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 6c0-1.1.9-2 2-2h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm2 0l8 5 8-5H4zm16 12V8l-8 5-8-5v10h16z"/></svg>
       </a>
+      {children}
     </div>
   )
 }
