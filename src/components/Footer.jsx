@@ -94,6 +94,13 @@ export default function Footer() {
         </div>
       </div>
       <div className="text-xs text-center py-4 text-neutral-500 border-t">© {new Date().getFullYear()} Auktionsrundan</div>
+      <div className="text-xs text-center pb-6 text-neutral-500">
+        {t('footer.credit', {
+          defaultValue: 'created by Logoland Design with ❤️ ',
+        })}
+        <a href="https://logoland.se" target="_blank" rel="noopener noreferrer" className="underline">logoland.se</a>
+        &nbsp;2025
+      </div>
     </footer>
   )
 }

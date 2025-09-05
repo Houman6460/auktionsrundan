@@ -25,7 +25,8 @@ const resources = {
         sectionOff: 'Sektionen är avstängd.'
       },
       footer: {
-        follow: 'Följ oss i sociala medier'
+        follow: 'Följ oss i sociala medier',
+        credit: 'skapad av Logoland Design med ❤️ '
       }
     }
   },
@@ -52,7 +53,8 @@ const resources = {
         sectionOff: 'This section is disabled.'
       },
       footer: {
-        follow: 'Follow us on social media'
+        follow: 'Follow us on social media',
+        credit: 'created by Logoland Design with ❤️ '
       }
     }
   }
