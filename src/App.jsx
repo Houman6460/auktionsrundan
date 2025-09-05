@@ -36,33 +36,33 @@ export default function App() {
         <Route
           path="/"
           element={
-            <main className="overflow-x-hidden">
+            <main>
               <Hero />
-              <section id="auctions" className="scroll-mt-24 overflow-x-hidden">
+              <section id="auctions" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.auctions')}</h2>
                   <Auctions />
                 </div>
               </section>
-              <section id="items" className="scroll-mt-24 overflow-x-hidden">
+              <section id="items" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.items')}</h2>
                   <Items />
                 </div>
               </section>
-              <section id="terms" className="scroll-mt-24 overflow-x-hidden">
+              <section id="terms" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.terms')}</h2>
                   <Terms />
                 </div>
               </section>
-              <section id="instagram" className="scroll-mt-24 overflow-x-hidden">
+              <section id="instagram" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">Instagram</h2>
                   <InstagramFeed />
                 </div>
               </section>
-              <section id="faq" className="scroll-mt-24 overflow-x-hidden">
+              <section id="faq" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <FAQ />
                 </div>
@@ -74,7 +74,7 @@ export default function App() {
         <Route
           path="/auctions"
           element={
-            <main className="overflow-x-hidden">
+            <main>
               <section className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.auctions')}</h2>
@@ -88,7 +88,7 @@ export default function App() {
         <Route
           path="/items"
           element={
-            <main className="overflow-x-hidden">
+            <main>
               <section className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.items')}</h2>
@@ -102,7 +102,7 @@ export default function App() {
         <Route
           path="/terms"
           element={
-            <main className="overflow-x-hidden">
+            <main>
               <section className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.terms')}</h2>
