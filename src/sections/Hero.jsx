@@ -84,7 +84,7 @@ export default function Hero() {
   }
 
   return (
-    <section id="home" className="relative h-[60vh] min-h-[420px] flex items-center justify-center">
+    <section id="home" className="relative h-[60vh] min-h-[420px] flex items-center justify-center overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: bg ? `url(${bg})` : 'linear-gradient(135deg,#efe9e2,#d9cbb6)' }}

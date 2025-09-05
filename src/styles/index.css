@@ -11,6 +11,12 @@ body {
   @apply bg-vintage-cream text-vintage-black font-sans antialiased;
 }
 
+/* Prevent horizontal scrolling caused by off-canvas effects on mobile */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 .container {
   @apply max-w-6xl;
 }
