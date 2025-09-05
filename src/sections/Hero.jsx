@@ -95,15 +95,15 @@ export default function Hero() {
         <h1 className="font-serif text-4xl md:text-5xl drop-shadow">Auktionsrundan</h1>
         {/* Floating compact band under header when stuck */}
         {stuck && (
-          <div className="fixed top-16 left-0 right-0 z-40">
+          <div className="fixed left-0 right-0 z-40" style={{ top: 'calc(env(safe-area-inset-top) + 4rem)' }}>
             <div className="container mx-auto px-4">
-              <div className="bg-white/90 backdrop-blur border rounded-md px-3 py-2 shadow-sm overflow-hidden whitespace-nowrap">
-                <div className="flex items-center gap-3 text-vintage-black text-sm">
+              <div className="bg-white/90 backdrop-blur border rounded-md px-3 py-2 shadow-sm overflow-hidden md:whitespace-nowrap whitespace-normal">
+                <div className="flex flex-wrap items-center gap-3 text-vintage-black text-sm min-w-0">
                   <span className="font-serif text-base">{t('hero.nextAuction')}</span>
                   {next && (
                     <>
                       <span className="text-neutral-400">•</span>
-                      <span className="font-medium truncate">
+                      <span className="font-medium truncate flex-1 min-w-0">
                         {(next.name && (next.name[lang] || next.name.sv || next.name.en)) || ''} — {new Date(next.ts).toLocaleDateString()} {next.time && <span className="text-neutral-700">{next.time}</span>}
                       </span>
                       <span className="text-neutral-400">•</span>
