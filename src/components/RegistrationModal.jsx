@@ -57,14 +57,14 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/30 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-lg max-h-[85vh] bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
-        <div className="px-4 py-3 border-b flex items-center justify-between gap-2">
+    <div className="fixed inset-0 z-[60] grid items-start justify-center bg-black/30 p-4 overflow-y-auto" role="dialog" aria-modal="true">
+      <div className="w-full max-w-lg max-h-[85vh] sm:max-h-[90vh] bg-white rounded-lg shadow-lg overflow-hidden flex flex-col min-h-0" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+        <div className="px-4 py-3 border-b flex items-center justify-between gap-2 shrink-0">
           <h3 className="font-serif text-lg flex-1">{t('auctions.reg_title')} — {title}</h3>
           <button className="btn-outline text-xs" onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <form id={`reg-form-${auctionId}`} onSubmit={submit} className="flex-1 grid grid-rows-[1fr_auto]">
-          <div className="p-4 grid gap-3 overflow-y-auto">
+        <form id={`reg-form-${auctionId}`} onSubmit={submit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 pb-20 grid gap-3">
             {settings?.fields?.name && (
               <div>
                 <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_name')}</label>
@@ -104,7 +104,7 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
               </div>
             ))}
           </div>
-          <div className="bg-white border-t px-4 py-3 flex items-center justify-end gap-2">
+          <div className="sticky bottom-0 bg-white border-t px-4 py-3 flex items-center justify-end gap-2">
             <button type="button" className="btn-outline" onClick={onClose}>Avbryt</button>
             <button type="submit" className="btn-primary">{t('auctions.reg_submit')}</button>
           </div>

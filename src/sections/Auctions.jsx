@@ -96,7 +96,7 @@ function AuctionCard({ a, idx, now, lang }) {
           <ShareButtons title={titleT} url={shareUrl} text={shareText}>
             {/* Register button styled like the social buttons - icon removed per request */}
             <button type="button" className="btn-outline text-xs relative px-3 whitespace-nowrap" onClick={()=>setOpenReg(true)} title={t('auctions.registerBtn')} aria-label={t('auctions.registerBtn')}>
-              {t('auctions.registerBtn')}
+              {t('auctions.registerShort')}
               {regCount>0 && (<span className="absolute -top-2 -right-2 bg-earth-dark text-white rounded-full text-[10px] leading-none px-1 py-0.5">{regCount}</span>)}
             </button>
           </ShareButtons>
