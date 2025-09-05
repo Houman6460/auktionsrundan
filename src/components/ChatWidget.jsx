@@ -32,9 +32,24 @@ export default function ChatWidget() {
   const greet = (cfg.greeting?.[i18n.language] || cfg.greeting?.sv || cfg.greeting?.en || '').trim()
   const href = `https://wa.me/${encodeURIComponent(phone.replace(/^\+/, ''))}${greet ? `?text=${encodeURIComponent(greet)}` : ''}`
   const isLeft = cfg.position === 'left'
+  const [isMobile, setIsMobile] = React.useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   return (
-    <div className="fixed z-40" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1rem + 56px + 12px)', [isLeft ? 'left' : 'right']: '1rem' }}>
+    <div
+      className="fixed z-40"
+      style={{
+        bottom: 'calc(env(safe-area-inset-bottom) + 1rem + 56px + 12px)',
+        ...(isLeft
+          ? { left: isMobile ? 'calc(1rem + 10px)' : '1rem' }
+          : { right: isMobile ? 'calc(1rem + 10px)' : '1rem' }
+        ),
+      }}
+    >
       <a
         href={href}
         target="_blank"
