@@ -42,7 +42,8 @@ export default function Header() {
   }
 
   return (
-    <header className={`sticky top-0 z-50 border-b bg-white/80 backdrop-blur ${visible ? '' : 'opacity-0'}`}>
+    <>
+    <header className={`fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur ${visible ? '' : 'opacity-0'}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3">
@@ -87,5 +88,8 @@ export default function Header() {
         </div>
       )}
     </header>
+    {/* Spacer to offset fixed header height */}
+    <div className="h-16" aria-hidden="true" />
+    </>
   )
 }
