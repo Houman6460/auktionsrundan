@@ -1,3 +1,4 @@
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -32,3 +33,5 @@ html, body {
 .btn-outline {
   @apply inline-flex items-center gap-2 px-4 py-2 rounded-md border border-earth-dark text-earth-dark hover:bg-earth-light/30 transition;
 }
+
+/* stylelint-enable at-rule-no-unknown */
