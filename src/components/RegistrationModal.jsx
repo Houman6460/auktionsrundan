@@ -3,13 +3,15 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { loadContent, saveContent } from '../services/store'
 import { addSubscriber } from '../services/newsletter'
-import { trackRegistrationSubmit } from '../services/analytics'
+import { trackRegistrationSubmit, trackEvent } from '../services/analytics'
+import { downloadIcs } from '../utils/ics'
 
-export default function RegistrationModal({ open, onClose, auctionId, title }) {
+export default function RegistrationModal({ open, onClose, auctionId, title, date, start, address }) {
   const { t, i18n } = useTranslation()
   const [content, setContent] = React.useState(loadContent())
   const [form, setForm] = React.useState({ name: '', email: '', tel: '', notes: '', answers: {} })
   const settings = content.registration || { enabled: true, fields: {}, questions: [] }
+  const [submitted, setSubmitted] = React.useState(false)
   const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('lang') || 'sv')
 
   React.useEffect(() => {
@@ -57,8 +59,7 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
       }
       try { trackRegistrationSubmit({ auctionId, title, email: entry.email, name: entry.name, tel: entry.tel, answers: entry.answers }) } catch {}
       setContent(current)
-      onClose()
-      setTimeout(() => alert(t('auctions.reg_thanks')), 50)
+      setSubmitted(true)
     } catch (err) {
       console.error('Registration save failed', err)
       alert('Could not save registration. Please try again.')
@@ -72,6 +73,7 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
           <h3 className="font-serif text-lg flex-1">{t('auctions.reg_title')} — {title}</h3>
           <button className="btn-outline text-xs" onClick={onClose} aria-label="Close">✕</button>
         </div>
+        {!submitted ? (
         <form id={`reg-form-${auctionId}`} onSubmit={submit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="flex-1 min-h-0 overflow-y-auto p-4 grid gap-3">
             {settings?.fields?.name && (
@@ -118,6 +120,31 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
             <button type="submit" className="btn-primary">{t('auctions.reg_submit')}</button>
           </div>
         </form>
+        ) : (
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 grid gap-3">
+            <div className="section-card p-3 bg-emerald-50 border-emerald-200">
+              <div className="font-serif text-lg mb-1">{t('auctions.reg_thanks')}</div>
+              <div className="text-sm text-neutral-700">{t('auctions.viewing')}: {start || '-'}{address ? ` — ${address}` : ''}</div>
+              <div className="text-sm text-neutral-700">{t('auctions.date')}: {date || '-'}</div>
+              <div className="mt-2">
+                <button type="button" className="btn-outline text-xs" onClick={()=>{
+                  try {
+                    const tStr = (typeof start === 'string' && /\d{1,2}:\d{2}/.test(start)) ? start : '00:00'
+                    const iso = date ? `${date}T${tStr}:00` : null
+                    if (iso) {
+                      downloadIcs({ title: title || 'Auktion', startIso: iso, durationMinutes: 180, location: address || '', filename: 'auktionsrundan.ics' })
+                      trackEvent('ics_add', { context: 'registration', title, start: iso })
+                    }
+                  } catch {}
+                }}>{t('auctions.add_to_calendar') || 'Lägg till i kalender'}</button>
+              </div>
+            </div>
+            <div className="text-sm text-neutral-600">Du kan stänga detta fönster. Vi ses på auktionen!</div>
+            <div className="shrink-0 bg-white border-t px-0 py-0 flex items-center justify-end gap-2">
+              <button type="button" className="btn-primary" onClick={onClose}>Stäng</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>,
     document.body

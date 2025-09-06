@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { trackPageView, trackSectionView } from './services/analytics'
 import { useTranslation } from 'react-i18next'
 import Header from './components/Header.jsx'
+import SeoHead from './components/SeoHead.jsx'
 import NewsletterPopup from './components/NewsletterPopup.jsx'
 import Hero from './sections/Hero.jsx'
 import Auctions from './sections/Auctions.jsx'
@@ -10,6 +11,7 @@ import Items from './sections/Items.jsx'
 import Terms from './sections/Terms.jsx'
 import InstagramFeed from './sections/InstagramFeed.jsx'
 import FAQ from './sections/FAQ.jsx'
+import FAQPreview from './sections/FAQPreview.jsx'
 import Footer from './components/Footer.jsx'
 import Admin from './admin/Admin.jsx'
 import ChatWidget from './components/ChatWidget.jsx'
@@ -66,6 +68,7 @@ export default function App() {
           path="/"
           element={
             <main>
+              <SeoHead />
               <Hero />
               <section id="auctions" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
@@ -83,6 +86,11 @@ export default function App() {
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.terms')}</h2>
                   <Terms />
+                </div>
+              </section>
+              <section className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-8">
+                  <FAQPreview />
                 </div>
               </section>
               <section id="instagram" className="scroll-mt-24">

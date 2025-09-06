@@ -1,6 +1,7 @@
 import React from 'react'
 import { loadContent } from '../services/store'
 import RatingStars from '../components/RatingStars'
+import { trackEvent } from '../services/analytics'
 import ShareButtons from '../components/ShareButtons'
 
 export default function Items() {
@@ -36,7 +37,12 @@ export default function Items() {
         {categoryNames.map((c) => (
           <button key={c} onClick={() => setFilter(c)} className={`btn-outline text-sm ${filter===c? 'bg-earth-light/30' : ''}`}>{c}</button>
         ))}
+        <div className="mt-8 flex items-center justify-center">
+        <a href="#auctions" className="btn-primary" onClick={()=>{ try { trackEvent('cta_click', { context: 'items', action: 'register' }) } catch {} }}>
+          {lang==='en' ? 'Register for the next auction' : 'Anmäl dig till nästa auktion'}
+        </a>
       </div>
+    </div>
       {filter === 'Alla' ? (
         <div className="grid gap-8">
           {Object.entries(categories).map(([cat, arr]) => (
@@ -47,7 +53,7 @@ export default function Items() {
                   <figure key={idx} id={`item-${cat}-${idx}`} className="section-card overflow-hidden">
                     <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                       {it.img ? (
-                        <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" />
+                        <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" loading="lazy" decoding="async" />
                       ) : (
                         <div className="w-full h-full grid place-items-center">
                           <span className="text-neutral-500">Ingen bild</span>
@@ -105,7 +111,7 @@ export default function Items() {
               <figure key={idx} id={`item-${it._cat}-${it._idx}`} className="section-card overflow-hidden">
                 <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                   {it.img ? (
-                    <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" />
+                    <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" loading="lazy" decoding="async" />
                   ) : (
                     <div className="w-full h-full grid place-items-center">
                       <span className="text-neutral-500">Ingen bild</span>

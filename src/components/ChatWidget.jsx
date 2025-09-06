@@ -1,5 +1,6 @@
 import React from 'react'
 import { loadContent } from '../services/store'
+import { trackEvent } from '../services/analytics'
 import { useTranslation } from 'react-i18next'
 
 function WhatsAppIcon({ className }) {
@@ -41,6 +42,7 @@ export default function ChatWidget() {
         rel="noopener noreferrer"
         aria-label="Open WhatsApp chat"
         className="group inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-600"
+        onClick={() => { try { trackEvent('chat_click', { provider: 'whatsapp' }) } catch {} }}
       >
         <WhatsAppIcon className="w-7 h-7" />
       </a>

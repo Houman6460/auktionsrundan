@@ -1,6 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
+import { downloadIcs } from '../utils/ics'
+import { trackEvent } from '../services/analytics'
 
 export default function Hero() {
   const { t, i18n } = useTranslation()
@@ -129,6 +131,32 @@ export default function Hero() {
                 {(next.name && (next.name[lang] || next.name.sv || next.name.en)) || ''} — {new Date(next.ts).toLocaleDateString()} {next.time && <span className="text-neutral-700">{next.time}</span>}
               </div>
               <div className="text-2xl font-mono">{formatRemaining(next.ts)}</div>
+              <div className="mt-2">
+                <button
+                  type="button"
+                  className="btn-outline text-xs"
+                  onClick={() => {
+                    try {
+                      const d = (next.date || '')
+                      const tStr = (typeof next.time === 'string' && /\d{1,2}:\d{2}/.test(next.time)) ? next.time : '00:00'
+                      const iso = d ? `${d}T${tStr}:00` : null
+                      if (iso) {
+                        downloadIcs({
+                          title: (next.name && (next.name[lang] || next.name.sv || next.name.en)) || 'Auktion',
+                          startIso: iso,
+                          durationMinutes: 180,
+                          description: 'Auktionsrundan',
+                          location: '',
+                          filename: 'auktionsrundan.ics'
+                        })
+                        trackEvent('ics_add', { context: 'hero', title: (next.name && (next.name[lang] || next.name.sv || next.name.en)) || '' , start: iso })
+                      }
+                    } catch {}
+                  }}
+                >
+                  {t('auctions.add_to_calendar') || 'Lägg till i kalender'}
+                </button>
+              </div>
             </div>
           )}
           <ul className="text-sm">
@@ -165,12 +193,23 @@ export default function Hero() {
         </div>
         </div>
         <div className="mt-6">
-          <a
-            href={content.hero?.cta?.link || '#auctions'}
-            className="btn-primary transition-all will-change-transform hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
-          >
-            {ctaText}
-          </a>
+          <div className="flex items-center justify-center gap-3">
+            <a
+              href={content.hero?.cta?.link || '#auctions'}
+              className="btn-primary transition-all will-change-transform hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
+              onClick={() => { try { trackEvent('cta_click', { context: 'hero', action: 'register' }) } catch {} }}
+              aria-label="Anmäl dig"
+            >
+              {ctaText}
+            </a>
+            <a
+              href="#terms"
+              className="btn-outline"
+              onClick={() => { try { trackEvent('cta_click', { context: 'hero', action: 'terms' }) } catch {} }}
+            >
+              {t('nav.terms')}
+            </a>
+          </div>
         </div>
       </div>
     </section>
