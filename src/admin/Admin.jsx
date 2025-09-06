@@ -456,6 +456,39 @@ export default function Admin() {
   React.useEffect(() => {
     const root = rootRef.current
     if (!root) return
+    let lastTipEl = null
+    const updatePosition = (el) => {
+      try {
+        if (!el || !el.hasAttribute('data-tip')) return
+        const pref = el.getAttribute('data-tip-pos') || 'top'
+        const rect = el.getBoundingClientRect()
+        const vw = window.innerWidth || document.documentElement.clientWidth
+        const vh = window.innerHeight || document.documentElement.clientHeight
+        const margin = 10
+        const estW = 280
+        const estH = 48
+        let pos = pref
+        if (pos === 'right' && (rect.right + estW + margin) > vw) pos = 'left'
+        if (pos === 'left' && (rect.left - estW - margin) < 0) pos = 'right'
+        if (pos === 'top' && (rect.top - estH - margin) < 0) pos = 'bottom'
+        if (pos === 'bottom' && (rect.bottom + estH + margin) > vh) pos = 'top'
+        el.setAttribute('data-tip-pos-active', pos)
+        if (pos === 'right') {
+          el.style.setProperty('--tip-left', `${Math.round(rect.right + margin)}px`)
+          el.style.setProperty('--tip-top', `${Math.round(rect.top + rect.height / 2)}px`)
+        } else if (pos === 'left') {
+          el.style.setProperty('--tip-left', `${Math.round(rect.left - margin)}px`)
+          el.style.setProperty('--tip-top', `${Math.round(rect.top + rect.height / 2)}px`)
+        } else if (pos === 'bottom') {
+          el.style.setProperty('--tip-left', `${Math.round(rect.left + rect.width / 2)}px`)
+          el.style.setProperty('--tip-top', `${Math.round(rect.bottom + margin)}px`)
+        } else { // top
+          el.style.setProperty('--tip-left', `${Math.round(rect.left + rect.width / 2)}px`)
+          el.style.setProperty('--tip-top', `${Math.round(rect.top - margin)}px`)
+        }
+        el.setAttribute('data-tip-fixed', '1')
+      } catch {}
+    }
     const show = (el) => {
       try {
         if (!tipsEnabled) return
@@ -464,6 +497,8 @@ export default function Admin() {
         el.__tipTitle = t
         el.setAttribute('data-tip', t)
         el.removeAttribute('title')
+        lastTipEl = el
+        updatePosition(el)
       } catch {}
     }
     const hide = (el) => {
@@ -472,7 +507,14 @@ export default function Admin() {
           el.setAttribute('title', el.__tipTitle)
           delete el.__tipTitle
         }
-        if (el) el.removeAttribute('data-tip')
+        if (el) {
+          el.removeAttribute('data-tip')
+          el.removeAttribute('data-tip-fixed')
+          el.removeAttribute('data-tip-pos-active')
+          el.style.removeProperty('--tip-left')
+          el.style.removeProperty('--tip-top')
+        }
+        if (lastTipEl === el) lastTipEl = null
       } catch {}
     }
     const onOver = (e) => {
@@ -493,15 +535,22 @@ export default function Admin() {
       const el = e.target && e.target.closest('[data-tip]')
       if (el) hide(el)
     }
+    const onScrollOrResize = () => {
+      if (lastTipEl) updatePosition(lastTipEl)
+    }
     root.addEventListener('mouseover', onOver)
     root.addEventListener('mouseout', onOut)
     root.addEventListener('focusin', onFocusIn)
     root.addEventListener('focusout', onFocusOut)
+    window.addEventListener('scroll', onScrollOrResize, true)
+    window.addEventListener('resize', onScrollOrResize)
     return () => {
       root.removeEventListener('mouseover', onOver)
       root.removeEventListener('mouseout', onOut)
       root.removeEventListener('focusin', onFocusIn)
       root.removeEventListener('focusout', onFocusOut)
+      window.removeEventListener('scroll', onScrollOrResize, true)
+      window.removeEventListener('resize', onScrollOrResize)
     }
   }, [tipsEnabled])
 
@@ -716,7 +765,7 @@ export default function Admin() {
               </>
             )}
             <div className="flex items-end justify-end gap-2">
-              <label className="inline-flex items-center gap-2 text-sm text-neutral-700 mr-2">
+              <label className="inline-flex items-center gap-2 text-sm text-neutral-700 mr-2" title={L('Jämför mot föregående period i grafer och nyckeltal','Compare against previous period in charts and KPIs')} data-tip-pos="bottom">
                 <Toggle checked={analyticsCompare} onChange={(e)=>setAnalyticsCompare(e.target.checked)} />
                 <span>{L('Jämför föregående period','Compare previous period')}</span>
               </label>
@@ -734,7 +783,7 @@ export default function Admin() {
                 { key: 'registration_submit', label: L('Anmälningar','Registrations') },
                 { key: 'rating_submit', label: L('Betyg','Ratings') },
               ]).map(({key,label}) => (
-                <label key={key} className="inline-flex items-center gap-2 text-sm text-neutral-700">
+                <label key={key} className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa/dölj denna händelsetyp i grafer','Show/hide this event type in charts')} data-tip-pos="bottom">
                   <Toggle size="sm" checked={!!analyticsTypes[key]} onChange={(e)=>setAnalyticsTypes((t)=>({ ...t, [key]: e.target.checked }))} />
                   <span className="truncate">{label}</span>
                 </label>
@@ -749,7 +798,7 @@ export default function Admin() {
                 <div className="text-xs text-neutral-600 mb-1">{L('Språk','Language')}</div>
                 <div className="flex flex-wrap gap-2">
                   {analyticsSelection.langs.map((v)=> (
-                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.lang.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} onClick={()=>setAnalyticsFilters((f)=>({ ...f, lang: f.lang.includes(v) ? f.lang.filter(x=>x!==v) : [...f.lang, v] }))}>{v.toUpperCase()}</button>
+                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.lang.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} title={L('Filtrera på språk: ','Filter by language: ') + v.toUpperCase()} data-tip-pos="bottom" onClick={()=>setAnalyticsFilters((f)=>({ ...f, lang: f.lang.includes(v) ? f.lang.filter(x=>x!==v) : [...f.lang, v] }))}>{v.toUpperCase()}</button>
                   ))}
                 </div>
               </div>
@@ -757,7 +806,7 @@ export default function Admin() {
                 <div className="text-xs text-neutral-600 mb-1">{L('Enhet','Device')}</div>
                 <div className="flex flex-wrap gap-2">
                   {analyticsSelection.devices.map((v)=> (
-                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.device.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} onClick={()=>setAnalyticsFilters((f)=>({ ...f, device: f.device.includes(v) ? f.device.filter(x=>x!==v) : [...f.device, v] }))}>{v}</button>
+                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.device.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} title={L('Filtrera på enhet: ','Filter by device: ') + v} data-tip-pos="bottom" onClick={()=>setAnalyticsFilters((f)=>({ ...f, device: f.device.includes(v) ? f.device.filter(x=>x!==v) : [...f.device, v] }))}>{v}</button>
                   ))}
                 </div>
               </div>
@@ -765,7 +814,7 @@ export default function Admin() {
                 <div className="text-xs text-neutral-600 mb-1">{L('Sida','Route')}</div>
                 <div className="flex flex-wrap gap-2 max-h-16 overflow-y-auto">
                   {analyticsSelection.routes.map((v)=> (
-                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.route.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} onClick={()=>setAnalyticsFilters((f)=>({ ...f, route: f.route.includes(v) ? f.route.filter(x=>x!==v) : [...f.route, v] }))}>{v}</button>
+                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.route.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} title={L('Filtrera på sida: ','Filter by route: ') + v} data-tip-pos="bottom" onClick={()=>setAnalyticsFilters((f)=>({ ...f, route: f.route.includes(v) ? f.route.filter(x=>x!==v) : [...f.route, v] }))}>{v}</button>
                   ))}
                 </div>
               </div>
