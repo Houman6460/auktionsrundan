@@ -189,16 +189,22 @@ html, body {
 
 /* Overlay variant (local mode): cover the element */
 .tooltip-root [data-tip][data-tip-pos="overlay"]::after {
-  left: 0;
-  top: 0;
-  bottom: auto;
-  width: 100%;
-  transform: none;
-  height: 100%;
+  left: 50%;
+  top: auto;
+  bottom: calc(100% + 8px);
+  width: auto;
+  max-width: min(360px, 90vw);
+  transform: translateX(-50%);
+  height: auto;
   display: block;
-  padding-top: 0;
-  padding-bottom: 0;
-  box-shadow: none;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+  padding: 6px 10px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.08);
+  pointer-events: none;
+  z-index: 9999;
 }
 .tooltip-root [data-tip][data-tip-pos="overlay"]::before {
   display: none;
