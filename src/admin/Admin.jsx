@@ -457,6 +457,28 @@ export default function Admin() {
     const root = rootRef.current
     if (!root) return
     let lastTipEl = null
+    const measureTip = (el) => {
+      try {
+        const txt = el.getAttribute('data-tip') || ''
+        const m = document.createElement('div')
+        m.style.position = 'fixed'
+        m.style.left = '-9999px'
+        m.style.top = '0'
+        m.style.maxWidth = '280px'
+        m.style.fontSize = '12px'
+        m.style.lineHeight = '1.25'
+        m.style.padding = '6px 8px'
+        m.style.borderRadius = '8px'
+        m.style.visibility = 'hidden'
+        m.style.whiteSpace = 'pre-wrap'
+        m.textContent = txt
+        document.body.appendChild(m)
+        const w = m.offsetWidth
+        const h = m.offsetHeight
+        document.body.removeChild(m)
+        return { w: Math.max(40, w), h: Math.max(24, h) }
+      } catch { return { w: 280, h: 48 } }
+    }
     const updatePosition = (el) => {
       try {
         if (!el || !el.hasAttribute('data-tip')) return
@@ -476,27 +498,36 @@ export default function Admin() {
         const vw = window.innerWidth || document.documentElement.clientWidth
         const vh = window.innerHeight || document.documentElement.clientHeight
         const margin = 10
-        const estW = 280
-        const estH = 48
+        const { w: estW, h: estH } = measureTip(el)
         let pos = pref
         if (pos === 'right' && (rect.right + estW + margin) > vw) pos = 'left'
         if (pos === 'left' && (rect.left - estW - margin) < 0) pos = 'right'
         if (pos === 'top' && (rect.top - estH - margin) < 0) pos = 'bottom'
         if (pos === 'bottom' && (rect.bottom + estH + margin) > vh) pos = 'top'
         el.setAttribute('data-tip-pos-active', pos)
+        // Compute anchor and clamp to viewport
+        let left = rect.left + rect.width / 2
+        let top = rect.top + rect.height / 2
         if (pos === 'right') {
-          el.style.setProperty('--tip-left', `${Math.round(rect.right + margin)}px`)
-          el.style.setProperty('--tip-top', `${Math.round(rect.top + rect.height / 2)}px`)
+          left = rect.right + margin
+          // clamp vertical center so bubble stays on-screen
+          const halfH = estH / 2
+          top = Math.min(Math.max(rect.top + rect.height / 2, halfH + margin), vh - halfH - margin)
         } else if (pos === 'left') {
-          el.style.setProperty('--tip-left', `${Math.round(rect.left - margin)}px`)
-          el.style.setProperty('--tip-top', `${Math.round(rect.top + rect.height / 2)}px`)
+          left = rect.left - margin
+          const halfH = estH / 2
+          top = Math.min(Math.max(rect.top + rect.height / 2, halfH + margin), vh - halfH - margin)
         } else if (pos === 'bottom') {
-          el.style.setProperty('--tip-left', `${Math.round(rect.left + rect.width / 2)}px`)
-          el.style.setProperty('--tip-top', `${Math.round(rect.bottom + margin)}px`)
+          top = rect.bottom + margin
+          const halfW = estW / 2
+          left = Math.min(Math.max(rect.left + rect.width / 2, halfW + margin), vw - halfW - margin)
         } else { // top
-          el.style.setProperty('--tip-left', `${Math.round(rect.left + rect.width / 2)}px`)
-          el.style.setProperty('--tip-top', `${Math.round(rect.top - margin)}px`)
+          top = rect.top - margin
+          const halfW = estW / 2
+          left = Math.min(Math.max(rect.left + rect.width / 2, halfW + margin), vw - halfW - margin)
         }
+        el.style.setProperty('--tip-left', `${Math.round(left)}px`)
+        el.style.setProperty('--tip-top', `${Math.round(top)}px`)
         el.setAttribute('data-tip-fixed', '1')
       } catch {}
     }

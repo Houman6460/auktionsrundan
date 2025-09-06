@@ -54,7 +54,8 @@ html, body {
   max-width: 280px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.20);
   pointer-events: none;
-  z-index: 50;
+  z-index: 9999;
+  will-change: transform, top, left;
   display: none;
 }
 .tooltip-root [data-tip]::before {
