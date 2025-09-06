@@ -499,8 +499,8 @@ export default function Admin() {
               >EN</button>
             </div>
             {/* Tabs removed; navigation moved to left accordion */}
-            <Link to="/" className="btn-outline text-sm">{L('Till webbplatsen','View site')}</Link>
-            <button className="btn-primary text-sm" onClick={save}>{L('Spara','Save')}</button>
+            <Link to="/" className="btn-outline text-sm" title={L('Öppna webbplatsen i ny flik','Open the site in a new tab')}>{L('Till webbplatsen','View site')}</Link>
+            <button className="btn-primary text-sm" onClick={save} title={L('Spara alla ändringar','Save all changes')}>{L('Spara','Save')}</button>
           </nav>
         </div>
       </header>
@@ -514,82 +514,82 @@ export default function Admin() {
             <div className="section-card p-4 sticky top-0 max-h-[100vh] overflow-y-auto">
               <nav className="flex flex-col gap-2 text-sm">
                 <div>
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandDesign(v=>!v); setActiveFilter('design')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Design‑sektioner','Show only Design sections')} onClick={()=>{setExpandDesign(v=>!v); setActiveFilter('design')}}>
                     {expandDesign ? '▾' : '▸'} {L('Design','Design')}
                   </button>
                   {expandDesign && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-header" className="hover:underline" onClick={()=>setActiveFilter('admin-header')}>{L('Header','Header')}</a>
-                      <a href="#admin-hero" className="hover:underline" onClick={()=>setActiveFilter('admin-hero')}>{L('Hero (Hem)','Hero (Home)')}</a>
-                      <a href="#admin-auctions" className="hover:underline" onClick={()=>setActiveFilter('admin-auctions')}>{L('Kommande Auktioner','Upcoming Auctions')}</a>
-                      <a href="#admin-items" className="hover:underline" onClick={()=>setActiveFilter('admin-items')}>{L('Auktionsvaror','Auction Items')}</a>
-                      <a href="#admin-terms" className="hover:underline" onClick={()=>setActiveFilter('admin-terms')}>{L('Auktionsvillkor','Terms')}</a>
-                      <a href="#admin-instagram" className="hover:underline" onClick={()=>setActiveFilter('admin-instagram')}>{L('Instagram','Instagram')}</a>
-                      <a href="#admin-faq" className="hover:underline" onClick={()=>setActiveFilter('admin-faq')}>FAQ</a>
-                      <a href="#admin-footer" className="hover:underline" onClick={()=>setActiveFilter('admin-footer')}>{L('Footer','Footer')}</a>
+                      <a href="#admin-header" className="hover:underline" title={L('Gå till Header','Go to Header')} onClick={()=>setActiveFilter('admin-header')}>{L('Header','Header')}</a>
+                      <a href="#admin-hero" className="hover:underline" title={L('Gå till Hero (Hem)','Go to Hero (Home)')} onClick={()=>setActiveFilter('admin-hero')}>{L('Hero (Hem)','Hero (Home)')}</a>
+                      <a href="#admin-auctions" className="hover:underline" title={L('Gå till Kommande Auktioner','Go to Upcoming Auctions')} onClick={()=>setActiveFilter('admin-auctions')}>{L('Kommande Auktioner','Upcoming Auctions')}</a>
+                      <a href="#admin-items" className="hover:underline" title={L('Gå till Auktionsvaror','Go to Auction Items')} onClick={()=>setActiveFilter('admin-items')}>{L('Auktionsvaror','Auction Items')}</a>
+                      <a href="#admin-terms" className="hover:underline" title={L('Gå till Auktionsvillkor','Go to Terms')} onClick={()=>setActiveFilter('admin-terms')}>{L('Auktionsvillkor','Terms')}</a>
+                      <a href="#admin-instagram" className="hover:underline" title={L('Gå till Instagram','Go to Instagram')} onClick={()=>setActiveFilter('admin-instagram')}>{L('Instagram','Instagram')}</a>
+                      <a href="#admin-faq" className="hover:underline" title={L('Gå till FAQ','Go to FAQ')} onClick={()=>setActiveFilter('admin-faq')}>FAQ</a>
+                      <a href="#admin-footer" className="hover:underline" title={L('Gå till Footer','Go to Footer')} onClick={()=>setActiveFilter('admin-footer')}>{L('Footer','Footer')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandMarketing(v=>!v); setActiveFilter('marketing')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Marknadsföring','Show only Marketing')} onClick={()=>{setExpandMarketing(v=>!v); setActiveFilter('marketing')}}>
                     {expandMarketing ? '▾' : '▸'} {L('Marknadsföring','Marketing')}
                   </button>
                   {expandMarketing && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-newsletter" className="hover:underline" onClick={()=>setActiveFilter('admin-newsletter')}>{L('Nyhetsbrev','Newsletter')}</a>
-                      <a href="#admin-share" className="hover:underline" onClick={()=>setActiveFilter('admin-share')}>{L('Dela (Social)','Share (Social)')}</a>
-                      <a href="#admin-chat" className="hover:underline" onClick={()=>setActiveFilter('admin-chat')}>{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
+                      <a href="#admin-newsletter" className="hover:underline" title={L('Gå till Nyhetsbrev','Go to Newsletter')} onClick={()=>setActiveFilter('admin-newsletter')}>{L('Nyhetsbrev','Newsletter')}</a>
+                      <a href="#admin-share" className="hover:underline" title={L('Gå till Dela (Social)','Go to Share (Social)')} onClick={()=>setActiveFilter('admin-share')}>{L('Dela (Social)','Share (Social)')}</a>
+                      <a href="#admin-chat" className="hover:underline" title={L('Gå till Chat (WhatsApp)','Go to Chat (WhatsApp)')} onClick={()=>setActiveFilter('admin-chat')}>{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandEngagement(v=>!v); setActiveFilter('engagement')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Engagemang','Show only Engagement')} onClick={()=>{setExpandEngagement(v=>!v); setActiveFilter('engagement')}}>
                     {expandEngagement ? '▾' : '▸'} {L('Engagemang','Engagement')}
                   </button>
                   {expandEngagement && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-liveaction" className="hover:underline" onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
-                      <a href="#admin-registration" className="hover:underline" onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
-                      <a href="#admin-ratings" className="hover:underline" onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
+                      <a href="#admin-liveaction" className="hover:underline" title={L('Gå till Action (Live)','Go to Action (Live)')} onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
+                      <a href="#admin-registration" className="hover:underline" title={L('Gå till Registrering','Go to Registration')} onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
+                      <a href="#admin-ratings" className="hover:underline" title={L('Gå till Betyg','Go to Ratings')} onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandIntegrations(v=>!v); setActiveFilter('integrations')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Integrationer','Show only Integrations')} onClick={()=>{setExpandIntegrations(v=>!v); setActiveFilter('integrations')}}>
                     {expandIntegrations ? '▾' : '▸'} {L('Integrationer','Integrations')}
                   </button>
                   {expandIntegrations && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-maps" className="hover:underline" onClick={()=>setActiveFilter('admin-maps')}>{L('Google Maps','Google Maps')}</a>
+                      <a href="#admin-maps" className="hover:underline" title={L('Gå till Google Maps','Go to Google Maps')} onClick={()=>setActiveFilter('admin-maps')}>{L('Google Maps','Google Maps')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandAnalytics(v=>!v); setActiveFilter('analytics')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Analys','Show only Analytics')} onClick={()=>{setExpandAnalytics(v=>!v); setActiveFilter('analytics')}}>
                     {expandAnalytics ? '▾' : '▸'} {L('Analys','Analytics')}
                   </button>
                   {expandAnalytics && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-analytics" className="hover:underline" onClick={()=>setActiveFilter('admin-analytics')}>{L('Instrumentpanel','Dashboard')}</a>
+                      <a href="#admin-analytics" className="hover:underline" title={L('Gå till Analys‑panel','Go to Analytics dashboard')} onClick={()=>setActiveFilter('admin-analytics')}>{L('Instrumentpanel','Dashboard')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandSubscribers(v=>!v); setActiveFilter('subscribers')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Prenumeranter','Show only Subscribers')} onClick={()=>{setExpandSubscribers(v=>!v); setActiveFilter('subscribers')}}>
                     {expandSubscribers ? '▾' : '▸'} {L('Prenumeranter','Subscribers')}
                   </button>
                   {expandSubscribers && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-subscribers" className="hover:underline" onClick={()=>setActiveFilter('admin-subscribers')}>{L('Prenumeranter','Subscribers')}</a>
+                      <a href="#admin-subscribers" className="hover:underline" title={L('Gå till Prenumeranter','Go to Subscribers')} onClick={()=>setActiveFilter('admin-subscribers')}>{L('Prenumeranter','Subscribers')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-3">
-                  <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)}>{L('Visa alla','Show all')}</button>
+                  <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')}>{L('Visa alla','Show all')}</button>
                 </div>
                 <hr className="my-3" />
-                <button className="btn-primary w-full" onClick={save}>{L('Spara','Save')}</button>
-                <button className="btn-outline w-full" onClick={hardReset}>{L('Återställ standard','Reset to defaults')}</button>
+                <button className="btn-primary w-full" onClick={save} title={L('Spara alla ändringar','Save all changes')}>{L('Spara','Save')}</button>
+                <button className="btn-outline w-full" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')}>{L('Återställ standard','Reset to defaults')}</button>
               </nav>
             </div>
           </aside>
@@ -831,7 +831,7 @@ export default function Admin() {
         )}
 
         <Section id="admin-header" title={L('Header','Header')} visible={isSectionVisible('admin-header')} help={L('Ställ in logotyp, navigationsetiketter och aktiva språk.','Configure logo, navigation labels, and active languages.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj headern på webbplatsen','Show/Hide the header on the site')}>
             <Toggle checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
             <span>{L('Visa header','Show header')}</span>
           </label>
@@ -882,7 +882,7 @@ export default function Admin() {
 
         {/* Marketing: Newsletter, Share, Chat */}
         <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')} visible={isSectionVisible('admin-newsletter')} help={L('Aktivera popup för nyhetsbrev. Anpassa rubriker, fält och triggrar (timer eller scroll).','Enable the newsletter popup. Customize titles, fields and triggers (timer or scroll).') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera popup för nyhetsbrev','Enable/disable newsletter popup')}>
             <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera popup','Enable popup')}</span>
           </label>
@@ -927,7 +927,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-share" title={L('Dela (Social)','Share (Social)')} visible={isSectionVisible('admin-share')} help={L('Aktivera delningsmenyn och välj kanaler (Facebook, Twitter m.fl.).','Enable the share menu and choose platforms (Facebook, Twitter, etc.).') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera delningsmenyn','Enable/disable the share menu')}>
             <Toggle checked={!!data.share?.enabled} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.enabled=e.target.checked; setData(n)}} />
             <span>{L('Aktivera delningsmeny','Enable share menu')}</span>
           </label>
@@ -968,7 +968,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')} visible={isSectionVisible('admin-chat')} help={L('Aktivera WhatsApp-chatt och hälsningsmeddelande. Ange telefonnummer i E.164-format.','Enable WhatsApp chat and greeting text. Provide phone number in E.164 format.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera WhatsApp‑chatten','Enable/disable WhatsApp chat')}>
             <Toggle checked={!!data.chat?.enabled} onChange={(e)=>{const n={...data}; n.chat = n.chat||{}; n.chat.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera WhatsApp-chat','Enable WhatsApp chat')}</span>
           </label>
@@ -1003,7 +1003,7 @@ export default function Admin() {
         {/* Newsletter moved above into Marketing group */}
 
         <Section id="admin-faq" title="FAQ" visible={isSectionVisible('admin-faq')} help={L('Hantera vanliga frågor och svar. Lägg till, redigera och ordna poster.','Manage frequently asked questions. Add, edit, and arrange entries.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj FAQ‑sektionen','Show/Hide the FAQ section')}>
             <Toggle checked={!!data.faq?.visible} onChange={(e)=>{const n={...data}; n.faq = n.faq||{}; n.faq.visible = e.target.checked; setData(n)}} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
@@ -1039,7 +1039,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')} visible={isSectionVisible('admin-hero')} help={L('Hjälptext: Startsektion på hemsidan. Ange bakgrundsbild, nästa auktioner och CTA-knapp.','Help: Home hero section. Set background image, next auctions and CTA link/text.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj Hero‑sektionen på startsidan','Show/Hide the Home hero section')}>
             <Toggle checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
             <span>{L('Visa hero','Show hero')}</span>
           </label>
@@ -1078,13 +1078,13 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-auctions" title={L('Kommande Auktioner','Upcoming Auctions')} visible={isSectionVisible('admin-auctions')} help={L('Lägg till och redigera platsauktioner med adress, visningstid, datum och start. Du kan skapa Live‑Event direkt från en auktion.','Add and edit in‑person auctions with address, viewing window, date and start time. You can create a Live Event directly from an auction.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj sektionen Kommande Auktioner','Show/Hide Upcoming Auctions section')}>
             <Toggle checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
           <div className="flex items-center justify-between mb-2">
             {/* auctions management controls here */}
-            <button className="btn-outline text-sm" type="button" onClick={addAuction}>{L('Lägg till auktion','Add auction')}</button>
+            <button className="btn-outline text-sm" type="button" onClick={addAuction} title={L('Skapa en ny auktion i listan','Create a new auction in the list')}>{L('Lägg till auktion','Add auction')}</button>
           </div>
           <div className="grid gap-3">
             {(data.auctions.list||[]).length === 0 && (
@@ -1112,7 +1112,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-items" title={L('Auktionsvaror','Auction Items')} visible={isSectionVisible('admin-items')} help={L('Kategorisera och lista varor som visas på publika sidan. Varje post kan ha namn, typ, storlek och pris.','Categorize and list items shown on the public site. Each entry may include name, type, size and price.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj sektionen Auktionsvaror','Show/Hide Auction Items section')}>
             <Toggle checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
@@ -1123,7 +1123,7 @@ export default function Admin() {
 
         {/* Engagement: Registration then Ratings */}
         <Section id="admin-registration" title={L('Registrering','Registration')} visible={isSectionVisible('admin-registration')} help={L('Aktivera besökaranmälan före auktion. Ställ in fält och egna frågor. Exportera inskick via CSV.','Enable visitor registration before auctions. Configure fields and custom questions. Export submissions via CSV.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera registreringsformulär','Enable/disable the registration form')}>
             <Toggle checked={!!data.registration?.enabled} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.enabled=e.target.checked; setData(n)}} />
             <span>{L('Aktivera registrering','Enable registration')}</span>
           </label>
@@ -1202,7 +1202,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-ratings" title={L('Betyg','Ratings')} visible={isSectionVisible('admin-ratings')} help={L('Aktivera stjärnbetyg för att samla in omdömen från besökare.','Enable star ratings to collect visitor feedback.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera betyg','Enable/disable ratings')}>
             <Toggle checked={!!data.ratings?.enabled} onChange={(e)=>{const n={...data}; n.ratings = n.ratings||{}; n.ratings.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera betygssystem (stjärnor)','Enable ratings (stars)')}</span>
           </label>
@@ -1217,7 +1217,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-terms" title={L('Auktionsvillkor','Terms')} visible={isSectionVisible('admin-terms')} help={L('Redigera villkorstexter på svenska och engelska.','Edit terms text in Swedish and English.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj sektionen Auktionsvillkor','Show/Hide Terms section')}>
             <Toggle checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
@@ -1230,7 +1230,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-instagram" title={L('Instagram','Instagram')} visible={isSectionVisible('admin-instagram')} help={L('Visa ett Instagramflöde på webbplatsen. Ange användarnamn och token.','Show an Instagram feed on the website. Provide username and token.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj Instagram‑sektionen','Show/Hide Instagram section')}>
             <Toggle checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
@@ -1247,7 +1247,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-maps" title={L('Google Maps','Google Maps')} visible={isSectionVisible('admin-maps')} help={L('Ange Google Maps API‑nyckel, språk och standardzoom.','Provide Google Maps API key, language and default zoom.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj kartsektionen','Show/Hide the map section')}>
             <Toggle checked={!!data.maps?.visible} onChange={handleToggle(['maps','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
@@ -1266,7 +1266,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-footer" title={L('Footer','Footer')} visible={isSectionVisible('admin-footer')} help={L('Redigera kontaktuppgifter, logotyp och sociala länkar i sidfoten.','Edit contact details, logo and social links in the footer.') }>
-          <label className="flex items-center gap-2 mb-3">
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj sidfoten','Show/Hide the footer')}>
             <Toggle checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
             <span>{L('Visa footer','Show footer')}</span>
           </label>
