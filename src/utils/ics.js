@@ -3,6 +3,26 @@
 
 function pad(n) { return String(n).padStart(2, '0') }
 
+// Open Google Calendar event creation in a new tab
+export function openGoogleCalendarEvent({ title, startIso, durationMinutes = 120, description = '', location = '' }) {
+  try {
+    if (!startIso) return
+    const start = toIcsDate(startIso) // YYYYMMDDTHHMMSSZ
+    const endMs = new Date(startIso).getTime() + (durationMinutes * 60000)
+    const end = toIcsDate(new Date(endMs).toISOString())
+    const params = new URLSearchParams()
+    params.set('action', 'TEMPLATE')
+    params.set('text', String(title || 'Event'))
+    params.set('dates', `${start}/${end}`)
+    if (description) params.set('details', String(description))
+    if (location) params.set('location', String(location))
+    params.set('sf', 'true')
+    params.set('output', 'xml')
+    const url = `https://calendar.google.com/calendar/render?${params.toString()}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  } catch {}
+}
+
 function toIcsDate(iso) {
   const d = new Date(iso)
   const yyyy = d.getUTCFullYear()

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { loadContent, saveContent } from '../services/store'
 import { addSubscriber } from '../services/newsletter'
 import { trackRegistrationSubmit, trackEvent } from '../services/analytics'
-import { downloadIcs } from '../utils/ics'
+import { openGoogleCalendarEvent } from '../utils/ics'
 
 export default function RegistrationModal({ open, onClose, auctionId, title, date, start, address }) {
   const { t, i18n } = useTranslation()
@@ -132,8 +132,8 @@ export default function RegistrationModal({ open, onClose, auctionId, title, dat
                     const tStr = (typeof start === 'string' && /\d{1,2}:\d{2}/.test(start)) ? start : '00:00'
                     const iso = date ? `${date}T${tStr}:00` : null
                     if (iso) {
-                      downloadIcs({ title: title || 'Auktion', startIso: iso, durationMinutes: 180, location: address || '', filename: 'auktionsrundan.ics' })
-                      trackEvent('ics_add', { context: 'registration', title, start: iso })
+                      openGoogleCalendarEvent({ title: title || 'Auktion', startIso: iso, durationMinutes: 180, location: address || '' })
+                      trackEvent('calendar_open', { provider: 'google', context: 'registration', title, start: iso })
                     }
                   } catch {}
                 }}>{t('auctions.add_to_calendar') || 'Lägg till i kalender'}</button>

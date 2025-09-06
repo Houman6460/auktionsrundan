@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { loadContent } from '../services/store'
 import RatingStars from '../components/RatingStars'
 import { trackEvent } from '../services/analytics'
@@ -37,12 +38,7 @@ export default function Items() {
         {categoryNames.map((c) => (
           <button key={c} onClick={() => setFilter(c)} className={`btn-outline text-sm ${filter===c? 'bg-earth-light/30' : ''}`}>{c}</button>
         ))}
-        <div className="mt-8 flex items-center justify-center">
-        <a href="#auctions" className="btn-primary" onClick={()=>{ try { trackEvent('cta_click', { context: 'items', action: 'register' }) } catch {} }}>
-          {lang==='en' ? 'Register for the next auction' : 'Anmäl dig till nästa auktion'}
-        </a>
       </div>
-    </div>
       {filter === 'Alla' ? (
         <div className="grid gap-8">
           {Object.entries(categories).map(([cat, arr]) => (
@@ -157,6 +153,11 @@ export default function Items() {
           )}
         </>
       )}
+      <div className="mt-10 flex items-center justify-center">
+        <Link to="/#auctions" className="btn-primary" onClick={()=>{ try { trackEvent('cta_click', { context: 'items', action: 'register' }) } catch {} }}>
+          {lang==='en' ? 'Register for the next auction' : 'Anmäl dig till nästa auktion'}
+        </Link>
+      </div>
     </div>
   )
 }

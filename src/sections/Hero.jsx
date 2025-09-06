@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
-import { downloadIcs } from '../utils/ics'
+import { openGoogleCalendarEvent } from '../utils/ics'
 import { trackEvent } from '../services/analytics'
 
 export default function Hero() {
@@ -141,15 +141,14 @@ export default function Hero() {
                       const tStr = (typeof next.time === 'string' && /\d{1,2}:\d{2}/.test(next.time)) ? next.time : '00:00'
                       const iso = d ? `${d}T${tStr}:00` : null
                       if (iso) {
-                        downloadIcs({
+                        openGoogleCalendarEvent({
                           title: (next.name && (next.name[lang] || next.name.sv || next.name.en)) || 'Auktion',
                           startIso: iso,
                           durationMinutes: 180,
                           description: 'Auktionsrundan',
-                          location: '',
-                          filename: 'auktionsrundan.ics'
+                          location: ''
                         })
-                        trackEvent('ics_add', { context: 'hero', title: (next.name && (next.name[lang] || next.name.sv || next.name.en)) || '' , start: iso })
+                        trackEvent('calendar_open', { provider: 'google', context: 'hero', title: (next.name && (next.name[lang] || next.name.sv || next.name.en)) || '' , start: iso })
                       }
                     } catch {}
                   }}
