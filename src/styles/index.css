@@ -93,9 +93,13 @@ html, body {
 .tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="right"]::after { transform: translate(0, -50%); }
 .tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="left"]::after { transform: translate(-100%, -50%); }
 
-/* Fixed overlay variant: centered directly over the element */
+/* Fixed overlay variant: cover the element using provided coordinates and width */
 .tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="overlay"]::after {
-  transform: translate(-50%, -50%);
+  transform: none;
+  width: var(--tip-width, auto);
+  height: var(--tip-height, auto);
+  display: flex;
+  align-items: center;
 }
 .tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="overlay"]::before {
   display: none;
@@ -174,12 +178,16 @@ html, body {
   border-left: 0;
 }
 
-/* Overlay variant: centered directly over the item (local mode) */
+/* Overlay variant (local mode): cover the element */
 .tooltip-root [data-tip][data-tip-pos="overlay"]::after {
-  left: 50%;
-  top: 50%;
+  left: 0;
+  top: 0;
   bottom: auto;
-  transform: translate(-50%, -50%);
+  width: 100%;
+  transform: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 .tooltip-root [data-tip][data-tip-pos="overlay"]::before {
   display: none;

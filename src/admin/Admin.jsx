@@ -486,30 +486,15 @@ export default function Admin() {
         // Only use viewport-fixed layout in constrained containers (sidebar) or forced right-placement
         const withinSidebar = !!el.closest('aside')
         const shouldFixed = withinSidebar
-        // For explicit overlay mode, always use local positioning (no fixed), so it renders directly over the item
+        // For explicit overlay mode, always use local positioning (no fixed), so it renders exactly over the item
         if (pref === 'overlay') {
-          if (!withinSidebar) {
-            // Local overlay (non-fixed)
-            el.removeAttribute('data-tip-fixed')
-            el.removeAttribute('data-tip-pos-active')
-            el.style.removeProperty('--tip-left')
-            el.style.removeProperty('--tip-top')
-            return
-          }
-          // Sidebar overlay: fixed and centered (or aligned) on the element
-          const rect = el.getBoundingClientRect()
-          const align = el.getAttribute('data-tip-align') || 'center' // start|center|end
-          let left = rect.left + rect.width / 2
-          let top = rect.top + rect.height / 2
-          if (align === 'start') {
-            left = rect.left
-          } else if (align === 'end') {
-            left = rect.right
-          }
-          el.setAttribute('data-tip-pos-active', 'overlay')
-          el.style.setProperty('--tip-left', `${Math.round(left)}px`)
-          el.style.setProperty('--tip-top', `${Math.round(top)}px`)
-          el.setAttribute('data-tip-fixed', '1')
+          el.removeAttribute('data-tip-fixed')
+          el.removeAttribute('data-tip-pos-active')
+          el.style.removeProperty('--tip-left')
+          el.style.removeProperty('--tip-top')
+          el.style.removeProperty('--tip-width')
+          el.style.removeProperty('--tip-height')
+          el.removeAttribute('data-tip-cover')
           return
         }
         if (!shouldFixed) {
@@ -579,8 +564,11 @@ export default function Admin() {
           el.removeAttribute('data-tip')
           el.removeAttribute('data-tip-fixed')
           el.removeAttribute('data-tip-pos-active')
+          el.removeAttribute('data-tip-cover')
           el.style.removeProperty('--tip-left')
           el.style.removeProperty('--tip-top')
+          el.style.removeProperty('--tip-width')
+          el.style.removeProperty('--tip-height')
         }
         if (lastTipEl === el) lastTipEl = null
       } catch {}
@@ -718,88 +706,88 @@ export default function Admin() {
             <div className="section-card p-4 sticky top-0 max-h-[100vh] overflow-y-auto">
               <nav className="flex flex-col gap-2 text-sm">
                 <div>
-                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Design‑sektioner','Show only Design sections')} data-tip-pos="overlay" onClick={()=>{setExpandDesign(v=>!v); setActiveFilter('design')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Design‑sektioner','Show only Design sections')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandDesign(v=>!v); setActiveFilter('design')}}>
                     {expandDesign ? '▾' : '▸'} {L('Design','Design')}
                   </button>
                   {expandDesign && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-header" className="hover:underline" data-tip-pos="overlay" title={L('Konfigurera logotyp, navigering och språk','Configure logo, navigation and languages')} onClick={()=>setActiveFilter('admin-header')}>{L('Header','Header')}</a>
-                      <a href="#admin-hero" className="hover:underline" data-tip-pos="overlay" title={L('Lägg till hero‑bild och rubriker för startsidan','Add hero image and titles for the homepage')} onClick={()=>setActiveFilter('admin-hero')}>{L('Hero (Hem)','Hero (Home)')}</a>
-                      <a href="#admin-auctions" className="hover:underline" data-tip-pos="overlay" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}>{L('Kommande Auktioner','Upcoming Auctions')}</a>
-                      <a href="#admin-items" className="hover:underline" data-tip-pos="overlay" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}>{L('Auktionsvaror','Auction Items')}</a>
-                      <a href="#admin-terms" className="hover:underline" data-tip-pos="overlay" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}>{L('Auktionsvillkor','Terms')}</a>
-                      <a href="#admin-instagram" className="hover:underline" data-tip-pos="overlay" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}>{L('Instagram','Instagram')}</a>
-                      <a href="#admin-faq" className="hover:underline" data-tip-pos="overlay" title={L('Hantera vanliga frågor och svar','Manage frequently asked questions')} onClick={()=>setActiveFilter('admin-faq')}>FAQ</a>
-                      <a href="#admin-footer" className="hover:underline" data-tip-pos="overlay" title={L('Redigera kontaktuppgifter och sociala länkar','Edit contact details and social links')} onClick={()=>setActiveFilter('admin-footer')}>{L('Footer','Footer')}</a>
+                      <a href="#admin-header" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Konfigurera logotyp, navigering och språk','Configure logo, navigation and languages')} onClick={()=>setActiveFilter('admin-header')}>{L('Header','Header')}</a>
+                      <a href="#admin-hero" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Lägg till hero‑bild och rubriker för startsidan','Add hero image and titles for the homepage')} onClick={()=>setActiveFilter('admin-hero')}>{L('Hero (Hem)','Hero (Home)')}</a>
+                      <a href="#admin-auctions" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}>{L('Kommande Auktioner','Upcoming Auctions')}</a>
+                      <a href="#admin-items" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}>{L('Auktionsvaror','Auction Items')}</a>
+                      <a href="#admin-terms" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}>{L('Auktionsvillkor','Terms')}</a>
+                      <a href="#admin-instagram" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}>{L('Instagram','Instagram')}</a>
+                      <a href="#admin-faq" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera vanliga frågor och svar','Manage frequently asked questions')} onClick={()=>setActiveFilter('admin-faq')}>FAQ</a>
+                      <a href="#admin-footer" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera kontaktuppgifter och sociala länkar','Edit contact details and social links')} onClick={()=>setActiveFilter('admin-footer')}>{L('Footer','Footer')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Marknadsföring','Show only Marketing')} data-tip-pos="overlay" onClick={()=>{setExpandMarketing(v=>!v); setActiveFilter('marketing')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Marknadsföring','Show only Marketing')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandMarketing(v=>!v); setActiveFilter('marketing')}}>
                     {expandMarketing ? '▾' : '▸'} {L('Marknadsföring','Marketing')}
                   </button>
                   {expandMarketing && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-newsletter" className="hover:underline" data-tip-pos="overlay" title={L('Aktivera popup, rubriker och triggrar','Enable newsletter popup, titles and triggers')} onClick={()=>setActiveFilter('admin-newsletter')}>{L('Nyhetsbrev','Newsletter')}</a>
-                      <a href="#admin-share" className="hover:underline" data-tip-pos="overlay" title={L('Konfigurera delningsmeny och kanaler','Configure sharing menu and platforms')} onClick={()=>setActiveFilter('admin-share')}>{L('Dela (Social)','Share (Social)')}</a>
-                      <a href="#admin-chat" className="hover:underline" data-tip-pos="overlay" title={L('WhatsApp‑chatt, nummer och hälsning','WhatsApp chat, number and greeting')} onClick={()=>setActiveFilter('admin-chat')}>{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
+                      <a href="#admin-newsletter" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Aktivera popup, rubriker och triggrar','Enable newsletter popup, titles and triggers')} onClick={()=>setActiveFilter('admin-newsletter')}>{L('Nyhetsbrev','Newsletter')}</a>
+                      <a href="#admin-share" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Konfigurera delningsmeny och kanaler','Configure sharing menu and platforms')} onClick={()=>setActiveFilter('admin-share')}>{L('Dela (Social)','Share (Social)')}</a>
+                      <a href="#admin-chat" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('WhatsApp‑chatt, nummer och hälsning','WhatsApp chat, number and greeting')} onClick={()=>setActiveFilter('admin-chat')}>{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Engagemang','Show only Engagement')} data-tip-pos="overlay" onClick={()=>{setExpandEngagement(v=>!v); setActiveFilter('engagement')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Engagemang','Show only Engagement')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandEngagement(v=>!v); setActiveFilter('engagement')}}>
                     {expandEngagement ? '▾' : '▸'} {L('Engagemang','Engagement')}
                   </button>
                   {expandEngagement && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-liveaction" className="hover:underline" data-tip-pos="overlay" title={L('Skapa live‑event, lägg till varor och styr visningen','Create live events, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
-                      <a href="#admin-registration" className="hover:underline" data-tip-pos="overlay" title={L('Formulär för anmälan, fält och egna frågor','Registration form, fields and custom questions')} onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
-                      <a href="#admin-ratings" className="hover:underline" data-tip-pos="overlay" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
+                      <a href="#admin-liveaction" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑event, lägg till varor och styr visningen','Create live events, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
+                      <a href="#admin-registration" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Formulär för anmälan, fält och egna frågor','Registration form, fields and custom questions')} onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
+                      <a href="#admin-ratings" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Integrationer','Show only Integrations')} data-tip-pos="overlay" onClick={()=>{setExpandIntegrations(v=>!v); setActiveFilter('integrations')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Integrationer','Show only Integrations')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandIntegrations(v=>!v); setActiveFilter('integrations')}}>
                     {expandIntegrations ? '▾' : '▸'} {L('Integrationer','Integrations')}
                   </button>
                   {expandIntegrations && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-maps" className="hover:underline" data-tip-pos="overlay" title={L('Ange Google Maps API‑nyckel och inställningar','Provide Google Maps API key and settings')} onClick={()=>setActiveFilter('admin-maps')}>{L('Google Maps','Google Maps')}</a>
+                      <a href="#admin-maps" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Ange Google Maps API‑nyckel och inställningar','Provide Google Maps API key and settings')} onClick={()=>setActiveFilter('admin-maps')}>{L('Google Maps','Google Maps')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Analys','Show only Analytics')} data-tip-pos="overlay" onClick={()=>{setExpandAnalytics(v=>!v); setActiveFilter('analytics')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Analys','Show only Analytics')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandAnalytics(v=>!v); setActiveFilter('analytics')}}>
                     {expandAnalytics ? '▾' : '▸'} {L('Analys','Analytics')}
                   </button>
                   {expandAnalytics && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-analytics" className="hover:underline" data-tip-pos="overlay" title={L('Visa trafik, händelser och toppsektioner','View traffic, events and top sections')} onClick={()=>setActiveFilter('admin-analytics')}>{L('Instrumentpanel','Dashboard')}</a>
+                      <a href="#admin-analytics" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Visa trafik, händelser och toppsektioner','View traffic, events and top sections')} onClick={()=>setActiveFilter('admin-analytics')}>{L('Instrumentpanel','Dashboard')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Prenumeranter','Show only Subscribers')} data-tip-pos="overlay" onClick={()=>{setExpandSubscribers(v=>!v); setActiveFilter('subscribers')}}>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Prenumeranter','Show only Subscribers')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandSubscribers(v=>!v); setActiveFilter('subscribers')}}>
                     {expandSubscribers ? '▾' : '▸'} {L('Prenumeranter','Subscribers')}
                   </button>
                   {expandSubscribers && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-subscribers" className="hover:underline" data-tip-pos="overlay" title={L('Visa och exportera prenumeranter','View and export subscribers')} onClick={()=>setActiveFilter('admin-subscribers')}>{L('Prenumeranter','Subscribers')}</a>
+                      <a href="#admin-subscribers" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Visa och exportera prenumeranter','View and export subscribers')} onClick={()=>setActiveFilter('admin-subscribers')}>{L('Prenumeranter','Subscribers')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <label className="flex items-center justify-between gap-2" title={L('Slå på/av hjälptooltips i adminpanelen','Toggle help tooltips in the admin panel')} data-tip-pos="overlay">
+                  <label className="flex items-center justify-between gap-2" title={L('Slå på/av hjälptooltips i adminpanelen','Toggle help tooltips in the admin panel')} data-tip-pos="overlay" data-tip-align="start">
                     <span>{L('Hjälp‑tooltips','Help tooltips')}</span>
                     <Toggle id="tips-toggle" checked={!!tipsEnabled} onChange={(e)=>{ const v=e.target.checked; setTipsEnabled(v); localStorage.setItem('ar_admin_tooltips', v ? '1' : '0') }} title={L('Slå på/av hjälptooltips','Toggle help tooltips')} />
                   </label>
                 </div>
                 <div className="mt-3">
-                  <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')} data-tip-pos="overlay">{L('Visa alla','Show all')}</button>
+                  <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')} data-tip-pos="overlay" data-tip-align="start">{L('Visa alla','Show all')}</button>
                 </div>
                 <hr className="my-3" />
-                <button className="btn-primary w-full" onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="overlay">{L('Spara','Save')}</button>
-                <button className="btn-outline w-full" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay">{L('Återställ standard','Reset to defaults')}</button>
+                <button className="btn-primary w-full" onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="overlay" data-tip-align="start">{L('Spara','Save')}</button>
+                <button className="btn-outline w-full" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay" data-tip-align="start">{L('Återställ standard','Reset to defaults')}</button>
               </nav>
             </div>
           </aside>
