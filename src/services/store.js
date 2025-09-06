@@ -496,6 +496,13 @@ export function loadContent() {
 
 export function saveContent(content) {
   localStorage.setItem(LS_KEY, JSON.stringify(content))
+  try {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      const ch = new BroadcastChannel('ar_content_sync')
+      ch.postMessage({ key: LS_KEY, ts: Date.now() })
+      ch.close()
+    }
+  } catch {}
 }
 
 export function resetContent() {

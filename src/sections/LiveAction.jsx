@@ -35,7 +35,24 @@ export default function LiveAction() {
     }
     window.addEventListener('storage', onStorage)
     const t = setInterval(() => setTick((x)=>x+1), 1000)
-    return () => { window.removeEventListener('storage', onStorage); clearInterval(t) }
+    let ch
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        ch = new BroadcastChannel('ar_content_sync')
+        ch.onmessage = (msg) => {
+          try {
+            if (!msg || (msg.data && msg.data.key === 'ar_site_content_v1')) {
+              setContent(loadContent())
+            }
+          } catch {}
+        }
+      }
+    } catch {}
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      clearInterval(t)
+      try { if (ch) ch.close() } catch {}
+    }
   }, [])
 
   const actions = content.actions || { order: [], events: {} }
