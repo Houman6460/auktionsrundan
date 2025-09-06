@@ -1,5 +1,6 @@
 import React from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { trackPageView, trackSectionView } from './services/analytics'
 import { useTranslation } from 'react-i18next'
 import Header from './components/Header.jsx'
 import NewsletterPopup from './components/NewsletterPopup.jsx'
@@ -27,6 +28,34 @@ function ScrollToHash() {
 
 export default function App() {
   const { t } = useTranslation()
+  const location = useLocation()
+  // Track page views
+  React.useEffect(() => {
+    try { trackPageView(location.pathname + (location.hash || '')) } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, location.hash])
+  // Track section views on home page
+  React.useEffect(() => {
+    if (location.pathname !== '/') return
+    const ids = ['auctions','items','terms','instagram','faq']
+    const els = ids.map((id) => document.getElementById(id)).filter(Boolean)
+    if (!els.length) return
+    const seen = new Set()
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) {
+          const id = en.target.id
+          if (!seen.has(id)) {
+            seen.add(id)
+            try { trackSectionView(id) } catch {}
+          }
+        }
+      })
+    }, { threshold: 0.4 })
+    els.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
   return (
     <div className="min-h-screen bg-vintage-cream text-vintage-black">
       <Header />

@@ -26,6 +26,12 @@ export function addSubscriber(entry) {
   }
   list.push(normalized)
   saveSubscribers(list)
+  // Notify any listeners (including same-tab Admin) to refresh subscribers
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new StorageEvent('storage', { key: SUBSCRIBERS_KEY }))
+    }
+  } catch {}
   return normalized
 }
 

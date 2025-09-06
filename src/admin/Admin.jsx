@@ -2,6 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { loadContent, saveContent, resetContent } from '../services/store'
 import { exportCsv, loadSubscribers } from '../services/newsletter'
+import AnalyticsChart from '../components/AnalyticsChart.jsx'
+import { queryEvents as analyticsQueryEvents, summarize as analyticsSummarize, bucketize as analyticsBucketize, exportAnalyticsCsv as analyticsExportAnalyticsCsv } from '../services/analytics'
 
 function Section({ id, title, children, visible = true }) {
   return (
@@ -104,6 +106,7 @@ export default function Admin() {
   const [expandMarketing, setExpandMarketing] = React.useState(true)
   const [expandEngagement, setExpandEngagement] = React.useState(true)
   const [expandIntegrations, setExpandIntegrations] = React.useState(true)
+  const [expandAnalytics, setExpandAnalytics] = React.useState(true)
   const [expandSubscribers, setExpandSubscribers] = React.useState(true)
   // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
   const [activeFilter, setActiveFilter] = React.useState(null)
@@ -112,6 +115,7 @@ export default function Admin() {
     marketing: ['admin-newsletter','admin-share','admin-chat'],
     engagement: ['admin-registration','admin-ratings'],
     integrations: ['admin-maps'],
+    analytics: ['admin-analytics'],
     subscribers: ['admin-subscribers'],
   }), [])
   const isSectionVisible = React.useCallback((id) => {
@@ -120,6 +124,77 @@ export default function Admin() {
     return activeFilter === id
   }, [activeFilter, groupSections])
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
+
+  // Analytics state
+  const [analyticsRange, setAnalyticsRange] = React.useState('week') // 'now' | 'week' | 'month' | 'year' | 'custom'
+  const [analyticsFrom, setAnalyticsFrom] = React.useState('')
+  const [analyticsTo, setAnalyticsTo] = React.useState('')
+  const [analyticsTypes, setAnalyticsTypes] = React.useState({
+    page_view: true,
+    section_view: true,
+    newsletter_subscribe: true,
+    registration_submit: true,
+    rating_submit: true,
+  })
+  const [analyticsTick, setAnalyticsTick] = React.useState(0)
+
+  React.useEffect(() => {
+    const onStorage = (e) => {
+      if (!e || e.key === 'ar_analytics_events_v1') setAnalyticsTick((n)=>n+1)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  const getRange = React.useCallback(() => {
+    const now = new Date()
+    if (analyticsRange === 'now') {
+      const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      return { from: d0.getTime(), to: now.getTime(), gran: 'hour' }
+    }
+    if (analyticsRange === 'week') {
+      const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
+      return { from: d0.getTime(), to: now.getTime(), gran: 'day' }
+    }
+    if (analyticsRange === 'month') {
+      const d0 = new Date(now.getFullYear(), now.getMonth(), 1)
+      return { from: d0.getTime(), to: now.getTime(), gran: 'day' }
+    }
+    if (analyticsRange === 'year') {
+      const d0 = new Date(now.getFullYear(), 0, 1)
+      return { from: d0.getTime(), to: now.getTime(), gran: 'month' }
+    }
+    // custom
+    const f = analyticsFrom ? new Date(analyticsFrom) : new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const t = analyticsTo ? new Date(analyticsTo) : now
+    const days = Math.max(1, Math.ceil((t - f) / 86400000))
+    let gran = 'day'
+    if (days <= 2) gran = 'hour'
+    else if (days > 60) gran = 'month'
+    return { from: f.getTime(), to: t.getTime(), gran }
+  }, [analyticsRange, analyticsFrom, analyticsTo])
+
+  const analyticsSelection = React.useMemo(() => {
+    const { from, to, gran } = getRange()
+    const types = Object.entries(analyticsTypes).filter(([,v]) => v).map(([k])=>k)
+    const ev = analyticsQueryEvents({ types, from, to })
+    const sum = analyticsSummarize(ev)
+    const buckets = analyticsBucketize(ev, gran)
+    const topSectionsMap = {}
+    const topAuctionsMap = {}
+    ev.forEach((e) => {
+      if (e.type === 'section_view') {
+        const sid = e.payload?.sectionId || 'unknown'
+        topSectionsMap[sid] = (topSectionsMap[sid] || 0) + 1
+      } else if (e.type === 'registration_submit') {
+        const key = e.payload?.title || e.payload?.auctionId || 'unknown'
+        topAuctionsMap[key] = (topAuctionsMap[key] || 0) + 1
+      }
+    })
+    const topSections = Object.entries(topSectionsMap).map(([label,count])=>({label, count})).sort((a,b)=>b.count-a.count).slice(0,8)
+    const topAuctions = Object.entries(topAuctionsMap).map(([label,count])=>({label, count})).sort((a,b)=>b.count-a.count).slice(0,8)
+    return { from, to, gran, events: ev, sum, buckets, topSections, topAuctions }
+  }, [analyticsTypes, analyticsTick, getRange])
 
   // CSV export for Registrations
   const escapeCsvLocal = (value) => {
@@ -391,6 +466,16 @@ export default function Admin() {
                   )}
                 </div>
                 <div className="mt-2">
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandAnalytics(v=>!v); setActiveFilter('analytics')}}>
+                    {expandAnalytics ? '▾' : '▸'} {L('Analys','Analytics')}
+                  </button>
+                  {expandAnalytics && (
+                    <div className="pl-3 flex flex-col gap-1">
+                      <a href="#admin-analytics" className="hover:underline" onClick={()=>setActiveFilter('admin-analytics')}>{L('Instrumentpanel','Dashboard')}</a>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2">
                   <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandSubscribers(v=>!v); setActiveFilter('subscribers')}}>
                     {expandSubscribers ? '▾' : '▸'} {L('Prenumeranter','Subscribers')}
                   </button>
@@ -412,6 +497,115 @@ export default function Admin() {
 
           {/* Content */}
           <div className="col-span-12 md:col-span-9 lg:col-span-9 grid gap-6">
+
+        {/* Analytics Dashboard */}
+        <Section id="admin-analytics" title={L('Analys','Analytics Dashboard')} visible={isSectionVisible('admin-analytics')}>
+          <div className="grid md:grid-cols-4 gap-3 mb-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Tidsintervall','Time range')}</label>
+              <select className="w-full border rounded px-3 py-2" value={analyticsRange} onChange={(e)=>setAnalyticsRange(e.target.value)}>
+                <option value="now">{L('Idag','Today')}</option>
+                <option value="week">{L('Denna vecka','This week')}</option>
+                <option value="month">{L('Denna månad','This month')}</option>
+                <option value="year">{L('Detta år','This year')}</option>
+                <option value="custom">{L('Anpassad','Custom')}</option>
+              </select>
+            </div>
+            {analyticsRange === 'custom' && (
+              <>
+                <div>
+                  <label className="block text-sm text-neutral-600 mb-1">{L('Från','From')}</label>
+                  <input type="date" className="w-full border rounded px-3 py-2" value={analyticsFrom} onChange={(e)=>setAnalyticsFrom(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm text-neutral-600 mb-1">{L('Till','To')}</label>
+                  <input type="date" className="w-full border rounded px-3 py-2" value={analyticsTo} onChange={(e)=>setAnalyticsTo(e.target.value)} />
+                </div>
+              </>
+            )}
+            <div className="flex items-end justify-end gap-2">
+              <button type="button" className="btn-outline" onClick={()=>analyticsExportAnalyticsCsv()}>{L('Exportera CSV','Export CSV')}</button>
+            </div>
+          </div>
+
+          <div className="section-card p-3 mb-4">
+            <div className="grid md:grid-cols-5 gap-3">
+              {([
+                { key: 'page_view', label: L('Sidvisningar','Page views') },
+                { key: 'section_view', label: L('Sektionsvisningar','Section views') },
+                { key: 'newsletter_subscribe', label: L('Prenumerationer','Subscriptions') },
+                { key: 'registration_submit', label: L('Anmälningar','Registrations') },
+                { key: 'rating_submit', label: L('Betyg','Ratings') },
+              ]).map(({key,label}) => (
+                <div key={key} className="p-3 rounded border bg-white">
+                  <label className="flex items-center justify-between text-sm text-neutral-600 mb-2">
+                    <span>{label}</span>
+                    <input type="checkbox" checked={!!analyticsTypes[key]} onChange={(e)=>setAnalyticsTypes((t)=>({ ...t, [key]: e.target.checked }))} />
+                  </label>
+                  <div className="text-2xl font-serif">{analyticsSelection.sum[key] || 0}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <h3 className="font-serif text-lg mb-2">{L('Händelser över tid','Events over time')}</h3>
+              <AnalyticsChart data={analyticsSelection.buckets} />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Toppsektioner','Top sections')}</h3>
+              <div className="section-card p-3">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-neutral-100 text-left">
+                      <th className="px-2 py-1">{L('Sektion','Section')}</th>
+                      <th className="px-2 py-1">{L('Antal','Count')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analyticsSelection.topSections.length === 0 && (
+                      <tr><td className="px-2 py-2 text-neutral-600" colSpan={2}>{L('Inga data ännu.','No data yet.')}</td></tr>
+                    )}
+                    {analyticsSelection.topSections.map((row, i) => (
+                      <tr key={i} className="border-t">
+                        <td className="px-2 py-1">{row.label}</td>
+                        <td className="px-2 py-1">{row.count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mt-6">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Toppauktioner (anmälningar)','Top auctions (registrations)')}</h3>
+              <div className="section-card p-3">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-neutral-100 text-left">
+                      <th className="px-2 py-1">{L('Auktion','Auction')}</th>
+                      <th className="px-2 py-1">{L('Antal','Count')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analyticsSelection.topAuctions.length === 0 && (
+                      <tr><td className="px-2 py-2 text-neutral-600" colSpan={2}>{L('Inga data ännu.','No data yet.')}</td></tr>
+                    )}
+                    {analyticsSelection.topAuctions.map((row, i) => (
+                      <tr key={i} className="border-t">
+                        <td className="px-2 py-1">{row.label}</td>
+                        <td className="px-2 py-1">{row.count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </Section>
 
         <Section id="admin-header" title={L('Header','Header')} visible={isSectionVisible('admin-header')}>
           <label className="flex items-center gap-2 mb-3">

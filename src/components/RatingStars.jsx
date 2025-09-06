@@ -1,4 +1,5 @@
 import React from 'react'
+import { trackRating } from '../services/analytics'
 
 // RatingStars component
 // Props:
@@ -63,6 +64,7 @@ export default function RatingStars({ targetType, targetId, className }) {
         setCount(Number(data.totalVotes || 0))
         setMine(score)
         try { localStorage.setItem(lsKey, String(score)) } catch {}
+        try { trackRating({ itemId: key, value: score }) } catch {}
         setMsg('Thanks for rating!')
       } else {
         setMsg('Could not submit rating. If this is production, ensure Cloudflare D1 is configured.')

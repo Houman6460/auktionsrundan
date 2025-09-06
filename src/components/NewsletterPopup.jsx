@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 import { addSubscriber } from '../services/newsletter'
+import { trackNewsletterSubscribe } from '../services/analytics'
 
 const SESSION_FLAG = 'ar_newsletter_popup_shown'
 
@@ -61,6 +62,7 @@ export default function NewsletterPopup() {
       return
     }
     addSubscriber(form)
+    try { trackNewsletterSubscribe({ email: form.email, name: form.name, tel: form.tel }) } catch {}
     setOpen(false)
     setForm({ name: '', email: '', tel: '' })
   }

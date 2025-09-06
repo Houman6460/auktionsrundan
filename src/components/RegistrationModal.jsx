@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { loadContent, saveContent } from '../services/store'
 import { addSubscriber } from '../services/newsletter'
+import { trackRegistrationSubmit } from '../services/analytics'
 
 export default function RegistrationModal({ open, onClose, auctionId, title }) {
   const { t, i18n } = useTranslation()
@@ -54,6 +55,7 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
       if (entry.email) {
         addSubscriber({ name: entry.name, email: entry.email, tel: entry.tel })
       }
+      try { trackRegistrationSubmit({ auctionId, title, email: entry.email, name: entry.name, tel: entry.tel, answers: entry.answers }) } catch {}
       setContent(current)
       onClose()
       setTimeout(() => alert(t('auctions.reg_thanks')), 50)
