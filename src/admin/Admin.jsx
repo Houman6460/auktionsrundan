@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { loadContent, saveContent, resetContent } from '../services/store'
 import { exportCsv, loadSubscribers } from '../services/newsletter'
 
-function Section({ id, title, children }) {
+function Section({ id, title, children, visible = true }) {
   return (
-    <section id={id} className="section-card p-5">
+    <section id={id} className={`section-card p-5 ${visible ? '' : 'hidden'}`}>
       <h2 className="font-serif text-2xl mb-4">{title}</h2>
       {children}
     </section>
@@ -105,6 +105,20 @@ export default function Admin() {
   const [expandEngagement, setExpandEngagement] = React.useState(true)
   const [expandIntegrations, setExpandIntegrations] = React.useState(true)
   const [expandSubscribers, setExpandSubscribers] = React.useState(true)
+  // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
+  const [activeFilter, setActiveFilter] = React.useState(null)
+  const groupSections = React.useMemo(() => ({
+    design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
+    marketing: ['admin-newsletter','admin-share','admin-chat'],
+    engagement: ['admin-registration','admin-ratings'],
+    integrations: ['admin-maps'],
+    subscribers: ['admin-subscribers'],
+  }), [])
+  const isSectionVisible = React.useCallback((id) => {
+    if (!activeFilter) return true
+    if (groupSections[activeFilter]) return groupSections[activeFilter].includes(id)
+    return activeFilter === id
+  }, [activeFilter, groupSections])
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
 
   const handleToggle = (path) => (e) => {
@@ -280,67 +294,70 @@ export default function Admin() {
         <div className="grid grid-cols-12 gap-6">
           {/* Sidebar */}
           <aside className="col-span-12 md:col-span-3 lg:col-span-3">
-            <div className="section-card p-4 sticky top-4 max-h-[80vh] overflow-auto">
+            <div className="section-card p-4 sticky top-0 max-h-[100vh] overflow-y-auto">
               <nav className="flex flex-col gap-2 text-sm">
                 <div>
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandDesign(v=>!v)}>
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandDesign(v=>!v); setActiveFilter('design')}}>
                     {expandDesign ? '▾' : '▸'} {L('Design','Design')}
                   </button>
                   {expandDesign && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-header" className="hover:underline">{L('Header','Header')}</a>
-                      <a href="#admin-hero" className="hover:underline">{L('Hero (Hem)','Hero (Home)')}</a>
-                      <a href="#admin-auctions" className="hover:underline">{L('Kommande Auktioner','Upcoming Auctions')}</a>
-                      <a href="#admin-items" className="hover:underline">{L('Auktionsvaror','Auction Items')}</a>
-                      <a href="#admin-terms" className="hover:underline">{L('Auktionsvillkor','Terms')}</a>
-                      <a href="#admin-instagram" className="hover:underline">{L('Instagram','Instagram')}</a>
-                      <a href="#admin-faq" className="hover:underline">FAQ</a>
-                      <a href="#admin-footer" className="hover:underline">{L('Footer','Footer')}</a>
+                      <a href="#admin-header" className="hover:underline" onClick={()=>setActiveFilter('admin-header')}>{L('Header','Header')}</a>
+                      <a href="#admin-hero" className="hover:underline" onClick={()=>setActiveFilter('admin-hero')}>{L('Hero (Hem)','Hero (Home)')}</a>
+                      <a href="#admin-auctions" className="hover:underline" onClick={()=>setActiveFilter('admin-auctions')}>{L('Kommande Auktioner','Upcoming Auctions')}</a>
+                      <a href="#admin-items" className="hover:underline" onClick={()=>setActiveFilter('admin-items')}>{L('Auktionsvaror','Auction Items')}</a>
+                      <a href="#admin-terms" className="hover:underline" onClick={()=>setActiveFilter('admin-terms')}>{L('Auktionsvillkor','Terms')}</a>
+                      <a href="#admin-instagram" className="hover:underline" onClick={()=>setActiveFilter('admin-instagram')}>{L('Instagram','Instagram')}</a>
+                      <a href="#admin-faq" className="hover:underline" onClick={()=>setActiveFilter('admin-faq')}>FAQ</a>
+                      <a href="#admin-footer" className="hover:underline" onClick={()=>setActiveFilter('admin-footer')}>{L('Footer','Footer')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandMarketing(v=>!v)}>
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandMarketing(v=>!v); setActiveFilter('marketing')}}>
                     {expandMarketing ? '▾' : '▸'} {L('Marknadsföring','Marketing')}
                   </button>
                   {expandMarketing && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-newsletter" className="hover:underline">{L('Nyhetsbrev','Newsletter')}</a>
-                      <a href="#admin-share" className="hover:underline">{L('Dela (Social)','Share (Social)')}</a>
-                      <a href="#admin-chat" className="hover:underline">{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
+                      <a href="#admin-newsletter" className="hover:underline" onClick={()=>setActiveFilter('admin-newsletter')}>{L('Nyhetsbrev','Newsletter')}</a>
+                      <a href="#admin-share" className="hover:underline" onClick={()=>setActiveFilter('admin-share')}>{L('Dela (Social)','Share (Social)')}</a>
+                      <a href="#admin-chat" className="hover:underline" onClick={()=>setActiveFilter('admin-chat')}>{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandEngagement(v=>!v)}>
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandEngagement(v=>!v); setActiveFilter('engagement')}}>
                     {expandEngagement ? '▾' : '▸'} {L('Engagemang','Engagement')}
                   </button>
                   {expandEngagement && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-registration" className="hover:underline">{L('Registrering','Registration')}</a>
-                      <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
+                      <a href="#admin-registration" className="hover:underline" onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
+                      <a href="#admin-ratings" className="hover:underline" onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandIntegrations(v=>!v)}>
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandIntegrations(v=>!v); setActiveFilter('integrations')}}>
                     {expandIntegrations ? '▾' : '▸'} {L('Integrationer','Integrations')}
                   </button>
                   {expandIntegrations && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
+                      <a href="#admin-maps" className="hover:underline" onClick={()=>setActiveFilter('admin-maps')}>{L('Google Maps','Google Maps')}</a>
                     </div>
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandSubscribers(v=>!v)}>
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>{setExpandSubscribers(v=>!v); setActiveFilter('subscribers')}}>
                     {expandSubscribers ? '▾' : '▸'} {L('Prenumeranter','Subscribers')}
                   </button>
                   {expandSubscribers && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-subscribers" className="hover:underline">{L('Prenumeranter','Subscribers')}</a>
+                      <a href="#admin-subscribers" className="hover:underline" onClick={()=>setActiveFilter('admin-subscribers')}>{L('Prenumeranter','Subscribers')}</a>
                     </div>
                   )}
+                </div>
+                <div className="mt-3">
+                  <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)}>{L('Visa alla','Show all')}</button>
                 </div>
                 <hr className="my-3" />
                 <button className="btn-primary w-full" onClick={save}>{L('Spara','Save')}</button>
@@ -352,7 +369,7 @@ export default function Admin() {
           {/* Content */}
           <div className="col-span-12 md:col-span-9 lg:col-span-9 grid gap-6">
 
-        <Section id="admin-header" title={L('Header','Header')}>
+        <Section id="admin-header" title={L('Header','Header')} visible={isSectionVisible('admin-header')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
             <span>{L('Visa header','Show header')}</span>
@@ -403,7 +420,7 @@ export default function Admin() {
         {/* Registration moved to Engagement group below (after Ratings) */}
 
         {/* Marketing: Newsletter, Share, Chat */}
-        <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')}>
+        <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')} visible={isSectionVisible('admin-newsletter')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera popup','Enable popup')}</span>
@@ -448,7 +465,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-share" title={L('Dela (Social)','Share (Social)')}>
+        <Section id="admin-share" title={L('Dela (Social)','Share (Social)')} visible={isSectionVisible('admin-share')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.share?.enabled} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.enabled=e.target.checked; setData(n)}} />
             <span>{L('Aktivera delningsmeny','Enable share menu')}</span>
@@ -489,7 +506,7 @@ export default function Admin() {
           </p>
         </Section>
 
-        <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')}>
+        <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')} visible={isSectionVisible('admin-chat')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.chat?.enabled} onChange={(e)=>{const n={...data}; n.chat = n.chat||{}; n.chat.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera WhatsApp-chat','Enable WhatsApp chat')}</span>
@@ -524,7 +541,7 @@ export default function Admin() {
 
         {/* Newsletter moved above into Marketing group */}
 
-        <Section id="admin-faq" title="FAQ">
+        <Section id="admin-faq" title="FAQ" visible={isSectionVisible('admin-faq')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.faq?.visible} onChange={(e)=>{const n={...data}; n.faq = n.faq||{}; n.faq.visible = e.target.checked; setData(n)}} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -560,7 +577,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')}>
+        <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')} visible={isSectionVisible('admin-hero')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
             <span>{L('Visa hero','Show hero')}</span>
@@ -599,7 +616,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-auctions" title={L('Kommande Auktioner','Upcoming Auctions')}>
+        <Section id="admin-auctions" title={L('Kommande Auktioner','Upcoming Auctions')} visible={isSectionVisible('admin-auctions')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -632,7 +649,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-items" title={L('Auktionsvaror','Auction Items')}>
+        <Section id="admin-items" title={L('Auktionsvaror','Auction Items')} visible={isSectionVisible('admin-items')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -643,7 +660,7 @@ export default function Admin() {
         </Section>
 
         {/* Engagement: Registration then Ratings */}
-        <Section id="admin-registration" title={L('Registrering','Registration')}>
+        <Section id="admin-registration" title={L('Registrering','Registration')} visible={isSectionVisible('admin-registration')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.registration?.enabled} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.enabled=e.target.checked; setData(n)}} />
             <span>{L('Aktivera registrering','Enable registration')}</span>
@@ -719,7 +736,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-ratings" title={L('Betyg','Ratings')}>
+        <Section id="admin-ratings" title={L('Betyg','Ratings')} visible={isSectionVisible('admin-ratings')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.ratings?.enabled} onChange={(e)=>{const n={...data}; n.ratings = n.ratings||{}; n.ratings.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera betygssystem (stjärnor)','Enable ratings (stars)')}</span>
@@ -729,7 +746,7 @@ export default function Admin() {
           </p>
         </Section>
 
-        <Section id="admin-terms" title={L('Auktionsvillkor','Terms')}>
+        <Section id="admin-terms" title={L('Auktionsvillkor','Terms')} visible={isSectionVisible('admin-terms')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -742,7 +759,7 @@ export default function Admin() {
           ))}
         </Section>
 
-        <Section id="admin-instagram" title={L('Instagram','Instagram')}>
+        <Section id="admin-instagram" title={L('Instagram','Instagram')} visible={isSectionVisible('admin-instagram')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -759,7 +776,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-maps" title={L('Google Maps','Google Maps')}>
+        <Section id="admin-maps" title={L('Google Maps','Google Maps')} visible={isSectionVisible('admin-maps')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.maps?.visible} onChange={handleToggle(['maps','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -778,7 +795,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-footer" title={L('Footer','Footer')}>
+        <Section id="admin-footer" title={L('Footer','Footer')} visible={isSectionVisible('admin-footer')}>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
             <span>{L('Visa footer','Show footer')}</span>
@@ -833,7 +850,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-subscribers" title={L('Prenumeranter','Subscribers')}>
+        <Section id="admin-subscribers" title={L('Prenumeranter','Subscribers')} visible={isSectionVisible('admin-subscribers')}>
           <div className="flex items-center justify-between mb-3">
             <div className="text-sm text-neutral-600">{L('Totalt','Total')}: {subscribers.length}</div>
             <button type="button" className="btn-outline" onClick={exportCsv}>{L('Exportera CSV','Export CSV')}</button>
