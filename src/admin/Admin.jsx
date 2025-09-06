@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { loadContent, saveContent, resetContent } from '../services/store'
 import { exportCsv, loadSubscribers } from '../services/newsletter'
 import AnalyticsChart from '../components/AnalyticsChart.jsx'
+import LiveActionAdmin from './LiveActionAdmin.jsx'
 import Sparkline from '../components/Sparkline.jsx'
 import { queryEvents as analyticsQueryEvents, summarize as analyticsSummarize, bucketize as analyticsBucketize, exportAnalyticsCsv as analyticsExportAnalyticsCsv, exportEventsCsv as analyticsExportEventsCsv, previousRange as analyticsPreviousRange } from '../services/analytics'
 
@@ -117,7 +118,7 @@ export default function Admin() {
   const groupSections = React.useMemo(() => ({
     design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
     marketing: ['admin-newsletter','admin-share','admin-chat'],
-    engagement: ['admin-registration','admin-ratings'],
+    engagement: ['admin-registration','admin-ratings','admin-liveaction'],
     integrations: ['admin-maps'],
     analytics: ['admin-analytics'],
     subscribers: ['admin-subscribers'],
@@ -503,6 +504,7 @@ export default function Admin() {
                     <div className="pl-3 flex flex-col gap-1">
                       <a href="#admin-registration" className="hover:underline" onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
                       <a href="#admin-ratings" className="hover:underline" onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
+                      <a href="#admin-liveaction" className="hover:underline" onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
                     </div>
                   )}
                 </div>
@@ -1160,6 +1162,11 @@ export default function Admin() {
           <p className="text-sm text-neutral-600">
             {L('När detta är aktiverat visas stjärnbetyg i sektionen Kommande Auktioner och för varje auktionsvara. Backend använder Cloudflare D1.','When enabled, star ratings appear in Upcoming Auctions and for each Auction Item. Backend uses Cloudflare D1.')}
           </p>
+        </Section>
+
+        {/* Live Action (Admin) */}
+        <Section id="admin-liveaction" title={L('Action (Live)','Action (Live)')} visible={isSectionVisible('admin-liveaction')}>
+          <LiveActionAdmin data={data} setData={setData} L={L} />
         </Section>
 
         <Section id="admin-terms" title={L('Auktionsvillkor','Terms')} visible={isSectionVisible('admin-terms')}>

@@ -12,6 +12,8 @@ import Terms from './sections/Terms.jsx'
 import InstagramFeed from './sections/InstagramFeed.jsx'
 import FAQ from './sections/FAQ.jsx'
 import FAQPreview from './sections/FAQPreview.jsx'
+import LiveAction from './sections/LiveAction.jsx'
+import ActionsHistory from './sections/ActionsHistory.jsx'
 import Footer from './components/Footer.jsx'
 import Admin from './admin/Admin.jsx'
 import ChatWidget from './components/ChatWidget.jsx'
@@ -130,6 +132,33 @@ export default function App() {
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.items')}</h2>
                   <Items />
+                </div>
+              </section>
+              <Footer />
+            </main>
+          }
+        />
+        <Route
+          path="/actions"
+          element={
+            <main>
+              <section className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-16">
+                  <h2 className="text-3xl font-serif mb-6">Action-historik</h2>
+                  <ActionsHistory />
+                </div>
+              </section>
+              <Footer />
+            </main>
+          }
+        />
+        <Route
+          path="/action/:id"
+          element={
+            <main>
+              <section className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-16">
+                  <LiveAction />
                 </div>
               </section>
               <Footer />
