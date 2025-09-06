@@ -1,3 +1,7 @@
+/* Overlay targets should be block to create a stable box for absolute positioning */
+.tooltip-root [data-tip][data-tip-pos="overlay"] {
+  display: block;
+}
 /* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
@@ -6,6 +10,11 @@
 /* Base typography */
 :root {
   color-scheme: light;
+}
+
+/* Make each tooltip target a positioning context */
+.tooltip-root [data-tip] {
+  position: relative;
 }
 
 body {
@@ -186,8 +195,10 @@ html, body {
   width: 100%;
   transform: none;
   height: 100%;
-  display: flex;
-  align-items: center;
+  display: block;
+  padding-top: 0;
+  padding-bottom: 0;
+  box-shadow: none;
 }
 .tooltip-root [data-tip][data-tip-pos="overlay"]::before {
   display: none;
