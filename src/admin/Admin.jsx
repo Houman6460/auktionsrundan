@@ -7,21 +7,34 @@ import LiveActionAdmin from './LiveActionAdmin.jsx'
 import Sparkline from '../components/Sparkline.jsx'
 import { queryEvents as analyticsQueryEvents, summarize as analyticsSummarize, bucketize as analyticsBucketize, exportAnalyticsCsv as analyticsExportAnalyticsCsv, exportEventsCsv as analyticsExportEventsCsv, previousRange as analyticsPreviousRange } from '../services/analytics'
 
+// Context for section tour controls
+const TourCtx = React.createContext({ startSectionTour: () => {}, sectionTourEnabled: true })
+
 function Section({ id, title, children, visible = true, help }) {
   const [showHelp, setShowHelp] = React.useState(false)
+  const tour = React.useContext(TourCtx)
   return (
     <section id={id} className={`section-card p-5 ${visible ? '' : 'hidden'}`}>
       <div className="flex items-start justify-between gap-3 mb-2">
         <h2 className="font-serif text-2xl">{title}</h2>
         {help ? (
-          <button
-            type="button"
-            className="btn-outline text-xs whitespace-nowrap"
-            onClick={()=>setShowHelp(v=>!v)}
-            aria-expanded={showHelp}
-            aria-controls={`${id}-help`}
-            title="Help / Hjälp"
-          >{showHelp ? '✕ ' : '❓ '}Help</button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="btn-outline text-xs whitespace-nowrap"
+              onClick={()=>setShowHelp(v=>!v)}
+              aria-expanded={showHelp}
+              aria-controls={`${id}-help`}
+              title="Help / Hjälp"
+            >{showHelp ? '✕ ' : '❓ '}Help</button>
+            <button
+              type="button"
+              className={`btn-outline text-xs whitespace-nowrap ${tour.sectionTourEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}
+              onClick={()=> tour.startSectionTour(id, help, title)}
+              disabled={!tour.sectionTourEnabled}
+              title={tour.sectionTourEnabled ? 'Play walkthrough' : 'Section tour disabled'}
+            >▶ Play</button>
+          </div>
         ) : null}
       </div>
       {help && showHelp && (
@@ -130,6 +143,11 @@ export default function Admin() {
   const [expandAnalytics, setExpandAnalytics] = React.useState(true)
   const [expandSubscribers, setExpandSubscribers] = React.useState(true)
   const [tipsEnabled, setTipsEnabled] = React.useState(() => localStorage.getItem('ar_admin_tooltips') !== '0')
+  // Tours: general (on login) and per-section enable toggles
+  const [generalTourEnabled, setGeneralTourEnabled] = React.useState(() => localStorage.getItem('ar_admin_tour_general') !== '0')
+  const [sectionTourEnabled, setSectionTourEnabled] = React.useState(() => localStorage.getItem('ar_admin_tour_section') !== '0')
+  const [tour, setTour] = React.useState({ open: false, title: '', steps: [], idx: 0 })
+  const tourShownRef = React.useRef(false)
   const rootRef = React.useRef(null)
   // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
   const [activeFilter, setActiveFilter] = React.useState(null)
@@ -147,6 +165,70 @@ export default function Admin() {
     return activeFilter === id
   }, [activeFilter, groupSections])
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
+
+  // Tour helpers
+  const getGeneralTourSteps = React.useCallback(() => ([
+    L('Välkommen till Adminpanelen. Använd sidofältet till vänster för att navigera mellan sektioner.','Welcome to the Admin panel. Use the left sidebar to navigate between sections.'),
+    L('Varje sektion har en Hjälp‑knapp (❓) och en Spela‑knapp (▶) för en snabb genomgång.','Each section has a Help (❓) button and a Play (▶) button for a quick walkthrough.'),
+    L('Gör dina ändringar och klicka på Spara högst upp för att spara dem.','Make your edits and click Save at the top to store them.'),
+    L('Använd Visa webbplatsen för att öppna publika sidan i ny flik och kontrollera resultatet.','Use View site to open the public page in a new tab and verify the result.'),
+    L('Du kan när som helst stänga av/aktivera tips och genomgångar i sidofältet.','You can enable/disable tips and tours anytime from the sidebar toggles.'),
+  ]), [currentLang])
+
+  const getSectionSteps = React.useCallback((id, helpText) => {
+    const steps = []
+    if (helpText && typeof helpText === 'string') steps.push(helpText)
+    steps.push(L('När du är klar i denna sektion, glöm inte att klicka Spara.','When you finish in this section, remember to click Save.'))
+    return steps
+  }, [currentLang])
+
+  const startGeneralTour = React.useCallback(() => {
+    if (!generalTourEnabled) return
+    setTour({ open: true, title: L('Snabb genomgång','Quick Walkthrough'), steps: getGeneralTourSteps(), idx: 0 })
+  }, [generalTourEnabled, getGeneralTourSteps, currentLang])
+
+  const startSectionTour = React.useCallback((id, helpText, sectionTitle) => {
+    if (!sectionTourEnabled) return
+    setTour({ open: true, title: sectionTitle || L('Sektion','Section'), steps: getSectionSteps(id, helpText), idx: 0 })
+  }, [sectionTourEnabled, getSectionSteps, currentLang])
+
+  // Auto-run general tour on login if enabled (once per mount)
+  React.useEffect(() => {
+    if (authed && generalTourEnabled && !tourShownRef.current) {
+      tourShownRef.current = true
+      startGeneralTour()
+    }
+  }, [authed, generalTourEnabled, startGeneralTour])
+
+  // Tour modal component
+  function TourModal({ open, title, steps, idx, onClose, onNext, onPrev }) {
+    if (!open) return null
+    const isLast = idx >= (steps.length - 1)
+    return (
+      <div className="fixed inset-0 bg-black/50 z-[100000] flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <h3 className="font-serif text-xl">{title}</h3>
+            <button className="btn-outline text-sm" onClick={onClose} title={L('Stäng','Close')}>✕</button>
+          </div>
+          <div className="text-sm text-neutral-800 whitespace-pre-wrap min-h-[4rem]">
+            {steps[idx]}
+          </div>
+          <div className="flex items-center justify-between mt-4">
+            <span className="text-xs text-neutral-500">{idx+1} / {steps.length}</span>
+            <div className="flex items-center gap-2">
+              <button className={`btn-outline text-sm ${idx === 0 ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={onPrev} disabled={idx===0}>{L('Bakåt','Back')}</button>
+              {!isLast ? (
+                <button className="btn-primary text-sm" onClick={onNext}>{L('Nästa','Next')}</button>
+              ) : (
+                <button className="btn-primary text-sm" onClick={onClose}>{L('Klar','Finish')}</button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Small delta badge component
   function Delta({ now = 0, prev = 0 }) {
@@ -724,6 +806,7 @@ export default function Admin() {
   }
 
   return (
+    <TourCtx.Provider value={{ startSectionTour, sectionTourEnabled }}>
     <div ref={rootRef} className={`min-h-screen bg-vintage-cream tooltip-root ${tipsEnabled ? '' : 'tips-off'}`}>
       <header className="border-b bg-white/80 backdrop-blur">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -838,6 +921,18 @@ export default function Admin() {
                   <label className="flex items-center justify-between gap-2" title={L('Slå på/av hjälptooltips i adminpanelen','Toggle help tooltips in the admin panel')} data-tip-pos="overlay" data-tip-align="start">
                     <span>{L('Hjälp‑tooltips','Help tooltips')}</span>
                     <Toggle id="tips-toggle" checked={!!tipsEnabled} onChange={(e)=>{ const v=e.target.checked; setTipsEnabled(v); localStorage.setItem('ar_admin_tooltips', v ? '1' : '0') }} title={L('Slå på/av hjälptooltips','Toggle help tooltips')} />
+                  </label>
+                </div>
+                <div className="mt-2">
+                  <label className="flex items-center justify-between gap-2" title={L('Visa generell genomgång vid inloggning','Show general tour on login')} data-tip-pos="overlay" data-tip-align="start">
+                    <span>{L('Allmän genomgång','General tour')}</span>
+                    <Toggle id="tour-general-toggle" checked={!!generalTourEnabled} onChange={(e)=>{ const v=e.target.checked; setGeneralTourEnabled(v); localStorage.setItem('ar_admin_tour_general', v ? '1' : '0') }} title={L('Aktivera/Avaktivera allmän genomgång','Enable/Disable general tour')} />
+                  </label>
+                </div>
+                <div className="mt-2">
+                  <label className="flex items-center justify-between gap-2" title={L('Aktivera genomgångar per sektion','Enable per‑section tours')} data-tip-pos="overlay" data-tip-align="start">
+                    <span>{L('Sektion‑genomgångar','Section tours')}</span>
+                    <Toggle id="tour-section-toggle" checked={!!sectionTourEnabled} onChange={(e)=>{ const v=e.target.checked; setSectionTourEnabled(v); localStorage.setItem('ar_admin_tour_section', v ? '1' : '0') }} title={L('Aktivera/Avaktivera sektion‑genomgångar','Enable/Disable section tours')} />
                   </label>
                 </div>
                 <div className="mt-3">
@@ -1619,6 +1714,17 @@ export default function Admin() {
         {/* end outer grid container */}
         </div>
       </main>
+      {/* Tour modal */}
+      <TourModal
+        open={tour.open}
+        title={tour.title}
+        steps={tour.steps}
+        idx={tour.idx}
+        onClose={()=> setTour(s => ({ ...s, open: false }))}
+        onNext={()=> setTour(s => ({ ...s, idx: Math.min(s.idx + 1, (s.steps.length - 1)) }))}
+        onPrev={()=> setTour(s => ({ ...s, idx: Math.max(s.idx - 1, 0) }))}
+      />
     </div>
+    </TourCtx.Provider>
   )
 }
