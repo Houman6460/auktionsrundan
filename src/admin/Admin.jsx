@@ -383,13 +383,87 @@ export default function Admin() {
     }
   }, [authed, generalTourEnabled, startGeneralTour])
 
-  // Tour modal component
-  function TourModal({ open, title, steps, idx, onClose, onNext, onPrev }) {
+  // Tour modal component (anchored near current target to avoid covering it)
+  function TourModal({ open, title, steps, idx, onClose, onNext, onPrev, getTarget }) {
+    const panelRef = React.useRef(null)
+    const [pos, setPos] = React.useState({ left: 12, top: 12, placement: 'bottom' })
+    const isLast = idx >= ((steps||[]).length - 1)
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+    const positionPanel = React.useCallback(() => {
+      try {
+        if (!open) return
+        const target = typeof getTarget === 'function' ? getTarget(idx) : null
+        const vw = window.innerWidth || document.documentElement.clientWidth
+        const vh = window.innerHeight || document.documentElement.clientHeight
+        // Measure panel
+        const el = panelRef.current
+        let pw = 360, ph = 140
+        if (el) {
+          const r0 = el.getBoundingClientRect()
+          pw = r0.width || pw
+          ph = r0.height || ph
+        }
+        const margin = 12
+        if (target && typeof target.getBoundingClientRect === 'function') {
+          const tr = target.getBoundingClientRect()
+          // Try below
+          if (tr.bottom + margin + ph <= vh) {
+            const left = clamp(tr.left, 8, vw - pw - 8)
+            const top = tr.bottom + margin
+            setPos({ left, top, placement: 'bottom' })
+            return
+          }
+          // Try above
+          if (tr.top - margin - ph >= 0) {
+            const left = clamp(tr.left, 8, vw - pw - 8)
+            const top = tr.top - margin - ph
+            setPos({ left, top, placement: 'top' })
+            return
+          }
+          // Try right
+          if (tr.right + margin + pw <= vw) {
+            const left = tr.right + margin
+            const top = clamp(tr.top, 8, vh - ph - 8)
+            setPos({ left, top, placement: 'right' })
+            return
+          }
+          // Try left
+          if (tr.left - margin - pw >= 0) {
+            const left = tr.left - margin - pw
+            const top = clamp(tr.top, 8, vh - ph - 8)
+            setPos({ left, top, placement: 'left' })
+            return
+          }
+        }
+        // Fallback: bottom area, centered
+        const left = clamp((vw - pw) / 2, 8, vw - pw - 8)
+        const top = clamp(vh - ph - 20, 8, vh - ph - 8)
+        setPos({ left, top, placement: 'bottom' })
+      } catch {}
+    }, [open, getTarget, idx])
+
+    React.useEffect(() => { positionPanel() }, [positionPanel])
+    React.useEffect(() => {
+      if (!open) return
+      const handler = () => positionPanel()
+      window.addEventListener('resize', handler)
+      window.addEventListener('scroll', handler, true)
+      return () => {
+        window.removeEventListener('resize', handler)
+        window.removeEventListener('scroll', handler, true)
+      }
+    }, [open, positionPanel])
+
     if (!open) return null
-    const isLast = idx >= (steps.length - 1)
     return (
-      <div className="fixed inset-0 bg-transparent z-[100000] flex items-center justify-center p-4 pointer-events-none">
-        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 pointer-events-auto">
+      <div className="fixed inset-0 bg-transparent z-[100000] pointer-events-none">
+        <div
+          ref={panelRef}
+          className="bg-white rounded-lg shadow-xl max-w-lg w-[min(95vw,640px)] p-5 pointer-events-auto"
+          data-pos={pos.placement}
+          style={{ position: 'fixed', left: `${Math.round(pos.left)}px`, top: `${Math.round(pos.top)}px` }}
+        >
           <div className="flex items-start justify-between gap-3 mb-3">
             <h3 className="font-serif text-xl">{title}</h3>
             <button className="btn-outline text-sm" onClick={onClose} title={L('Stäng','Close')}>✕</button>
@@ -401,7 +475,7 @@ export default function Admin() {
             <span className="text-xs text-neutral-500">{idx+1} / {steps.length}</span>
             <div className="flex items-center gap-2">
               <button className={`btn-outline text-sm ${idx === 0 ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={onPrev} disabled={idx===0}>{L('Bakåt','Back')}</button>
-              {!isLast ? (
+              {idx < (steps.length - 1) ? (
                 <button className="btn-primary text-sm" onClick={onNext}>{L('Nästa','Next')}</button>
               ) : (
                 <button className="btn-primary text-sm" onClick={onClose}>{L('Klar','Finish')}</button>
@@ -1960,6 +2034,7 @@ export default function Admin() {
         title={tour.title}
         steps={tour.steps}
         idx={tour.idx}
+        getTarget={tourGetTarget}
         onClose={()=> setTour(s => ({ ...s, open: false }))}
         onNext={()=> setTour(s => ({ ...s, idx: Math.min(s.idx + 1, (s.steps.length - 1)) }))}
         onPrev={()=> setTour(s => ({ ...s, idx: Math.max(s.idx - 1, 0) }))}
