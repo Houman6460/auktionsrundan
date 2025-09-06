@@ -121,6 +121,50 @@ export default function Admin() {
   }, [activeFilter, groupSections])
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
 
+  // CSV export for Registrations
+  const escapeCsvLocal = (value) => {
+    const str = String(value ?? '')
+    return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str
+  }
+  const exportRegistrationCsv = React.useCallback(() => {
+    try {
+      const subs = data.registration?.submissions || {}
+      const rows = []
+      Object.entries(subs).forEach(([auctionId, arr]) => {
+        ;(arr || []).forEach((it) => {
+          rows.push({
+            auctionId,
+            title: it.title || '',
+            name: it.name || '',
+            email: it.email || '',
+            tel: it.tel || '',
+            notes: it.notes || '',
+            lang: it.lang || '',
+            answers: it.answers ? JSON.stringify(it.answers) : '',
+            timestamp: new Date(it.ts || 0).toISOString(),
+          })
+        })
+      })
+      const headers = ['auctionId','title','name','email','tel','notes','lang','answers','timestamp']
+      const csv = [
+        headers.join(','),
+        ...rows.map((r) => headers.map((h) => escapeCsvLocal(r[h])).join(','))
+      ].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'registrations.csv'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export registrations CSV failed', err)
+      alert(L('Kunde inte exportera CSV.','Could not export CSV.'))
+    }
+  }, [data])
+
   const handleToggle = (path) => (e) => {
     const next = { ...data }
     let cur = next
@@ -705,7 +749,10 @@ export default function Admin() {
           </div>
 
           <div className="mt-6">
-            <h3 className="font-serif text-lg mb-2">{L('Inkomna anmälningar','Submissions')}</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-serif text-lg">{L('Inkomna anmälningar','Submissions')}</h3>
+              <button type="button" className="btn-outline text-sm" onClick={exportRegistrationCsv}>{L('Exportera CSV','Export CSV')}</button>
+            </div>
             <div className="section-card p-3 overflow-auto">
               <table className="w-full text-sm">
                 <thead>

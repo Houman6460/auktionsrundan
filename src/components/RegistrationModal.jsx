@@ -2,6 +2,7 @@ import React from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { loadContent, saveContent } from '../services/store'
+import { addSubscriber } from '../services/newsletter'
 
 export default function RegistrationModal({ open, onClose, auctionId, title }) {
   const { t, i18n } = useTranslation()
@@ -49,6 +50,10 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
       reg.submissions[auctionId].push(entry)
       current.registration = { ...current.registration, ...reg }
       saveContent(current)
+      // Also add to newsletter subscribers list
+      if (entry.email) {
+        addSubscriber({ name: entry.name, email: entry.email, tel: entry.tel })
+      }
       setContent(current)
       onClose()
       setTimeout(() => alert(t('auctions.reg_thanks')), 50)
