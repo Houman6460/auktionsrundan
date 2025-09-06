@@ -15,9 +15,12 @@ function Section({ id, title, children, visible = true }) {
 }
 
 // Accessible toggle switch built on a native checkbox using Tailwind's peer utilities
-function Toggle({ checked, onChange, disabled, id }) {
+function Toggle({ checked, onChange, disabled, id, size = 'md', title }) {
+  const S = size === 'sm'
+    ? { wrap: 'w-8 h-4', knob: 'w-3 h-3', move: 'peer-checked:translate-x-3', inset: 'top-0.5 left-0.5' }
+    : { wrap: 'w-10 h-6', knob: 'w-4 h-4', move: 'peer-checked:translate-x-4', inset: 'top-1 left-1' }
   return (
-    <label htmlFor={id} className={`inline-flex items-center cursor-pointer ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
+    <label htmlFor={id} title={title} className={`inline-flex items-center cursor-pointer ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
       <input
         id={id}
         type="checkbox"
@@ -26,8 +29,8 @@ function Toggle({ checked, onChange, disabled, id }) {
         onChange={onChange}
         disabled={disabled}
       />
-      <div className="relative w-10 h-6 rounded-full bg-neutral-300 transition-colors peer-checked:bg-earth-dark peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-earth-dark/30">
-        <span className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"></span>
+      <div className={`relative ${S.wrap} rounded-full bg-neutral-300 transition-colors peer-checked:bg-earth-dark peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-earth-dark/30`}>
+        <span className={`absolute ${S.inset} ${S.knob} bg-white rounded-full shadow transition-transform ${S.move}`}></span>
       </div>
     </label>
   )
@@ -528,6 +531,24 @@ export default function Admin() {
             </div>
           </div>
 
+          {/* Event filters row */}
+          <div className="section-card p-3 mb-4">
+            <div className="flex flex-wrap items-center gap-4">
+              {([
+                { key: 'page_view', label: L('Sidvisningar','Page views') },
+                { key: 'section_view', label: L('Sektionsvisningar','Section views') },
+                { key: 'newsletter_subscribe', label: L('Prenumerationer','Subscriptions') },
+                { key: 'registration_submit', label: L('Anmälningar','Registrations') },
+                { key: 'rating_submit', label: L('Betyg','Ratings') },
+              ]).map(({key,label}) => (
+                <label key={key} className="inline-flex items-center gap-2 text-sm text-neutral-700">
+                  <Toggle size="sm" checked={!!analyticsTypes[key]} onChange={(e)=>setAnalyticsTypes((t)=>({ ...t, [key]: e.target.checked }))} />
+                  <span className="truncate">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div className="section-card p-3 mb-4">
             <div className="grid md:grid-cols-5 gap-3">
               {([
@@ -537,11 +558,8 @@ export default function Admin() {
                 { key: 'registration_submit', label: L('Anmälningar','Registrations') },
                 { key: 'rating_submit', label: L('Betyg','Ratings') },
               ]).map(({key,label}) => (
-                <div key={key} className="p-3 rounded border bg-white">
-                  <label className="flex items-center justify-between text-sm text-neutral-600 mb-2">
-                    <span>{label}</span>
-                    <Toggle checked={!!analyticsTypes[key]} onChange={(e)=>setAnalyticsTypes((t)=>({ ...t, [key]: e.target.checked }))} />
-                  </label>
+                <div key={key} className="p-3 rounded border bg-white min-h-[88px] flex flex-col justify-between">
+                  <div className="text-xs text-neutral-700 truncate">{label}</div>
                   <div className="text-2xl font-serif">{analyticsSelection.sum[key] || 0}</div>
                 </div>
               ))}
@@ -551,7 +569,9 @@ export default function Admin() {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <h3 className="font-serif text-lg mb-2">{L('Händelser över tid','Events over time')}</h3>
-              <AnalyticsChart data={analyticsSelection.buckets} />
+              <div className="section-card p-3">
+                <AnalyticsChart data={analyticsSelection.buckets} />
+              </div>
             </div>
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Toppsektioner','Top sections')}</h3>
@@ -734,7 +754,7 @@ export default function Admin() {
           <div className="grid md:grid-cols-5 gap-4 mt-4">
             {['facebook','twitter','linkedin','telegram','copy'].map((k)=> (
               <label key={k} className="flex items-center gap-2">
-                <input type="checkbox" checked={data.share?.platforms?.[k]!==false} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.platforms = { ...(n.share.platforms||{}), [k]: e.target.checked }; setData(n)}} />
+                <Toggle size="sm" checked={data.share?.platforms?.[k]!==false} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.platforms = { ...(n.share.platforms||{}), [k]: e.target.checked }; setData(n)}} />
                 <span className="capitalize">{k}</span>
               </label>
             ))}

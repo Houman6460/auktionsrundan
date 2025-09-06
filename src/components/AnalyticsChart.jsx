@@ -17,7 +17,10 @@ export default function AnalyticsChart({ data, color = '#8B5E34' }) {
   }
   return (
     <div className="w-full">
-      <div className="h-48 md:h-64 flex items-end gap-2 border-b border-neutral-200 px-2">
+      <div
+        className="h-48 md:h-64 flex items-end gap-2 border-b border-neutral-200 px-2"
+        style={{ backgroundImage: 'repeating-linear-gradient(to top, rgba(0,0,0,0.04), rgba(0,0,0,0.04) 1px, transparent 1px, transparent 24px)' }}
+      >
         {rows.map((d, i) => (
           <div key={i} className="flex-1 flex flex-col items-center justify-end">
             <div
