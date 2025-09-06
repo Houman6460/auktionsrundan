@@ -486,15 +486,10 @@ export default function Admin() {
         // Only use viewport-fixed layout in constrained containers (sidebar) or forced right-placement
         const withinSidebar = !!el.closest('aside')
         const shouldFixed = withinSidebar
-        // For explicit overlay mode, always use local positioning (no fixed), so it renders exactly over the item
+        // For explicit overlay mode, position using viewport-fixed coords so it renders over the page (not clipped)
         if (pref === 'overlay') {
-          el.removeAttribute('data-tip-fixed')
-          el.removeAttribute('data-tip-pos-active')
-          el.style.removeProperty('--tip-left')
-          el.style.removeProperty('--tip-top')
-          el.style.removeProperty('--tip-width')
-          el.style.removeProperty('--tip-height')
-          el.removeAttribute('data-tip-cover')
+          // Overlay positioning handled via body-level portal
+          positionOverlayPortal(el)
           return
         }
         if (!shouldFixed) {
@@ -542,16 +537,71 @@ export default function Admin() {
         el.setAttribute('data-tip-fixed', '1')
       } catch {}
     }
+    // Body-level portal for overlay tooltips (avoids clipping by containers)
+    let portal = null
+    const ensurePortal = () => {
+      if (portal && document.body.contains(portal)) return portal
+      portal = document.createElement('div')
+      portal.className = 'admin-tooltip-portal'
+      portal.setAttribute('role', 'tooltip')
+      portal.style.display = 'none'
+      document.body.appendChild(portal)
+      return portal
+    }
+    const positionOverlayPortal = (el) => {
+      try {
+        const p = ensurePortal()
+        const txt = el.__tipTitle || el.getAttribute('title') || ''
+        p.textContent = txt
+        // Apply theme colors from rootRef CSS variables if available
+        try {
+          const csRoot = getComputedStyle(root)
+          const bg = csRoot.getPropertyValue('--tooltip-bg') || ''
+          const fg = csRoot.getPropertyValue('--tooltip-fg') || ''
+          if (bg.trim()) p.style.background = bg
+          if (fg.trim()) p.style.color = fg
+        } catch {}
+        // Measure and compute fixed position using the portal element itself for accuracy
+        const rect = el.getBoundingClientRect()
+        const vw = window.innerWidth || document.documentElement.clientWidth
+        const vh = window.innerHeight || document.documentElement.clientHeight
+        const margin = 8
+        // Temporarily show offscreen to measure
+        p.style.left = '-9999px'
+        p.style.top = '0'
+        p.style.transform = 'none'
+        p.style.display = 'block'
+        const estW = p.offsetWidth || 280
+        const estH = p.offsetHeight || 40
+        let pos = (rect.top - estH - margin) >= 0 ? 'top' : 'bottom'
+        let left = rect.left + rect.width / 2
+        const halfW = estW / 2
+        left = Math.min(Math.max(left, halfW + margin), vw - halfW - margin)
+        let top = pos === 'top' ? (rect.top - margin) : (rect.bottom + margin)
+        top = Math.min(Math.max(top, margin), vh - margin)
+        p.style.left = `${Math.round(left)}px`
+        p.style.top = `${Math.round(top)}px`
+        p.style.transform = pos === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)'
+      } catch {}
+    }
+    const hidePortal = () => { try { if (portal) portal.style.display = 'none' } catch {} }
+
     const show = (el) => {
       try {
         if (!tipsEnabled) return
         const t = el.getAttribute('title')
         if (!t) return
         el.__tipTitle = t
-        el.setAttribute('data-tip', t)
         el.removeAttribute('title')
         lastTipEl = el
-        updatePosition(el)
+        const pref = el.getAttribute('data-tip-pos') || 'top'
+        if (pref === 'overlay') {
+          // Use body-level portal
+          positionOverlayPortal(el)
+        } else {
+          el.setAttribute('data-tip', t)
+          updatePosition(el)
+        }
       } catch {}
     }
     const hide = (el) => {
@@ -570,6 +620,7 @@ export default function Admin() {
           el.style.removeProperty('--tip-width')
           el.style.removeProperty('--tip-height')
         }
+        hidePortal()
         if (lastTipEl === el) lastTipEl = null
       } catch {}
     }
@@ -578,9 +629,12 @@ export default function Admin() {
       if (el && root.contains(el)) show(el)
     }
     const onOut = (e) => {
-      const el = e.target && (e.target.closest('[data-tip]') || e.target.closest('[title]'))
+      let el = e.target && (e.target.closest('[data-tip]') || e.target.closest('[title]'))
+      // For overlay mode, element no longer has data-tip/title; fall back to lastTipEl
+      if (!el && lastTipEl) el = lastTipEl
       if (!el) return
-      if (el.contains(e.relatedTarget)) return
+      // If moving within the same element, ignore
+      if (e.relatedTarget && el.contains(e.relatedTarget)) return
       hide(el)
     }
     const onFocusIn = (e) => {
@@ -588,11 +642,15 @@ export default function Admin() {
       if (el && root.contains(el)) show(el)
     }
     const onFocusOut = (e) => {
-      const el = e.target && e.target.closest('[data-tip]')
+      let el = e.target && e.target.closest('[data-tip]')
+      if (!el && lastTipEl) el = lastTipEl
       if (el) hide(el)
     }
     const onScrollOrResize = () => {
-      if (lastTipEl) updatePosition(lastTipEl)
+      if (!lastTipEl) return
+      const pref = lastTipEl.getAttribute('data-tip-pos') || 'top'
+      if (pref === 'overlay') positionOverlayPortal(lastTipEl)
+      else updatePosition(lastTipEl)
     }
     root.addEventListener('mouseover', onOver)
     root.addEventListener('mouseout', onOut)
