@@ -100,7 +100,10 @@ export default function Admin() {
   const [currentLang, setCurrentLang] = React.useState(() => localStorage.getItem('ar_admin_lang') || 'sv')
   const [subscribers, setSubscribers] = React.useState(loadSubscribers())
   const [expandDesign, setExpandDesign] = React.useState(true)
-  const [expandSettings, setExpandSettings] = React.useState(true)
+  // New sidebar groups
+  const [expandMarketing, setExpandMarketing] = React.useState(true)
+  const [expandEngagement, setExpandEngagement] = React.useState(true)
+  const [expandIntegrations, setExpandIntegrations] = React.useState(true)
   const [expandSubscribers, setExpandSubscribers] = React.useState(true)
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
 
@@ -297,17 +300,35 @@ export default function Admin() {
                   )}
                 </div>
                 <div className="mt-2">
-                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandSettings(v=>!v)}>
-                    {expandSettings ? '▾' : '▸'} {L('Inställningar','Settings')}
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandMarketing(v=>!v)}>
+                    {expandMarketing ? '▾' : '▸'} {L('Marknadsföring','Marketing')}
                   </button>
-                  {expandSettings && (
+                  {expandMarketing && (
                     <div className="pl-3 flex flex-col gap-1">
                       <a href="#admin-newsletter" className="hover:underline">{L('Nyhetsbrev','Newsletter')}</a>
+                      <a href="#admin-share" className="hover:underline">{L('Dela (Social)','Share (Social)')}</a>
+                      <a href="#admin-chat" className="hover:underline">{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandEngagement(v=>!v)}>
+                    {expandEngagement ? '▾' : '▸'} {L('Engagemang','Engagement')}
+                  </button>
+                  {expandEngagement && (
+                    <div className="pl-3 flex flex-col gap-1">
                       <a href="#admin-registration" className="hover:underline">{L('Registrering','Registration')}</a>
                       <a href="#admin-ratings" className="hover:underline">{L('Betyg','Ratings')}</a>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <button type="button" className="w-full text-left font-medium py-2" onClick={()=>setExpandIntegrations(v=>!v)}>
+                    {expandIntegrations ? '▾' : '▸'} {L('Integrationer','Integrations')}
+                  </button>
+                  {expandIntegrations && (
+                    <div className="pl-3 flex flex-col gap-1">
                       <a href="#admin-maps" className="hover:underline">{L('Google Maps','Google Maps')}</a>
-                      <a href="#admin-chat" className="hover:underline">{L('Chat (WhatsApp)','Chat (WhatsApp)')}</a>
-                      <a href="#admin-share" className="hover:underline">{L('Dela (Social)','Share (Social)')}</a>
                     </div>
                   )}
                 </div>
@@ -379,78 +400,50 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-registration" title={L('Registrering','Registration')}>
+        {/* Registration moved to Engagement group below (after Ratings) */}
+
+        {/* Marketing: Newsletter, Share, Chat */}
+        <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')}>
           <label className="flex items-center gap-2 mb-3">
-            <Toggle checked={!!data.registration?.enabled} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.enabled=e.target.checked; setData(n)}} />
-            <span>{L('Aktivera registrering','Enable registration')}</span>
+            <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
+            <span>{L('Aktivera popup','Enable popup')}</span>
           </label>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <h3 className="font-serif text-lg mb-2">{L('Fält','Fields')}</h3>
-              {['name','email','tel','notes'].map((k)=> (
-                <label key={k} className="flex items-center gap-2 mb-1">
-                  <Toggle checked={data.registration?.fields?.[k] !== false} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.fields={...(n.registration.fields||{}) ,[k]: e.target.checked}; setData(n)}} />
-                  <span className="capitalize">{k}</span>
-                </label>
-              ))}
+              <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
+              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.title = { ...(n.newsletter.title||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
-            <div className="md:col-span-2">
-              <h3 className="font-serif text-lg mb-2">{L('Frågor','Questions')}</h3>
-              <button type="button" className="btn-outline text-sm mb-2" onClick={()=>{const n={...data}; n.registration=n.registration||{}; n.registration.questions = [...(n.registration.questions||[]), { id: `q${(n.registration.questions?.length||0)+1}`, label:{sv:'',en:''}, options: [] }]; setData(n)}}>{L('Lägg till fråga','Add question')}</button>
-              <div className="grid gap-3">
-                {(data.registration?.questions||[]).map((q, i)=> (
-                  <div key={q.id||i} className="section-card p-3">
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm text-neutral-600 mb-1">Label (SV)</label>
-                        <input className="w-full border rounded px-3 py-2" value={q.label?.sv||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), sv: e.target.value }; setData(n)}} />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-neutral-600 mb-1">Label (EN)</label>
-                        <input className="w-full border rounded px-3 py-2" value={q.label?.en||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), en: e.target.value }; setData(n)}} />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm text-neutral-600 mb-1">{L('Svarsalternativ (komma-separerade)','Options (comma-separated)')}</label>
-                        <input className="w-full border rounded px-3 py-2" value={(q.options||[]).join(', ')} onChange={(e)=>{const n={...data}; n.registration.questions[i].options = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); setData(n)}} />
-                      </div>
-                    </div>
-                    <div className="mt-2 flex justify-end">
-                      <button type="button" className="btn-outline text-xs" onClick={()=>{const n={...data}; n.registration.questions.splice(i,1); setData(n)}}>{L('Ta bort','Remove')}</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
+              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.subtitle = { ...(n.newsletter.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
           </div>
-
-          <div className="mt-6">
-            <h3 className="font-serif text-lg mb-2">{L('Inkomna anmälningar','Submissions')}</h3>
-            <div className="section-card p-3 overflow-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-neutral-100 text-left">
-                    <th className="px-2 py-1">ID</th>
-                    <th className="px-2 py-1">{L('Titel','Title')}</th>
-                    <th className="px-2 py-1">Email</th>
-                    <th className="px-2 py-1">{L('Telefon','Phone')}</th>
-                    <th className="px-2 py-1">{L('Tid','Time')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(data.registration?.submissions||{}).flatMap(([aid, arr]) => (arr||[]).map((it, idx)=> (
-                    <tr key={`${aid}-${idx}`} className="border-t">
-                      <td className="px-2 py-1 whitespace-nowrap">{aid}</td>
-                      <td className="px-2 py-1">{it.title||''}</td>
-                      <td className="px-2 py-1">{it.email||''}</td>
-                      <td className="px-2 py-1">{it.tel||''}</td>
-                      <td className="px-2 py-1 whitespace-nowrap">{it.ts ? new Date(it.ts).toLocaleString() : ''}</td>
-                    </tr>
-                  )))}
-                  {(!data.registration || !data.registration.submissions || Object.keys(data.registration.submissions).length===0) && (
-                    <tr><td className="px-2 py-2 text-neutral-600" colSpan={5}>{L('Inga anmälningar ännu.','No submissions yet.')}</td></tr>
-                  )}
-                </tbody>
-              </table>
+          <div className="mt-4 grid md:grid-cols-3 gap-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Fält','Fields')}</h3>
+              <label className="flex items-center gap-2 mb-1"><Toggle checked={!!data.newsletter?.fields?.name} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.name=e.target.checked; setData(n)}} />{L('Namn','Name')}</label>
+              <label className="flex items-center gap-2 mb-1"><Toggle checked={data.newsletter?.fields?.email !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.email=e.target.checked; setData(n)}} />Email</label>
+              <label className="flex items-center gap-2"><Toggle checked={!!data.newsletter?.fields?.tel} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.tel=e.target.checked; setData(n)}} />{L('Telefon','Phone')}</label>
+            </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Utlösare','Triggers')}</h3>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Läge','Mode')}</label>
+              <select className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.mode || 'timer'} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), mode: e.target.value }; setData(n)}}>
+                <option value="timer">{L('Timer','Timer')}</option>
+                <option value="scroll">{L('Skroll','Scroll')}</option>
+              </select>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Fördröjning (ms)','Delay (ms)')}</label>
+              <input type="number" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.delayMs ?? 5000} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), delayMs: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <label className="block text-sm text-neutral-600 mb-1">{L('Scroll %','Scroll %')}</label>
+              <input type="number" min="0" max="100" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.scrollPercent ?? 50} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), scrollPercent: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <label className="flex items-center gap-2"><Toggle checked={data.newsletter?.triggers?.oncePerSession !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), oncePerSession: e.target.checked }; setData(n)}} />{L('Visa en gång per session','Show once per session')}</label>
+            </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Prenumeranter','Subscribers')}</h3>
+              <div className="section-card p-3">
+                <div className="text-sm mb-2">{L('Antal','Count')}: {loadSubscribers().length}</div>
+                <button type="button" className="btn-outline" onClick={exportCsv}>{L('Exportera CSV','Export CSV')}</button>
+              </div>
             </div>
           </div>
         </Section>
@@ -529,50 +522,7 @@ export default function Admin() {
           </p>
         </Section>
 
-        <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')}>
-          <label className="flex items-center gap-2 mb-3">
-            <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
-            <span>{L('Aktivera popup','Enable popup')}</span>
-          </label>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.title = { ...(n.newsletter.title||{}), [currentLang]: e.target.value }; setData(n)}} />
-            </div>
-            <div>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.subtitle = { ...(n.newsletter.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
-            </div>
-          </div>
-          <div className="mt-4 grid md:grid-cols-3 gap-4">
-            <div>
-              <h3 className="font-serif text-lg mb-2">{L('Fält','Fields')}</h3>
-              <label className="flex items-center gap-2 mb-1"><Toggle checked={!!data.newsletter?.fields?.name} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.name=e.target.checked; setData(n)}} />{L('Namn','Name')}</label>
-              <label className="flex items-center gap-2 mb-1"><Toggle checked={data.newsletter?.fields?.email !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.email=e.target.checked; setData(n)}} />Email</label>
-              <label className="flex items-center gap-2"><Toggle checked={!!data.newsletter?.fields?.tel} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.tel=e.target.checked; setData(n)}} />{L('Telefon','Phone')}</label>
-            </div>
-            <div>
-              <h3 className="font-serif text-lg mb-2">{L('Utlösare','Triggers')}</h3>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Läge','Mode')}</label>
-              <select className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.mode || 'timer'} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), mode: e.target.value }; setData(n)}}>
-                <option value="timer">{L('Timer','Timer')}</option>
-                <option value="scroll">{L('Skroll','Scroll')}</option>
-              </select>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Fördröjning (ms)','Delay (ms)')}</label>
-              <input type="number" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.delayMs ?? 5000} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), delayMs: parseInt(e.target.value||'0',10) }; setData(n)}} />
-              <label className="block text-sm text-neutral-600 mb-1">{L('Scroll %','Scroll %')}</label>
-              <input type="number" min="0" max="100" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.scrollPercent ?? 50} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), scrollPercent: parseInt(e.target.value||'0',10) }; setData(n)}} />
-              <label className="flex items-center gap-2"><Toggle checked={data.newsletter?.triggers?.oncePerSession !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), oncePerSession: e.target.checked }; setData(n)}} />{L('Visa en gång per session','Show once per session')}</label>
-            </div>
-            <div>
-              <h3 className="font-serif text-lg mb-2">{L('Prenumeranter','Subscribers')}</h3>
-              <div className="section-card p-3">
-                <div className="text-sm mb-2">{L('Antal','Count')}: {loadSubscribers().length}</div>
-                <button type="button" className="btn-outline" onClick={exportCsv}>{L('Exportera CSV','Export CSV')}</button>
-              </div>
-            </div>
-          </div>
-        </Section>
+        {/* Newsletter moved above into Marketing group */}
 
         <Section id="admin-faq" title="FAQ">
           <label className="flex items-center gap-2 mb-3">
@@ -690,6 +640,83 @@ export default function Admin() {
           <p className="text-sm text-neutral-600 mb-3">{L('Hantera kategorier och lägg upp bilder för varje kategori. På framsidan visas en flik för Alla samt per kategori.','Manage categories and upload pictures per category. The frontend shows an All tab and per-category tabs.')}</p>
           {/* items/categories management UI here */}
           <div className="section-card p-3 text-neutral-600 text-sm">{L('Hantera auktionsvaror kommer här.','Auction items management coming here.')}</div>
+        </Section>
+
+        {/* Engagement: Registration then Ratings */}
+        <Section id="admin-registration" title={L('Registrering','Registration')}>
+          <label className="flex items-center gap-2 mb-3">
+            <Toggle checked={!!data.registration?.enabled} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.enabled=e.target.checked; setData(n)}} />
+            <span>{L('Aktivera registrering','Enable registration')}</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Fält','Fields')}</h3>
+              {['name','email','tel','notes'].map((k)=> (
+                <label key={k} className="flex items-center gap-2 mb-1">
+                  <Toggle checked={data.registration?.fields?.[k] !== false} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.fields={...(n.registration.fields||{}) ,[k]: e.target.checked}; setData(n)}} />
+                  <span className="capitalize">{k}</span>
+                </label>
+              ))}
+            </div>
+            <div className="md:col-span-2">
+              <h3 className="font-serif text-lg mb-2">{L('Frågor','Questions')}</h3>
+              <button type="button" className="btn-outline text-sm mb-2" onClick={()=>{const n={...data}; n.registration=n.registration||{}; n.registration.questions = [...(n.registration.questions||[]), { id: `q${(n.registration.questions?.length||0)+1}`, label:{sv:'',en:''}, options: [] }]; setData(n)}}>{L('Lägg till fråga','Add question')}</button>
+              <div className="grid gap-3">
+                {(data.registration?.questions||[]).map((q, i)=> (
+                  <div key={q.id||i} className="section-card p-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-neutral-600 mb-1">Label (SV)</label>
+                        <input className="w-full border rounded px-3 py-2" value={q.label?.sv||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), sv: e.target.value }; setData(n)}} />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-neutral-600 mb-1">Label (EN)</label>
+                        <input className="w-full border rounded px-3 py-2" value={q.label?.en||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), en: e.target.value }; setData(n)}} />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm text-neutral-600 mb-1">{L('Svarsalternativ (komma-separerade)','Options (comma-separated)')}</label>
+                        <input className="w-full border rounded px-3 py-2" value={(q.options||[]).join(', ')} onChange={(e)=>{const n={...data}; n.registration.questions[i].options = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); setData(n)}} />
+                      </div>
+                    </div>
+                    <div className="mt-2 flex justify-end">
+                      <button type="button" className="btn-outline text-xs" onClick={()=>{const n={...data}; n.registration.questions.splice(i,1); setData(n)}}>{L('Ta bort','Remove')}</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="font-serif text-lg mb-2">{L('Inkomna anmälningar','Submissions')}</h3>
+            <div className="section-card p-3 overflow-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-neutral-100 text-left">
+                    <th className="px-2 py-1">ID</th>
+                    <th className="px-2 py-1">{L('Titel','Title')}</th>
+                    <th className="px-2 py-1">Email</th>
+                    <th className="px-2 py-1">{L('Telefon','Phone')}</th>
+                    <th className="px-2 py-1">{L('Tid','Time')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(data.registration?.submissions||{}).flatMap(([aid, arr]) => (arr||[]).map((it, idx)=> (
+                    <tr key={`${aid}-${idx}`} className="border-t">
+                      <td className="px-2 py-1 whitespace-nowrap">{aid}</td>
+                      <td className="px-2 py-1">{it.title||''}</td>
+                      <td className="px-2 py-1">{it.email||''}</td>
+                      <td className="px-2 py-1">{it.tel||''}</td>
+                      <td className="px-2 py-1 whitespace-nowrap">{it.ts ? new Date(it.ts).toLocaleString() : ''}</td>
+                    </tr>
+                  )))}
+                  {(!data.registration || !data.registration.submissions || Object.keys(data.registration.submissions).length===0) && (
+                    <tr><td className="px-2 py-2 text-neutral-600" colSpan={5}>{L('Inga anmälningar ännu.','No submissions yet.')}</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </Section>
 
         <Section id="admin-ratings" title={L('Betyg','Ratings')}>
