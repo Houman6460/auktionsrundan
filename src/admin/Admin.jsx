@@ -838,10 +838,10 @@ export default function Admin() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Logotyp URL','Logo URL')}</label>
-              <input className="w-full border rounded px-3 py-2" value={data.header.logo || ''} onChange={handleChange(['header','logo'])} placeholder="https://..." />
+              <input className="w-full border rounded px-3 py-2" title={L('Länk till logotypbilden (URL)','Link to logo image (URL)')} value={data.header.logo || ''} onChange={handleChange(['header','logo'])} placeholder="https://..." />
               <div className="mt-2 flex items-center gap-2">
-                <input type="file" accept="image/*" onChange={handleFileToDataUrl(['header','logo'])} />
-                <button type="button" className="btn-outline text-xs" onClick={clearField(['header','logo'])}>{L('Rensa','Clear')}</button>
+                <input type="file" accept="image/*" title={L('Ladda upp logotypbild','Upload logo image')} onChange={handleFileToDataUrl(['header','logo'])} />
+                <button type="button" className="btn-outline text-xs" onClick={clearField(['header','logo'])} title={L('Rensa fältet','Clear the field')}>{L('Rensa','Clear')}</button>
               </div>
               {data.header.logo && (
                 <div className="mt-2">
@@ -867,13 +867,13 @@ export default function Admin() {
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Navigering','Navigation')} ({currentLang.toUpperCase()})</h3>
               <label className="block text-sm text-neutral-600 mb-1">{L('Hem','Home')}</label>
-              <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.home?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.home[currentLang]=e.target.value; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Hem‑länken i menyn','Text for Home link in the menu')} value={data.header.nav.home?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.home[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Kommande auktioner','Upcoming auctions')}</label>
-              <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.auctions?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.auctions[currentLang]=e.target.value; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Kommande Auktioner i menyn','Text for Upcoming Auctions in the menu')} value={data.header.nav.auctions?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.auctions[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvaror','Auction items')}</label>
-              <input className="w-full border rounded px-3 py-2 mb-2" value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Auktionsvaror i menyn','Text for Auction Items in the menu')} value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvillkor','Terms')}</label>
-              <input className="w-full border rounded px-3 py-2" value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2" title={L('Text för Auktionsvillkor i menyn','Text for Terms in the menu')} value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
             </div>
           </div>
         </Section>
@@ -889,11 +889,11 @@ export default function Admin() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.title = { ...(n.newsletter.title||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2" title={L('Rubrik i popup (aktuellt språk)','Popup headline (current language)')} value={data.newsletter?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.title = { ...(n.newsletter.title||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" value={data.newsletter?.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.subtitle = { ...(n.newsletter.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2" title={L('Underrubrik i popup (aktuellt språk)','Popup subtitle (current language)')} value={data.newsletter?.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.subtitle = { ...(n.newsletter.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
           </div>
           <div className="mt-4 grid md:grid-cols-3 gap-4">
@@ -906,14 +906,14 @@ export default function Admin() {
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Utlösare','Triggers')}</h3>
               <label className="block text-sm text-neutral-600 mb-1">{L('Läge','Mode')}</label>
-              <select className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.mode || 'timer'} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), mode: e.target.value }; setData(n)}}>
+              <select className="w-full border rounded px-3 py-2 mb-2" title={L('Välj hur popupen ska triggas','Choose how the popup should trigger')} value={data.newsletter?.triggers?.mode || 'timer'} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), mode: e.target.value }; setData(n)}}>
                 <option value="timer">{L('Timer','Timer')}</option>
                 <option value="scroll">{L('Skroll','Scroll')}</option>
               </select>
               <label className="block text-sm text-neutral-600 mb-1">{L('Fördröjning (ms)','Delay (ms)')}</label>
-              <input type="number" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.delayMs ?? 5000} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), delayMs: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <input type="number" className="w-full border rounded px-3 py-2 mb-2" title={L('Fördröjning i millisekunder innan popup visas','Delay in milliseconds before popup shows')} value={data.newsletter?.triggers?.delayMs ?? 5000} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), delayMs: parseInt(e.target.value||'0',10) }; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Scroll %','Scroll %')}</label>
-              <input type="number" min="0" max="100" className="w-full border rounded px-3 py-2 mb-2" value={data.newsletter?.triggers?.scrollPercent ?? 50} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), scrollPercent: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <input type="number" min="0" max="100" className="w-full border rounded px-3 py-2 mb-2" title={L('Procent scroll på sidan innan popup visas','Page scroll percentage before popup shows')} value={data.newsletter?.triggers?.scrollPercent ?? 50} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), scrollPercent: parseInt(e.target.value||'0',10) }; setData(n)}} />
               <label className="flex items-center gap-2"><Toggle checked={data.newsletter?.triggers?.oncePerSession !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), oncePerSession: e.target.checked }; setData(n)}} />{L('Visa en gång per session','Show once per session')}</label>
             </div>
             <div>
@@ -934,30 +934,30 @@ export default function Admin() {
           <div className="grid md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Position','Position')}</label>
-              <select className="w-full border rounded px-3 py-2" value={data.share?.position||'right'} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.position = e.target.value==='left'?'left':'right'; setData(n)}}>
+              <select className="w-full border rounded px-3 py-2" title={L('Placering av delningsmeny','Placement of the share menu')} value={data.share?.position||'right'} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.position = e.target.value==='left'?'left':'right'; setData(n)}}>
                 <option value="right">{L('Höger','Right')}</option>
                 <option value="left">{L('Vänster','Left')}</option>
               </select>
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm text-neutral-600 mb-1">{L('Omslagsbild (URL)','Cover image (URL)')}</label>
-              <input className="w-full border rounded px-3 py-2" value={data.share?.coverUrl||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.coverUrl=e.target.value; setData(n)}} placeholder="https://..." />
+              <input className="w-full border rounded px-3 py-2" title={L('OG‑bild/omslagsbild som används vid delning','Open Graph / cover image used when sharing')} value={data.share?.coverUrl||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.coverUrl=e.target.value; setData(n)}} placeholder="https://..." />
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4 mt-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Delningstext (SV)','Share text (SV)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.share?.text?.sv||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), sv: e.target.value }; setData(n)}} />
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Text som följer med vid delning (svenska)','Text included when sharing (Swedish)')} value={data.share?.text?.sv||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), sv: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Delningstext (EN)','Share text (EN)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.share?.text?.en||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), en: e.target.value }; setData(n)}} />
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Text som följer med vid delning (engelska)','Text included when sharing (English)')} value={data.share?.text?.en||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), en: e.target.value }; setData(n)}} />
             </div>
           </div>
           <div className="grid md:grid-cols-5 gap-4 mt-4">
             {['facebook','twitter','linkedin','telegram','copy'].map((k)=> (
               <label key={k} className="flex items-center gap-2">
-                <Toggle size="sm" checked={data.share?.platforms?.[k]!==false} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.platforms = { ...(n.share.platforms||{}), [k]: e.target.checked }; setData(n)}} />
+                <Toggle size="sm" title={L('Visa/dölj kanal','Show/hide platform')} checked={data.share?.platforms?.[k]!==false} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.platforms = { ...(n.share.platforms||{}), [k]: e.target.checked }; setData(n)}} />
                 <span className="capitalize">{k}</span>
               </label>
             ))}
@@ -975,11 +975,11 @@ export default function Admin() {
           <div className="grid md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Telefon (E.164, t.ex. +46701234567)','Phone (E.164, e.g. +46701234567)')}</label>
-              <input className="w-full border rounded px-3 py-2" value={data.chat?.phoneE164||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.phoneE164=e.target.value; setData(n)}} placeholder="+4670..." />
+              <input className="w-full border rounded px-3 py-2" title={L('Telefon i E.164‑format, t.ex. +46701234567','Phone in E.164 format, e.g. +46701234567')} value={data.chat?.phoneE164||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.phoneE164=e.target.value; setData(n)}} placeholder="+4670..." />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Position','Position')}</label>
-              <select className="w-full border rounded px-3 py-2" value={data.chat?.position||'right'} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.position = e.target.value==='left'?'left':'right'; setData(n)}}>
+              <select className="w-full border rounded px-3 py-2" title={L('Placering av chatknappen','Placement of the chat button')} value={data.chat?.position||'right'} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.position = e.target.value==='left'?'left':'right'; setData(n)}}>
                 <option value="right">{L('Höger','Right')}</option>
                 <option value="left">{L('Vänster','Left')}</option>
               </select>
@@ -988,11 +988,11 @@ export default function Admin() {
           <div className="grid md:grid-cols-2 gap-4 mt-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Hälsning (SV)','Greeting (SV)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.chat?.greeting?.sv||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), sv: e.target.value }; setData(n)}} />
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Hälsningsmeddelande på svenska','Greeting message in Swedish')} value={data.chat?.greeting?.sv||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), sv: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Hälsning (EN)','Greeting (EN)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={data.chat?.greeting?.en||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), en: e.target.value }; setData(n)}} />
+              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Hälsningsmeddelande på engelska','Greeting message in English')} value={data.chat?.greeting?.en||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), en: e.target.value }; setData(n)}} />
             </div>
           </div>
           <p className="text-xs text-neutral-600 mt-3">
@@ -1009,7 +1009,7 @@ export default function Admin() {
           </label>
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-serif text-lg">{L('Frågor & svar','Questions & Answers')}</h3>
-            <button className="btn-outline text-sm" onClick={()=>{const n={...data}; n.faq = n.faq||{}; n.faq.items = n.faq.items||[]; n.faq.items.push({ q:{sv:'',en:''}, a:{sv:'',en:''} }); setData(n)}}>{L('Lägg till','Add')}</button>
+            <button className="btn-outline text-sm" onClick={()=>{const n={...data}; n.faq = n.faq||{}; n.faq.items = n.faq.items||[]; n.faq.items.push({ q:{sv:'',en:''}, a:{sv:'',en:''} }); setData(n)}} title={L('Lägg till en ny fråga','Add a new question')}>{L('Lägg till','Add')}</button>
           </div>
           <div className="grid gap-3">
             {(!(data.faq?.items)||data.faq.items.length===0) && (
@@ -1020,11 +1020,11 @@ export default function Admin() {
                 <div className="grid md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm text-neutral-600 mb-1">{L('Fråga','Question')} ({currentLang.toUpperCase()})</label>
-                    <input className="w-full border rounded px-3 py-2" value={it.q?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.faq.items[idx].q = { ...(n.faq.items[idx].q||{}), [currentLang]: e.target.value }; setData(n)}} />
+                    <input className="w-full border rounded px-3 py-2" title={L('Frågetext (aktuellt språk)','Question text (current language)')} value={it.q?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.faq.items[idx].q = { ...(n.faq.items[idx].q||{}), [currentLang]: e.target.value }; setData(n)}} />
                   </div>
                   <div>
                     <label className="block text-sm text-neutral-600 mb-1">{L('Svar','Answer')} ({currentLang.toUpperCase()})</label>
-                    <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" value={it.a?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.faq.items[idx].a = { ...(n.faq.items[idx].a||{}), [currentLang]: e.target.value }; setData(n)}} />
+                    <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Svarstext (aktuellt språk)','Answer text (current language)')} value={it.a?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.faq.items[idx].a = { ...(n.faq.items[idx].a||{}), [currentLang]: e.target.value }; setData(n)}} />
                   </div>
                 </div>
                 <div className="flex justify-between items-center mt-3">
@@ -1047,23 +1047,24 @@ export default function Admin() {
             {/* hero details form fields here */}
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" value={data.hero.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.title = { ...(n.hero.title||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2" title={L('Hjälprubrik på startsidan (aktuellt språk)','Home hero title (current language)')} value={data.hero.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.title = { ...(n.hero.title||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" value={data.hero.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.subtitle = { ...(n.hero.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2" title={L('Underrubrik på startsidan (aktuellt språk)','Home hero subtitle (current language)')} value={data.hero.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.subtitle = { ...(n.hero.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm text-neutral-600 mb-1">{L('Bakgrundsbild (URL)','Background image (URL)')}</label>
               <input
                 className="w-full border rounded px-3 py-2"
+                title={L('Länk till bakgrundsbild (URL)','Link to background image (URL)')}
                 value={data.hero.bg || ''}
                 onChange={(e)=>{const n={...data}; n.hero.bg = e.target.value; setData(n)}}
                 placeholder="https://..."
               />
               <div className="mt-2 flex items-center gap-2">
-                <input type="file" accept="image/*" onChange={handleFileToDataUrl(['hero','bg'])} />
-                <button type="button" className="btn-outline text-xs" onClick={clearField(['hero','bg'])}>{L('Rensa','Clear')}</button>
+                <input type="file" accept="image/*" title={L('Ladda upp bakgrundsbild','Upload background image')} onChange={handleFileToDataUrl(['hero','bg'])} />
+                <button type="button" className="btn-outline text-xs" onClick={clearField(['hero','bg'])} title={L('Rensa fältet','Clear the field')}>{L('Rensa','Clear')}</button>
               </div>
               {data.hero.bg && (
                 <div className="mt-2">
@@ -1095,16 +1096,16 @@ export default function Admin() {
                 <div className="grid md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
-                    <input className="w-full border rounded px-3 py-2" value={a.title?.[currentLang] || ''} onChange={(e)=>updateAuction(idx,'title',{...(a.title||{}), [currentLang]: e.target.value})} />
+                    <input className="w-full border rounded px-3 py-2" title={L('Auktionens titel (aktuellt språk)','Auction title (current language)')} value={a.title?.[currentLang] || ''} onChange={(e)=>updateAuction(idx,'title',{...(a.title||{}), [currentLang]: e.target.value})} />
                   </div>
                   <div>
                     <label className="block text-sm text-neutral-600 mb-1">{L('Adress','Address')} ({currentLang.toUpperCase()})</label>
-                    <input className="w-full border rounded px-3 py-2" value={a.address?.[currentLang] || ''} onChange={(e)=>updateAuction(idx,'address',{...(a.address||{}), [currentLang]: e.target.value})} />
+                    <input className="w-full border rounded px-3 py-2" title={L('Auktionens adress (aktuellt språk)','Auction address (current language)')} value={a.address?.[currentLang] || ''} onChange={(e)=>updateAuction(idx,'address',{...(a.address||{}), [currentLang]: e.target.value})} />
                   </div>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <button className="btn-outline" onClick={()=>removeAuction(idx)}>{L('Ta bort','Remove')}</button>
-                  <button className="btn-primary" onClick={()=>createLiveEventFromAuction(idx)}>{L('Skapa Live Event','Create Live Event')}</button>
+                  <button className="btn-outline" onClick={()=>removeAuction(idx)} title={L('Ta bort denna auktion','Remove this auction')}>{L('Ta bort','Remove')}</button>
+                  <button className="btn-primary" onClick={()=>createLiveEventFromAuction(idx)} title={L('Skapa ett Live‑Event kopplat till denna auktion','Create a Live Event linked to this auction')}>{L('Skapa Live Event','Create Live Event')}</button>
                 </div>
               </div>
             ))}
@@ -1139,22 +1140,22 @@ export default function Admin() {
             </div>
             <div className="md:col-span-2">
               <h3 className="font-serif text-lg mb-2">{L('Frågor','Questions')}</h3>
-              <button type="button" className="btn-outline text-sm mb-2" onClick={()=>{const n={...data}; n.registration=n.registration||{}; n.registration.questions = [...(n.registration.questions||[]), { id: `q${(n.registration.questions?.length||0)+1}`, label:{sv:'',en:''}, options: [] }]; setData(n)}}>{L('Lägg till fråga','Add question')}</button>
+              <button type="button" className="btn-outline text-sm mb-2" onClick={()=>{const n={...data}; n.registration=n.registration||{}; n.registration.questions = [...(n.registration.questions||[]), { id: `q${(n.registration.questions?.length||0)+1}`, label:{sv:'',en:''}, options: [] }]; setData(n)}} title={L('Lägg till en ny fråga','Add a new question')}>{L('Lägg till fråga','Add question')}</button>
               <div className="grid gap-3">
                 {(data.registration?.questions||[]).map((q, i)=> (
                   <div key={q.id||i} className="section-card p-3">
                     <div className="grid md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm text-neutral-600 mb-1">Label (SV)</label>
-                        <input className="w-full border rounded px-3 py-2" value={q.label?.sv||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), sv: e.target.value }; setData(n)}} />
+                        <input className="w-full border rounded px-3 py-2" title={L('Etikett på svenska','Label in Swedish')} value={q.label?.sv||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), sv: e.target.value }; setData(n)}} />
                       </div>
                       <div>
                         <label className="block text-sm text-neutral-600 mb-1">Label (EN)</label>
-                        <input className="w-full border rounded px-3 py-2" value={q.label?.en||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), en: e.target.value }; setData(n)}} />
+                        <input className="w-full border rounded px-3 py-2" title={L('Etikett på engelska','Label in English')} value={q.label?.en||''} onChange={(e)=>{const n={...data}; n.registration.questions[i].label = { ...(n.registration.questions[i].label||{}), en: e.target.value }; setData(n)}} />
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm text-neutral-600 mb-1">{L('Svarsalternativ (komma-separerade)','Options (comma-separated)')}</label>
-                        <input className="w-full border rounded px-3 py-2" value={(q.options||[]).join(', ')} onChange={(e)=>{const n={...data}; n.registration.questions[i].options = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); setData(n)}} />
+                        <input className="w-full border rounded px-3 py-2" title={L('Ange alternativ separerade med komma','Provide options separated by commas')} value={(q.options||[]).join(', ')} onChange={(e)=>{const n={...data}; n.registration.questions[i].options = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); setData(n)}} />
                       </div>
                     </div>
                     <div className="mt-2 flex justify-end">
@@ -1224,7 +1225,7 @@ export default function Admin() {
           {Object.entries(data.terms.blocks).map(([key, val]) => (
             <div key={key} className="mb-4">
               <label className="block text-sm text-neutral-600 mb-1">{key} ({currentLang.toUpperCase()})</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[100px]" value={val?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.terms.blocks[key] = { ...(n.terms.blocks[key]||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <textarea className="w-full border rounded px-3 py-2 min-h-[100px]" title={L('Villkorstext (aktuellt språk)','Terms text (current language)')} value={val?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.terms.blocks[key] = { ...(n.terms.blocks[key]||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
           ))}
         </Section>
@@ -1238,7 +1239,7 @@ export default function Admin() {
             {/* instagram configuration inputs here */}
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Layout','Layout')}</label>
-              <select className="w-full border rounded px-3 py-2" value={data.instagram.layout} onChange={(e)=>{const n={...data}; n.instagram.layout=e.target.value; setData(n)}}>
+              <select className="w-full border rounded px-3 py-2" title={L('Välj layout för Instagramflödet','Choose layout for Instagram feed')} value={data.instagram.layout} onChange={(e)=>{const n={...data}; n.instagram.layout=e.target.value; setData(n)}}>
                 <option value="grid">{L('Rutnät','Grid')}</option>
                 <option value="carousel">{L('Karusell','Carousel')}</option>
               </select>
@@ -1255,7 +1256,7 @@ export default function Admin() {
             {/* maps configuration inputs here */}
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('API-nyckel','API key')}</label>
-              <input className="w-full border rounded px-3 py-2" value={data.maps?.apiKey||''} onChange={(e)=>{const n={...data}; n.maps = n.maps||{}; n.maps.apiKey = e.target.value; setData(n)}} />
+              <input className="w-full border rounded px-3 py-2" title={L('Google Maps API‑nyckel','Google Maps API key')} value={data.maps?.apiKey||''} onChange={(e)=>{const n={...data}; n.maps = n.maps||{}; n.maps.apiKey = e.target.value; setData(n)}} />
             </div>
           </div>
           <div className="mt-3">
@@ -1274,7 +1275,7 @@ export default function Admin() {
             {/* footer configuration inputs here */}
             <div className="md:col-span-2">
               <label className="block text-sm text-neutral-600 mb-1">{L('Adress','Address')} ({currentLang.toUpperCase()})</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[100px]" value={data.footer.address?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.footer.address = { ...(n.footer.address||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <textarea className="w-full border rounded px-3 py-2 min-h-[100px]" title={L('Adressrad i sidfoten (aktuellt språk)','Footer address (current language)')} value={data.footer.address?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.footer.address = { ...(n.footer.address||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Nyhetsbrev','Newsletter')}</label>
@@ -1298,6 +1299,7 @@ export default function Admin() {
                     placeholder="https://..."
                     value={data.footer?.social?.[key] || ''}
                     onChange={(e)=>{const n={...data}; n.footer=n.footer||{}; n.footer.social = { ...(n.footer.social||{}), [key]: e.target.value }; setData(n)}}
+                    title={L('Länk till kanalens sida','Link to the channel page')}
                   />
                 </div>
               ))}
@@ -1308,6 +1310,7 @@ export default function Admin() {
                 {['facebook','instagram','tiktok','youtube','website'].map((k)=> (
                   <label key={k} className="flex items-center gap-2">
                     <Toggle
+                      title={L('Visa/dölj kanal i sidfoten','Show/hide channel in footer')}
                       checked={(data.footer?.socialEnabled?.[k] !== false)}
                       onChange={(e)=>{const n={...data}; n.footer=n.footer||{}; n.footer.socialEnabled = { ...(n.footer.socialEnabled||{}), [k]: e.target.checked }; setData(n)}}
                     />
