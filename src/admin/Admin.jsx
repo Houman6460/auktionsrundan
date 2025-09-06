@@ -118,7 +118,7 @@ export default function Admin() {
   const groupSections = React.useMemo(() => ({
     design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
     marketing: ['admin-newsletter','admin-share','admin-chat'],
-    engagement: ['admin-registration','admin-ratings','admin-liveaction'],
+    engagement: ['admin-liveaction','admin-registration','admin-ratings'],
     integrations: ['admin-maps'],
     analytics: ['admin-analytics'],
     subscribers: ['admin-subscribers'],
@@ -502,9 +502,9 @@ export default function Admin() {
                   </button>
                   {expandEngagement && (
                     <div className="pl-3 flex flex-col gap-1">
+                      <a href="#admin-liveaction" className="hover:underline" onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
                       <a href="#admin-registration" className="hover:underline" onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
                       <a href="#admin-ratings" className="hover:underline" onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
-                      <a href="#admin-liveaction" className="hover:underline" onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
                     </div>
                   )}
                 </div>

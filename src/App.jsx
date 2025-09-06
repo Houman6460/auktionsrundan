@@ -144,7 +144,6 @@ export default function App() {
             <main>
               <section className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
-                  <h2 className="text-3xl font-serif mb-6">Action-historik</h2>
                   <ActionsHistory />
                 </div>
               </section>

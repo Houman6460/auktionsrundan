@@ -35,14 +35,31 @@ export default function LiveActionAdmin({ data, setData, L }) {
   const [linkCopied, setLinkCopied] = React.useState(null)
 
   const actions = (data.actions && typeof data.actions === 'object') ? data.actions : { order: [], events: {} }
+  const auctionsList = (data.auctions && Array.isArray(data.auctions.list)) ? data.auctions.list : []
+
+  const auctionLabel = (a) => {
+    const title = (a?.title?.sv || a?.title?.en || '').trim() || L('Namnlös','Untitled')
+    const date = a?.date || ''
+    const time = a?.start || ''
+    return `${title}${date ? ' — '+date : ''}${time ? ' '+time : ''}`
+  }
+
+  const auctionStartIso = (a) => {
+    try {
+      if (!a?.date) return ''
+      const t = (/\d{1,2}:\d{2}/.test(a.start||'')) ? a.start : '00:00'
+      return `${a.date}T${t}:00`
+    } catch { return '' }
+  }
   const createEvent = () => {
     upsert(data, setData, (next) => {
       const id = 'act-' + Date.now()
       next.actions.events[id] = {
         id,
-        title: { sv: 'Nytt Live Event', en: 'New Live Event' },
+        title: { sv: L('Nytt Live Event','New Live Event'), en: 'New Live Event' },
         startIso: '',
         visible: false,
+        linkedAuctionIndex: null,
         items: [],
         state: { started: false, currentIndex: -1 }
       }
@@ -73,6 +90,16 @@ export default function LiveActionAdmin({ data, setData, L }) {
     const tStr = (/\d{1,2}:\d{2}/.test(timeStr||'')) ? timeStr : '00:00'
     const iso = dateStr ? `${dateStr}T${tStr}:00` : ''
     updateField(id, ['startIso'], iso)
+  }
+
+  const linkAuction = (id, idx) => {
+    upsert(data, setData, (next) => {
+      const ev = next.actions.events[id]
+      ev.linkedAuctionIndex = (Number.isInteger(idx) && idx >= 0) ? idx : null
+      // When linking, we can clear manual startIso; countdown will derive from auction
+      if (ev.linkedAuctionIndex != null) ev.startIso = ''
+      saveNow(next)
+    })
   }
 
   const addItem = (id) => {
@@ -176,79 +203,102 @@ export default function LiveActionAdmin({ data, setData, L }) {
     <div className="grid gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-neutral-700 text-sm">Live Action</div>
-          <div className="text-xs text-neutral-500">Skapa live-event, lägg till varor, och styr visning i realtid.</div>
+          <div className="text-neutral-700 text-sm">{L('Live Action','Live Action')}</div>
+          <div className="text-xs text-neutral-500">{L('Skapa live-event, koppla mot Kommande Auktioner, lägg till varor och styr visningen i realtid.','Create live events, link to Upcoming Auctions, add items and control the show in real time.')}</div>
         </div>
-        <button type="button" className="btn-primary" onClick={createEvent}>Nytt event</button>
+        <button type="button" className="btn-primary" onClick={createEvent}>{L('Nytt event','New event')}</button>
       </div>
 
       {(actions.order || []).map((id) => {
         const ev = actions.events[id]
         if (!ev) return null
-        const startDate = ev.startIso ? ev.startIso.slice(0,10) : ''
-        const startTime = ev.startIso ? ev.startIso.slice(11,16) : ''
+        const linked = Number.isInteger(ev.linkedAuctionIndex) && ev.linkedAuctionIndex >= 0 && ev.linkedAuctionIndex < auctionsList.length
+        const linkedAuction = linked ? auctionsList[ev.linkedAuctionIndex] : null
+        const startDate = linked ? (linkedAuction?.date || '') : (ev.startIso ? ev.startIso.slice(0,10) : '')
+        const startTime = linked ? (linkedAuction?.start || '') : (ev.startIso ? ev.startIso.slice(11,16) : '')
         const total = getTotal(ev)
         const publicUrl = (typeof window !== 'undefined') ? new URL(`/action/${id}`, window.location.origin).toString() : ''
         return (
           <div key={id} className="section-card p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
+                {/* Link to auction */}
+                <div className="mb-3">
+                  <label className="block text-sm text-neutral-600 mb-1">{L('Kopplat till auktion','Linked auction')}</label>
+                  <select className="w-full border rounded px-3 py-2" value={linked ? String(ev.linkedAuctionIndex) : ''} onChange={(e)=>{
+                    const v = e.target.value
+                    if (v === '') linkAuction(id, null)
+                    else linkAuction(id, parseInt(v,10))
+                  }}>
+                    <option value="">{L('Ej kopplat','Not linked')}</option>
+                    {auctionsList.map((a, idx) => (
+                      <option key={idx} value={String(idx)}>{auctionLabel(a)}</option>
+                    ))}
+                  </select>
+                  {linked && (
+                    <div className="text-xs text-neutral-600 mt-1">
+                      <div>{L('Adress','Address')}: {(linkedAuction?.address?.sv || linkedAuction?.address?.en || '')}</div>
+                      {!!linkedAuction?.viewing && <div>{L('Visning','Viewing')}: {(linkedAuction.viewing.sv || linkedAuction.viewing.en || '')}</div>}
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Titel (SV)</label>
-                    <input className="w-full border rounded px-3 py-2" value={ev.title?.sv||''} onChange={(e)=>updateField(id,['title','sv'], e.target.value)} />
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Titel (SV)','Title (SV)')}</label>
+                    <input className="w-full border rounded px-3 py-2" value={linked ? (linkedAuction?.title?.sv || '') : (ev.title?.sv||'')} onChange={(e)=>updateField(id,['title','sv'], e.target.value)} disabled={linked} />
                   </div>
                   <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Title (EN)</label>
-                    <input className="w-full border rounded px-3 py-2" value={ev.title?.en||''} onChange={(e)=>updateField(id,['title','en'], e.target.value)} />
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Title (EN)','Title (EN)')}</label>
+                    <input className="w-full border rounded px-3 py-2" value={linked ? (linkedAuction?.title?.en || '') : (ev.title?.en||'')} onChange={(e)=>updateField(id,['title','en'], e.target.value)} disabled={linked} />
                   </div>
                   <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Datum</label>
-                    <input type="date" className="w-full border rounded px-3 py-2" value={startDate} onChange={(e)=>setStart(id, e.target.value, startTime)} />
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Datum','Date')}</label>
+                    <input type="date" className="w-full border rounded px-3 py-2" value={startDate} onChange={(e)=>setStart(id, e.target.value, startTime)} disabled={linked} />
                   </div>
                   <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Tid</label>
-                    <input type="time" className="w-full border rounded px-3 py-2" value={startTime} onChange={(e)=>setStart(id, startDate, e.target.value)} />
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Tid','Time')}</label>
+                    <input type="time" className="w-full border rounded px-3 py-2" value={startTime} onChange={(e)=>setStart(id, startDate, e.target.value)} disabled={linked} />
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm text-neutral-600">Totalt</div>
+                <div className="text-sm text-neutral-600">{L('Totalt','Total')}</div>
                 <div className="text-xl font-serif">{total.toLocaleString('sv-SE')} SEK</div>
                 <div className="mt-2">
                   <label className="inline-flex items-center gap-2 text-sm text-neutral-700">
                     <input type="checkbox" checked={!!ev.visible} onChange={(e)=>updateField(id,['visible'], e.target.checked)} />
-                    <span>Visa historik</span>
+                    <span>{L('Visa historik','Show in history')}</span>
                   </label>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <a href={publicUrl} className="btn-outline text-xs" target="_blank" rel="noopener noreferrer">Öppna</a>
-                  <button type="button" className="btn-outline text-xs" onClick={()=>copyLink(id)}>{linkCopied===id ? 'Kopierad!' : 'Kopiera länk'}</button>
-                  <button type="button" className="btn-outline text-xs" onClick={()=>removeEvent(id)}>Ta bort</button>
+                  <a href={publicUrl} className="btn-outline text-xs" target="_blank" rel="noopener noreferrer">{L('Öppna','Open')}</a>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>copyLink(id)}>{linkCopied===id ? L('Kopierad!','Copied!') : L('Kopiera länk','Copy link')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>removeEvent(id)}>{L('Ta bort','Remove')}</button>
                 </div>
               </div>
             </div>
 
             <div className="mt-4 border-t pt-4">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm text-neutral-700">Styrning</div>
+                <div className="text-sm text-neutral-700">{L('Styrning','Controls')}</div>
                 <div className="flex items-center gap-2">
                   {!ev.state?.started ? (
-                    <button type="button" className="btn-primary text-xs" onClick={()=>startEvent(id)}>Starta</button>
+                    <button type="button" className="btn-primary text-xs" onClick={()=>startEvent(id)}>{L('Starta','Start')}</button>
                   ) : (
-                    <button type="button" className="btn-outline text-xs" onClick={()=>stopEvent(id)}>Stoppa</button>
+                    <button type="button" className="btn-outline text-xs" onClick={()=>stopEvent(id)}>{L('Stoppa','Stop')}</button>
                   )}
-                  <button type="button" className="btn-outline text-xs" onClick={()=>revealNext(id)}>Visa nästa</button>
-                  <button type="button" className="btn-outline text-xs" onClick={()=>markSold(id)}>Markera såld</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>revealNext(id)}>{L('Visa nästa','Reveal next')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>markSold(id)}>{L('Markera såld','Mark sold')}</button>
                 </div>
               </div>
-              <div className="text-xs text-neutral-600 mb-3">Aktuell index: {Number.isInteger(ev.state?.currentIndex) ? ev.state.currentIndex : -1}</div>
+              <div className="text-xs text-neutral-600 mb-3">{L('Aktuell index','Current index')}: {Number.isInteger(ev.state?.currentIndex) ? ev.state.currentIndex : -1}</div>
             </div>
 
             <div className="mt-3">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm text-neutral-700">Varor</div>
-                <button type="button" className="btn-outline text-xs" onClick={()=>addItem(id)}>Lägg till vara</button>
+                <div className="text-sm text-neutral-700">{L('Varor','Items')}</div>
+                <button type="button" className="btn-outline text-xs" onClick={()=>addItem(id)}>{L('Lägg till vara','Add item')}</button>
               </div>
               <div className="grid gap-3">
                 {(ev.items||[]).map((it, idx) => (
@@ -259,30 +309,30 @@ export default function LiveActionAdmin({ data, setData, L }) {
                           {it.img ? (
                             <img src={it.img} alt={(it.title?.sv||it.title?.en||'')+ ' image'} className="w-full h-full object-cover" />
                           ) : (
-                            <span>Ingen bild</span>
+                            <span>{L('Ingen bild','No image')}</span>
                           )}
                         </div>
-                        <input type="file" accept="image/*" className="mt-1 text-xs" onChange={(e)=>{ const f=e.target.files?.[0]; if (f) uploadImg(id, idx, f)}} />
+                        <input type="file" accept="image/*" className="mt-1 text-xs" onChange={(e)=>{ const f=e.target.files?.[0]; if (f) uploadImg(id, idx, f)}} title={L('Ladda upp bild','Upload image')} />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-xs text-neutral-600 mb-1">Titel (SV)</label>
+                        <label className="block text-xs text-neutral-600 mb-1">{L('Titel (SV)','Title (SV)')}</label>
                         <input className="w-full border rounded px-3 py-2" value={it.title?.sv||''} onChange={(e)=>updateField(id,['items',idx,'title','sv'], e.target.value)} />
-                        <label className="block text-xs text-neutral-600 mb-1 mt-2">Title (EN)</label>
+                        <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Title (EN)','Title (EN)')}</label>
                         <input className="w-full border rounded px-3 py-2" value={it.title?.en||''} onChange={(e)=>updateField(id,['items',idx,'title','en'], e.target.value)} />
-                        <label className="block text-xs text-neutral-600 mb-1 mt-2">Utropspris (SEK)</label>
+                        <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Utropspris (SEK)','Start price (SEK)')}</label>
                         <input className="w-full border rounded px-3 py-2" value={it.startPrice||''} onChange={(e)=>updateField(id,['items',idx,'startPrice'], e.target.value)} />
                         <div className="mt-2 text-sm text-neutral-700">
                           {it.sold ? (
-                            <span>SÅLD · {parseFloat(it.finalPrice||0).toLocaleString('sv-SE')} SEK</span>
+                            <span>{L('SÅLD','SOLD')} · {parseFloat(it.finalPrice||0).toLocaleString('sv-SE')} SEK</span>
                           ) : (
-                            <span>Ej såld</span>
+                            <span>{L('Ej såld','Not sold')}</span>
                           )}
                         </div>
                       </div>
                       <div className="flex flex-col items-stretch gap-2">
-                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, -1)}>Upp</button>
-                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, +1)}>Ner</button>
-                        <button type="button" className="btn-outline text-xs" onClick={()=>removeItem(id, idx)}>Ta bort</button>
+                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, -1)}>{L('Upp','Up')}</button>
+                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, +1)}>{L('Ner','Down')}</button>
+                        <button type="button" className="btn-outline text-xs" onClick={()=>removeItem(id, idx)}>{L('Ta bort','Remove')}</button>
                       </div>
                     </div>
                   </div>
@@ -294,7 +344,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
       })}
 
       {actions.order.length === 0 && (
-        <div className="section-card p-4 text-neutral-600">Inga event skapade ännu.</div>
+        <div className="section-card p-4 text-neutral-600">{L('Inga event skapade ännu.','No events created yet.')}</div>
       )}
     </div>
   )
