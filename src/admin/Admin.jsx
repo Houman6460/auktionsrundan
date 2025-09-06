@@ -15,7 +15,7 @@ function Section({ id, title, children, visible = true }) {
 }
 
 // Accessible toggle switch built on a native checkbox using Tailwind's peer utilities
-function Toggle({ checked, onChange, disabled, id, size = 'md', title }) {
+function Toggle({ checked, onChange, disabled, id, size = 'sm', title }) {
   const S = size === 'sm'
     ? { wrap: 'w-8 h-4', knob: 'w-3 h-3', move: 'peer-checked:translate-x-3', inset: 'top-0.5 left-0.5' }
     : { wrap: 'w-10 h-6', knob: 'w-4 h-4', move: 'peer-checked:translate-x-4', inset: 'top-1 left-1' }
