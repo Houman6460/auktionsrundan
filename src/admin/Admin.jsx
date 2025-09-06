@@ -461,6 +461,17 @@ export default function Admin() {
       try {
         if (!el || !el.hasAttribute('data-tip')) return
         const pref = el.getAttribute('data-tip-pos') || 'top'
+        // Only use viewport-fixed layout in constrained containers (sidebar) or forced right-placement
+        const withinSidebar = !!el.closest('aside')
+        const shouldFixed = withinSidebar
+        if (!shouldFixed) {
+          // Ensure we fall back to relative tooltip
+          el.removeAttribute('data-tip-fixed')
+          el.removeAttribute('data-tip-pos-active')
+          el.style.removeProperty('--tip-left')
+          el.style.removeProperty('--tip-top')
+          return
+        }
         const rect = el.getBoundingClientRect()
         const vw = window.innerWidth || document.documentElement.clientWidth
         const vh = window.innerHeight || document.documentElement.clientHeight
