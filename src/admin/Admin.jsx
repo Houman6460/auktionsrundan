@@ -147,6 +147,7 @@ export default function Admin() {
   const [generalTourEnabled, setGeneralTourEnabled] = React.useState(() => localStorage.getItem('ar_admin_tour_general') !== '0')
   const [sectionTourEnabled, setSectionTourEnabled] = React.useState(() => localStorage.getItem('ar_admin_tour_section') !== '0')
   const [tour, setTour] = React.useState({ open: false, title: '', steps: [], idx: 0 })
+  const [tourGetTarget, setTourGetTarget] = React.useState(null)
   const tourShownRef = React.useRef(false)
   const rootRef = React.useRef(null)
   // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
@@ -168,11 +169,11 @@ export default function Admin() {
 
   // Tour helpers
   const getGeneralTourSteps = React.useCallback(() => ([
-    L('Välkommen till Adminpanelen. Använd sidofältet till vänster för att navigera mellan sektioner.','Welcome to the Admin panel. Use the left sidebar to navigate between sections.'),
-    L('Varje sektion har en Hjälp‑knapp (❓) och en Spela‑knapp (▶) för en snabb genomgång.','Each section has a Help (❓) button and a Play (▶) button for a quick walkthrough.'),
-    L('Gör dina ändringar och klicka på Spara högst upp för att spara dem.','Make your edits and click Save at the top to store them.'),
-    L('Använd Visa webbplatsen för att öppna publika sidan i ny flik och kontrollera resultatet.','Use View site to open the public page in a new tab and verify the result.'),
-    L('Du kan när som helst stänga av/aktivera tips och genomgångar i sidofältet.','You can enable/disable tips and tours anytime from the sidebar toggles.'),
+    { text: L('Välkommen till Adminpanelen. Använd sidofältet till vänster för att navigera mellan sektioner.','Welcome to the Admin panel. Use the left sidebar to navigate between sections.'), key: 'sidebar' },
+    { text: L('Varje sektion har en Hjälp‑knapp (❓) och en Spela‑knapp (▶) för en snabb genomgång.','Each section has a Help (❓) button and a Play (▶) button for a quick walkthrough.'), key: 'first-help' },
+    { text: L('Gör dina ändringar och klicka på Spara högst upp för att spara dem.','Make your edits and click Save at the top to store them.'), key: 'save' },
+    { text: L('Använd Visa webbplatsen för att öppna publika sidan i ny flik och kontrollera resultatet.','Use View site to open the public page in a new tab and verify the result.'), key: 'view-site' },
+    { text: L('Du kan när som helst stänga av/aktivera tips och genomgångar i sidofältet.','You can enable/disable tips and tours anytime from the sidebar toggles.'), key: 'toggles' },
   ]), [currentLang])
 
   const getSectionSteps = React.useCallback((id, helpText) => {
@@ -184,12 +185,34 @@ export default function Admin() {
 
   const startGeneralTour = React.useCallback(() => {
     if (!generalTourEnabled) return
-    setTour({ open: true, title: L('Snabb genomgång','Quick Walkthrough'), steps: getGeneralTourSteps(), idx: 0 })
+    const steps = getGeneralTourSteps()
+    const resolver = (idx) => {
+      const step = steps[idx] || {}
+      const key = step.key
+      if (key === 'sidebar') return document.getElementById('admin-sidebar') || document.querySelector('aside')
+      if (key === 'first-help') return document.querySelector('section .btn-outline[title*="Help"]') || document.querySelector('section button[title*="Help"]')
+      if (key === 'save') return document.getElementById('admin-save') || document.querySelector('header .btn-primary')
+      if (key === 'view-site') return document.getElementById('admin-view-site') || document.querySelector('header a[href="/"]')
+      if (key === 'toggles') return document.getElementById('tips-toggle')?.closest('label') || document.querySelector('aside label')
+      return null
+    }
+    setTour({ open: true, title: L('Snabb genomgång','Quick Walkthrough'), steps, idx: 0 })
+    setTourGetTarget(() => resolver)
   }, [generalTourEnabled, getGeneralTourSteps, currentLang])
 
   const startSectionTour = React.useCallback((id, helpText, sectionTitle) => {
     if (!sectionTourEnabled) return
-    setTour({ open: true, title: sectionTitle || L('Sektion','Section'), steps: getSectionSteps(id, helpText), idx: 0 })
+    const steps = getSectionSteps(id, helpText).map((t, i) => ({ text: t, key: `s${i}` }))
+    const resolver = (idx) => {
+      const sec = document.getElementById(id)
+      if (!sec) return null
+      if (idx === 0) return sec.querySelector('h2') || sec
+      if (idx === (steps.length - 1)) return document.getElementById('admin-save')
+      // try first interactive control inside the section
+      return sec.querySelector('input, textarea, select, button') || sec
+    }
+    setTour({ open: true, title: sectionTitle || L('Sektion','Section'), steps, idx: 0 })
+    setTourGetTarget(() => resolver)
   }, [sectionTourEnabled, getSectionSteps, currentLang])
 
   // Auto-run general tour on login if enabled (once per mount)
@@ -205,14 +228,14 @@ export default function Admin() {
     if (!open) return null
     const isLast = idx >= (steps.length - 1)
     return (
-      <div className="fixed inset-0 bg-black/50 z-[100000] flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5">
+      <div className="fixed inset-0 bg-transparent z-[100000] flex items-center justify-center p-4 pointer-events-none">
+        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-5 pointer-events-auto">
           <div className="flex items-start justify-between gap-3 mb-3">
             <h3 className="font-serif text-xl">{title}</h3>
             <button className="btn-outline text-sm" onClick={onClose} title={L('Stäng','Close')}>✕</button>
           </div>
           <div className="text-sm text-neutral-800 whitespace-pre-wrap min-h-[4rem]">
-            {steps[idx]}
+            {typeof steps[idx] === 'object' ? steps[idx]?.text : steps[idx]}
           </div>
           <div className="flex items-center justify-between mt-4">
             <span className="text-xs text-neutral-500">{idx+1} / {steps.length}</span>
@@ -229,6 +252,65 @@ export default function Admin() {
       </div>
     )
   }
+
+  // Spotlight overlay to frame target element
+  const spotRef = React.useRef(null)
+  const ensureSpot = () => {
+    if (spotRef.current && document.body.contains(spotRef.current)) return spotRef.current
+    const d = document.createElement('div')
+    d.className = 'tour-spotlight'
+    d.style.display = 'none'
+    document.body.appendChild(d)
+    spotRef.current = d
+    return spotRef.current
+  }
+  const hideSpot = () => { try { if (spotRef.current) spotRef.current.style.display = 'none' } catch {} }
+  const showSpotForEl = (el) => {
+    try {
+      if (!el) { hideSpot(); return }
+      const d = ensureSpot()
+      const r = el.getBoundingClientRect()
+      const pad = 8
+      const left = Math.max(0, r.left - pad)
+      const top = Math.max(0, r.top - pad)
+      const width = Math.min(window.innerWidth, r.width + pad*2)
+      const height = Math.min(window.innerHeight, r.height + pad*2)
+      d.style.left = `${Math.round(left)}px`
+      d.style.top = `${Math.round(top)}px`
+      d.style.width = `${Math.round(width)}px`
+      d.style.height = `${Math.round(height)}px`
+      d.style.display = 'block'
+    } catch {}
+  }
+
+  const positionSpotlightCurrent = React.useCallback(() => {
+    if (!tour.open) { hideSpot(); return }
+    const target = typeof tourGetTarget === 'function' ? tourGetTarget(tour.idx) : null
+    if (!target) { hideSpot(); return }
+    const r = target.getBoundingClientRect()
+    if (r.top < 0 || r.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }) } catch {}
+      setTimeout(() => showSpotForEl(target), 220)
+    } else {
+      showSpotForEl(target)
+    }
+  }, [tour.open, tour.idx, tourGetTarget])
+
+  // Reposition spotlight when tour step changes or on scroll/resize
+  React.useEffect(() => {
+    positionSpotlightCurrent()
+  }, [positionSpotlightCurrent])
+
+  React.useEffect(() => {
+    if (!tour.open) return
+    const handler = () => positionSpotlightCurrent()
+    window.addEventListener('scroll', handler, true)
+    window.addEventListener('resize', handler)
+    return () => {
+      window.removeEventListener('scroll', handler, true)
+      window.removeEventListener('resize', handler)
+    }
+  }, [tour.open, tour.idx, tourGetTarget, positionSpotlightCurrent])
 
   // Small delta badge component
   function Delta({ now = 0, prev = 0 }) {
@@ -832,8 +914,8 @@ export default function Admin() {
               >EN</button>
             </div>
             {/* Tabs removed; navigation moved to left accordion */}
-            <Link to="/" className="btn-outline text-sm" title={L('Öppna webbplatsen i ny flik','Open the site in a new tab')} data-tip-pos="bottom">{L('Till webbplatsen','View site')}</Link>
-            <button className="btn-primary text-sm" onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="bottom">{L('Spara','Save')}</button>
+            <Link id="admin-view-site" to="/" className="btn-outline text-sm" title={L('Öppna webbplatsen i ny flik','Open the site in a new tab')} data-tip-pos="bottom">{L('Till webbplatsen','View site')}</Link>
+            <button id="admin-save" className="btn-primary text-sm" onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="bottom">{L('Spara','Save')}</button>
           </nav>
         </div>
       </header>
@@ -843,7 +925,7 @@ export default function Admin() {
 
         <div className="grid grid-cols-12 gap-6">
           {/* Sidebar */}
-          <aside className="col-span-12 md:col-span-3 lg:col-span-3">
+          <aside id="admin-sidebar" className="col-span-12 md:col-span-3 lg:col-span-3">
             <div className="section-card p-4 sticky top-0 max-h-[100vh] overflow-y-auto">
               <nav className="flex flex-col gap-2 text-sm">
                 <div>

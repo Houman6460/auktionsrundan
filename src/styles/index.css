@@ -245,4 +245,16 @@ html, body {
   z-index: 9999;
 }
 
+/* Tour spotlight: frames the target and dims surroundings using a giant spread shadow */
+.tour-spotlight {
+  position: fixed;
+  left: 0; top: 0; width: 0; height: 0;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 200, 80, 0.95);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45), 0 8px 30px rgba(0,0,0,0.25);
+  pointer-events: none;
+  z-index: 99998; /* under modal (z-[100000]) but above page */
+  transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
+}
+
 /* stylelint-enable at-rule-no-unknown */
