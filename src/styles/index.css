@@ -93,6 +93,14 @@ html, body {
 .tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="right"]::after { transform: translate(0, -50%); }
 .tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="left"]::after { transform: translate(-100%, -50%); }
 
+/* Fixed overlay variant: centered directly over the element */
+.tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="overlay"]::after {
+  transform: translate(-50%, -50%);
+}
+.tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="overlay"]::before {
+  display: none;
+}
+
 /* Arrow orientation and transforms for fixed position */
 .tooltip-root [data-tip][data-tip-fixed="1"][data-tip-pos-active="top"]::before {
   border-left: 6px solid transparent;
@@ -164,6 +172,17 @@ html, body {
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
   border-left: 0;
+}
+
+/* Overlay variant: centered directly over the item (local mode) */
+.tooltip-root [data-tip][data-tip-pos="overlay"]::after {
+  left: 50%;
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+.tooltip-root [data-tip][data-tip-pos="overlay"]::before {
+  display: none;
 }
 
 /* Disable entirely when tips are off */
