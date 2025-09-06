@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { loadContent, saveContent, resetContent } from '../services/store'
 import { exportCsv, loadSubscribers } from '../services/newsletter'
 import AnalyticsChart from '../components/AnalyticsChart.jsx'
-import { queryEvents as analyticsQueryEvents, summarize as analyticsSummarize, bucketize as analyticsBucketize, exportAnalyticsCsv as analyticsExportAnalyticsCsv } from '../services/analytics'
+import Sparkline from '../components/Sparkline.jsx'
+import { queryEvents as analyticsQueryEvents, summarize as analyticsSummarize, bucketize as analyticsBucketize, exportAnalyticsCsv as analyticsExportAnalyticsCsv, exportEventsCsv as analyticsExportEventsCsv, previousRange as analyticsPreviousRange } from '../services/analytics'
 
 function Section({ id, title, children, visible = true }) {
   return (
@@ -128,6 +129,36 @@ export default function Admin() {
   }, [activeFilter, groupSections])
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
 
+  // Small delta badge component
+  function Delta({ now = 0, prev = 0 }) {
+    const n = Number(now)||0
+    const p = Number(prev)||0
+    const diff = n - p
+    const pct = p === 0 ? (n > 0 ? 100 : 0) : Math.round((diff / p) * 100)
+    const up = diff >= 0
+    const color = up ? 'text-emerald-700' : 'text-rose-700'
+    const bg = up ? 'bg-emerald-50' : 'bg-rose-50'
+    const sign = up ? '+' : ''
+    return (
+      <span className={`ml-1 px-2 py-0.5 rounded text-xs ${bg} ${color}`}>{sign}{diff} ({sign}{pct}%)</span>
+    )
+  }
+
+  // Build sparkline data for a given type using current selection buckets
+  function buildSpark(selection, comparison, type) {
+    try {
+      const events = selection.events.filter(e => e.type === type)
+      const rows = analyticsBucketize(events, selection.gran)
+      const pts = rows.map(r => Number(r.count)||0)
+      // Ensure at least two points for a line
+      if (pts.length === 1) return [0, pts[0]]
+      if (pts.length === 0) return [0,0]
+      return pts
+    } catch {
+      return [0,0]
+    }
+  }
+
   // Analytics state
   const [analyticsRange, setAnalyticsRange] = React.useState('week') // 'now' | 'week' | 'month' | 'year' | 'custom'
   const [analyticsFrom, setAnalyticsFrom] = React.useState('')
@@ -140,6 +171,10 @@ export default function Admin() {
     rating_submit: true,
   })
   const [analyticsTick, setAnalyticsTick] = React.useState(0)
+  const [analyticsCompare, setAnalyticsCompare] = React.useState(false)
+  const [analyticsFilters, setAnalyticsFilters] = React.useState({ lang: [], device: [], route: [] })
+  const [drill, setDrill] = React.useState({ open: false, type: null, rows: [] })
+  const [annotations, setAnnotations] = React.useState([])
 
   React.useEffect(() => {
     const onStorage = (e) => {
@@ -180,7 +215,7 @@ export default function Admin() {
   const analyticsSelection = React.useMemo(() => {
     const { from, to, gran } = getRange()
     const types = Object.entries(analyticsTypes).filter(([,v]) => v).map(([k])=>k)
-    const ev = analyticsQueryEvents({ types, from, to })
+    const ev = analyticsQueryEvents({ types, from, to, filters: analyticsFilters })
     const sum = analyticsSummarize(ev)
     const buckets = analyticsBucketize(ev, gran)
     const topSectionsMap = {}
@@ -196,8 +231,21 @@ export default function Admin() {
     })
     const topSections = Object.entries(topSectionsMap).map(([label,count])=>({label, count})).sort((a,b)=>b.count-a.count).slice(0,8)
     const topAuctions = Object.entries(topAuctionsMap).map(([label,count])=>({label, count})).sort((a,b)=>b.count-a.count).slice(0,8)
-    return { from, to, gran, events: ev, sum, buckets, topSections, topAuctions }
-  }, [analyticsTypes, analyticsTick, getRange])
+    // Build segmentation options from current result set
+    const langs = Array.from(new Set(ev.map(e=>e.lang).filter(Boolean)))
+    const devices = Array.from(new Set(ev.map(e=>e.device).filter(Boolean)))
+    const routes = Array.from(new Set(ev.map(e=>e.route).filter(Boolean)))
+    return { from, to, gran, events: ev, sum, buckets, topSections, topAuctions, langs, devices, routes }
+  }, [analyticsTypes, analyticsTick, analyticsFilters, getRange])
+
+  const analyticsComparison = React.useMemo(() => {
+    if (!analyticsCompare) return null
+    const { from, to, gran } = getRange()
+    const prev = analyticsPreviousRange(from, to)
+    const types = Object.entries(analyticsTypes).filter(([,v]) => v).map(([k])=>k)
+    const evPrev = analyticsQueryEvents({ types, from: prev.from, to: prev.to, filters: analyticsFilters })
+    return { prevFrom: prev.from, prevTo: prev.to, sumPrev: analyticsSummarize(evPrev), bucketsPrev: analyticsBucketize(evPrev, gran) }
+  }, [analyticsTypes, analyticsFilters, analyticsCompare, getRange])
 
   // CSV export for Registrations
   const escapeCsvLocal = (value) => {
@@ -527,12 +575,16 @@ export default function Admin() {
               </>
             )}
             <div className="flex items-end justify-end gap-2">
+              <label className="inline-flex items-center gap-2 text-sm text-neutral-700 mr-2">
+                <Toggle checked={analyticsCompare} onChange={(e)=>setAnalyticsCompare(e.target.checked)} />
+                <span>{L('Jämför föregående period','Compare previous period')}</span>
+              </label>
               <button type="button" className="btn-outline" onClick={()=>analyticsExportAnalyticsCsv()}>{L('Exportera CSV','Export CSV')}</button>
             </div>
           </div>
 
           {/* Event filters row */}
-          <div className="section-card p-3 mb-4">
+          <div className="section-card p-3 mb-4 sticky top-0 z-10">
             <div className="flex flex-wrap items-center gap-4">
               {([
                 { key: 'page_view', label: L('Sidvisningar','Page views') },
@@ -549,6 +601,36 @@ export default function Admin() {
             </div>
           </div>
 
+          {/* Segmentation filters */}
+          <div className="section-card p-3 mb-4">
+            <div className="grid md:grid-cols-3 gap-3">
+              <div>
+                <div className="text-xs text-neutral-600 mb-1">{L('Språk','Language')}</div>
+                <div className="flex flex-wrap gap-2">
+                  {analyticsSelection.langs.map((v)=> (
+                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.lang.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} onClick={()=>setAnalyticsFilters((f)=>({ ...f, lang: f.lang.includes(v) ? f.lang.filter(x=>x!==v) : [...f.lang, v] }))}>{v.toUpperCase()}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-neutral-600 mb-1">{L('Enhet','Device')}</div>
+                <div className="flex flex-wrap gap-2">
+                  {analyticsSelection.devices.map((v)=> (
+                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.device.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} onClick={()=>setAnalyticsFilters((f)=>({ ...f, device: f.device.includes(v) ? f.device.filter(x=>x!==v) : [...f.device, v] }))}>{v}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-neutral-600 mb-1">{L('Sida','Route')}</div>
+                <div className="flex flex-wrap gap-2 max-h-16 overflow-y-auto">
+                  {analyticsSelection.routes.map((v)=> (
+                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.route.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} onClick={()=>setAnalyticsFilters((f)=>({ ...f, route: f.route.includes(v) ? f.route.filter(x=>x!==v) : [...f.route, v] }))}>{v}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="section-card p-3 mb-4">
             <div className="grid md:grid-cols-5 gap-3">
               {([
@@ -558,10 +640,22 @@ export default function Admin() {
                 { key: 'registration_submit', label: L('Anmälningar','Registrations') },
                 { key: 'rating_submit', label: L('Betyg','Ratings') },
               ]).map(({key,label}) => (
-                <div key={key} className="p-3 rounded border bg-white min-h-[88px] flex flex-col justify-between">
-                  <div className="text-xs text-neutral-700 truncate">{label}</div>
-                  <div className="text-2xl font-serif">{analyticsSelection.sum[key] || 0}</div>
-                </div>
+                <button key={key} type="button" onClick={()=>{
+                  const type = key
+                  const ev = analyticsSelection.events.filter(e=>e.type===type)
+                  setDrill({ open: true, type, rows: ev })
+                }} className="p-3 rounded border bg-white min-h-[88px] flex flex-col justify-between text-left hover:bg-neutral-50">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-xs text-neutral-700 truncate">{label}</div>
+                    <div className="w-20"><Sparkline points={buildSpark(analyticsSelection, analyticsComparison, key)} /></div>
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <div className="text-2xl font-serif">{analyticsSelection.sum[key] || 0}</div>
+                    {analyticsCompare && (
+                      <Delta now={analyticsSelection.sum[key]||0} prev={analyticsComparison?.sumPrev?.[key]||0} />
+                    )}
+                  </div>
+                </button>
               ))}
             </div>
           </div>
@@ -625,7 +719,68 @@ export default function Admin() {
               </div>
             </div>
           </div>
+
+          {/* Annotations simple list */}
+          <div className="section-card p-3">
+            <h3 className="font-serif text-lg mb-2">{L('Anteckningar','Annotations')}</h3>
+            <form className="flex gap-2 mb-3" onSubmit={(e)=>{e.preventDefault(); const f = e.currentTarget; const txt = f.note?.value?.trim(); if (!txt) return; setAnnotations((a)=>[{ ts: Date.now(), text: txt }, ...a]); f.reset();}}>
+              <input name="note" className="flex-1 border rounded px-3 py-2" placeholder={L('Lägg till notering (syns här som historik)','Add a note (appears here as history)')} />
+              <button className="btn-outline" type="submit">{L('Lägg till','Add')}</button>
+            </form>
+            <ul className="space-y-1 text-sm">
+              {annotations.length===0 && <li className="text-neutral-500">{L('Inga noteringar ännu.','No annotations yet.')}</li>}
+              {annotations.map((a,i)=> (
+                <li key={i} className="flex items-center justify-between border-b py-1">
+                  <span>{new Date(a.ts).toLocaleString()} — {a.text}</span>
+                  <button className="text-xs underline" onClick={()=>setAnnotations((arr)=>arr.filter((_,idx)=>idx!==i))}>{L('Ta bort','Remove')}</button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Section>
+
+        {/* Drill down modal */}
+        {drill.open && (
+          <div className="fixed inset-0 z-50 grid place-items-center">
+            <div className="absolute inset-0 bg-black/40" onClick={()=>setDrill({ open:false, type:null, rows:[] })}></div>
+            <div className="relative section-card w-[95vw] max-w-4xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-serif text-lg">{L('Detaljer','Details')}: {drill.type}</h3>
+                <div className="flex items-center gap-2">
+                  <button className="btn-outline" onClick={()=>analyticsExportEventsCsv(drill.rows)}>{L('Exportera','Export')}</button>
+                  <button className="btn-primary" onClick={()=>setDrill({ open:false, type:null, rows:[] })}>{L('Stäng','Close')}</button>
+                </div>
+              </div>
+              <div className="max-h-[70vh] overflow-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-neutral-100 text-left">
+                      <th className="px-2 py-1">{L('Tid','Time')}</th>
+                      <th className="px-2 py-1">Type</th>
+                      <th className="px-2 py-1">Route</th>
+                      <th className="px-2 py-1">Lang</th>
+                      <th className="px-2 py-1">Device</th>
+                      <th className="px-2 py-1">Payload</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {drill.rows.length===0 && (<tr><td className="px-2 py-2 text-neutral-600" colSpan={6}>{L('Inga data.','No data.')}</td></tr>)}
+                    {drill.rows.map((r,i)=> (
+                      <tr key={r.id||i} className="border-t">
+                        <td className="px-2 py-1">{new Date(r.ts).toLocaleString()}</td>
+                        <td className="px-2 py-1">{r.type}</td>
+                        <td className="px-2 py-1">{r.route||''}</td>
+                        <td className="px-2 py-1">{(r.lang||'').toUpperCase()}</td>
+                        <td className="px-2 py-1">{r.device||''}</td>
+                        <td className="px-2 py-1"><code className="text-xs">{JSON.stringify(r.payload)}</code></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Section id="admin-header" title={L('Header','Header')} visible={isSectionVisible('admin-header')}>
           <label className="flex items-center gap-2 mb-3">

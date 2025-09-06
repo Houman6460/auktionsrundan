@@ -13,6 +13,11 @@ export function loadEvents() {
   }
 }
 
+export function previousRange(from, to) {
+  const span = Math.max(0, (to || 0) - (from || 0))
+  return { from: Math.max(0, (from || 0) - span), to: from || 0 }
+}
+
 function saveEvents(list) {
   localStorage.setItem(ANALYTICS_KEY, JSON.stringify(Array.isArray(list) ? list : []))
   // Notify listeners
@@ -24,7 +29,12 @@ function saveEvents(list) {
 }
 
 export function trackEvent(type, payload = {}) {
-  const evt = { id: randomId(), type, payload, ts: Date.now() }
+  const meta = {
+    route: detectRoute(),
+    lang: detectLang(),
+    device: detectDevice(),
+  }
+  const evt = { id: randomId(), type, payload, ts: Date.now(), ...meta }
   const list = loadEvents()
   list.push(evt)
   saveEvents(list)
@@ -53,11 +63,14 @@ export function trackSectionView(sectionId) {
 
 export function exportAnalyticsCsv() {
   const list = loadEvents()
-  const headers = ['id','type','timestamp','payload']
+  const headers = ['id','type','timestamp','route','lang','device','payload']
   const rows = list.map((e) => [
     escapeCsv(e.id),
     escapeCsv(e.type),
     new Date(e.ts).toISOString(),
+    escapeCsv(e.route || ''),
+    escapeCsv(e.lang || ''),
+    escapeCsv(e.device || ''),
     escapeCsv(JSON.stringify(e.payload || {})),
   ])
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
@@ -72,12 +85,41 @@ export function exportAnalyticsCsv() {
   URL.revokeObjectURL(url)
 }
 
-export function queryEvents({ types, from, to } = {}) {
+export function exportEventsCsv(events) {
+  const list = Array.isArray(events) ? events : []
+  const headers = ['id','type','timestamp','route','lang','device','payload']
+  const rows = list.map((e) => [
+    escapeCsv(e.id),
+    escapeCsv(e.type),
+    new Date(e.ts).toISOString(),
+    escapeCsv(e.route || ''),
+    escapeCsv(e.lang || ''),
+    escapeCsv(e.device || ''),
+    escapeCsv(JSON.stringify(e.payload || {})),
+  ])
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'analytics-filtered-events.csv'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+export function queryEvents({ types, from, to, filters } = {}) {
   const list = loadEvents()
   return list.filter((e) => {
     if (types && types.length && !types.includes(e.type)) return false
     if (typeof from === 'number' && e.ts < from) return false
     if (typeof to === 'number' && e.ts > to) return false
+    if (filters) {
+      if (filters.lang && filters.lang.length && !filters.lang.includes(e.lang)) return false
+      if (filters.device && filters.device.length && !filters.device.includes(e.device)) return false
+      if (filters.route && filters.route.length && !filters.route.includes(e.route)) return false
+    }
     return true
   })
 }
@@ -150,4 +192,32 @@ function escapeCsv(value) {
   const str = String(value ?? '')
   if (/[",\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"'
   return str
+}
+
+function detectLang() {
+  try {
+    const lng = (localStorage.getItem('i18nextLng') || localStorage.getItem('lang') || 'sv').toLowerCase()
+    if (lng.startsWith('en')) return 'en'
+    if (lng.startsWith('sv')) return 'sv'
+    return 'en'
+  } catch {
+    return 'en'
+  }
+}
+
+function detectRoute() {
+  try {
+    return (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '/'
+  } catch {
+    return '/'
+  }
+}
+
+function detectDevice() {
+  try {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1024
+    return w < 768 ? 'mobile' : 'desktop'
+  } catch {
+    return 'desktop'
+  }
 }
