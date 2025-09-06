@@ -446,7 +446,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
           <div className="text-neutral-700 text-sm">{L('Live Action','Live Action')}</div>
           <div className="text-xs text-neutral-500">{L('Skapa live-event, koppla mot Kommande Auktioner, lägg till varor och styr visningen i realtid.','Create live events, link to Upcoming Auctions, add items and control the show in real time.')}</div>
         </div>
-        <button type="button" className="btn-primary" onClick={createEvent}>{L('Nytt event','New event')}</button>
+        <button type="button" className="btn-primary" onClick={createEvent} title={L('Skapa ett nytt live‑event','Create a new live event')}>{L('Nytt event','New event')}</button>
       </div>
 
       {(actions.order || []).map((id) => {
@@ -465,7 +465,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
                 {/* Link to auction */}
                 <div className="mb-3">
                   <label className="block text-sm text-neutral-600 mb-1">{L('Kopplat till auktion','Linked auction')}</label>
-                  <select className="w-full border rounded px-3 py-2" value={linked ? String(ev.linkedAuctionIndex) : ''} onChange={(e)=>{
+                  <select className="w-full border rounded px-3 py-2" title={L('Välj auktion att länka (valfritt)','Select auction to link (optional)')} value={linked ? String(ev.linkedAuctionIndex) : ''} onChange={(e)=>{
                     const v = e.target.value
                     if (v === '') linkAuction(id, null)
                     else linkAuction(id, parseInt(v,10))
@@ -506,15 +506,15 @@ export default function LiveActionAdmin({ data, setData, L }) {
                 <div className="text-sm text-neutral-600">{L('Totalt','Total')}</div>
                 <div className="text-xl font-serif">{total.toLocaleString('sv-SE')} SEK</div>
                 <div className="mt-2">
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700">
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa eventet i arkivet när det är klart','Show this event in the public archive after it is finished')}>
                     <input type="checkbox" checked={!!ev.visible} onChange={(e)=>updateField(id,['visible'], e.target.checked)} />
                     <span>{L('Visa historik','Show in history')}</span>
                   </label>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <a href={publicUrl} className="btn-outline text-xs" target="_blank" rel="noopener noreferrer">{L('Öppna','Open')}</a>
-                  <button type="button" className="btn-outline text-xs" onClick={()=>copyLink(id)}>{linkCopied===id ? L('Kopierad!','Copied!') : L('Kopiera länk','Copy link')}</button>
-                  <button type="button" className="btn-outline text-xs" onClick={()=>removeEvent(id)}>{L('Ta bort','Remove')}</button>
+                  <a href={publicUrl} className="btn-outline text-xs" target="_blank" rel="noopener noreferrer" title={L('Öppna den publika sidan i en ny flik','Open the public page in a new tab')}>{L('Öppna','Open')}</a>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>copyLink(id)} title={L('Kopiera offentlig URL till urklipp','Copy public URL to clipboard')}>{linkCopied===id ? L('Kopierad!','Copied!') : L('Kopiera länk','Copy link')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>removeEvent(id)} title={L('Ta bort detta event permanent','Delete this event permanently')}>{L('Ta bort','Remove')}</button>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <button type="button" className="btn-outline text-xs" onClick={()=>exportSalesCsv(id)} title={L('Exportera försäljning (CSV)','Export sales (CSV)')}>{L('Försäljning CSV','Sales CSV')}</button>
@@ -528,45 +528,45 @@ export default function LiveActionAdmin({ data, setData, L }) {
                 <div className="text-sm text-neutral-700">{L('Styrning','Controls')}</div>
                 <div className="flex items-center gap-2">
                   {!ev.state?.started ? (
-                    <button type="button" className="btn-primary text-xs" onClick={()=>startEvent(id)}>{L('Starta','Start')}</button>
+                    <button type="button" className="btn-primary text-xs" onClick={()=>startEvent(id)} title={L('Starta livesändningen (Kortkommando: Mellanslag)','Start the live show (Shortcut: Space)')}>{L('Starta','Start')}</button>
                   ) : (
-                    <button type="button" className="btn-outline text-xs" onClick={()=>stopEvent(id)}>{L('Stoppa','Stop')}</button>
+                    <button type="button" className="btn-outline text-xs" onClick={()=>stopEvent(id)} title={L('Stoppa livesändningen (Kortkommando: Mellanslag)','Stop the live show (Shortcut: Space)')}>{L('Stoppa','Stop')}</button>
                   )}
-                  <button type="button" className="btn-outline text-xs" onClick={()=>revealNext(id)}>{L('Visa nästa','Reveal next')}</button>
-                  <button type="button" className="btn-outline text-xs" onClick={()=>markSold(id)}>{L('Markera såld','Mark sold')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>revealNext(id)} title={L('Visa nästa vara (Kortkommando: N)','Reveal next item (Shortcut: N)')}>{L('Visa nästa','Reveal next')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>markSold(id)} title={L('Markera nuvarande vara som såld (Kortkommando: S)','Mark current item as sold (Shortcut: S)')}>{L('Markera såld','Mark sold')}</button>
                 </div>
               </div>
-              <div className="text-xs text-neutral-600 mb-3">{L('Aktuell index','Current index')}: {Number.isInteger(ev.state?.currentIndex) ? ev.state.currentIndex : -1}</div>
+              <div className="text-xs text-neutral-600 mb-3" title={L('0-baserad position för varan som visas nu','0-based position of the item currently showing')}>{L('Aktuell index','Current index')}: {Number.isInteger(ev.state?.currentIndex) ? ev.state.currentIndex : -1}</div>
 
               {/* Event settings */}
               <div className="grid md:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-neutral-600 mb-1">{L('Varaktighet (minuter)','Duration (minutes)')}</label>
-                  <input type="number" min="1" className="w-full border rounded px-3 py-2" value={ev.settings?.durationMinutes||60} onChange={(e)=>updateField(id,['settings','durationMinutes'], Math.max(1, parseInt(e.target.value||'60',10)||60))} />
+                  <input type="number" min="1" className="w-full border rounded px-3 py-2" title={L('Hur länge själva auktionen pågår (minuter)','How long the live show runs (minutes)')} value={ev.settings?.durationMinutes||60} onChange={(e)=>updateField(id,['settings','durationMinutes'], Math.max(1, parseInt(e.target.value||'60',10)||60))} />
                 </div>
                 <div>
                   <label className="block text-xs text-neutral-600 mb-1">{L('Efterfönster (minuter)','Post window (minutes)')}</label>
-                  <input type="number" min="0" className="w-full border rounded px-3 py-2" value={ev.settings?.postMinutes||10} onChange={(e)=>updateField(id,['settings','postMinutes'], Math.max(0, parseInt(e.target.value||'10',10)||10))} />
+                  <input type="number" min="0" className="w-full border rounded px-3 py-2" title={L('Tiden efter stopp då feedbackformulär är öppet (minuter)','Time after stop when feedback form stays open (minutes)')} value={ev.settings?.postMinutes||10} onChange={(e)=>updateField(id,['settings','postMinutes'], Math.max(0, parseInt(e.target.value||'10',10)||10))} />
                 </div>
                 <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.publicDisplay?.showTotals!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showTotals'], e.target.checked)} />{L('Visa totalsumma','Show total')}</label>
-                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.publicDisplay?.showSold!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showSold'], e.target.checked)} />{L('Visa sålda-status','Show sold status')}</label>
+                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700" title={L('Visa total försäljning på publika sidan','Show total sales amount on public page')}><input type="checkbox" checked={ev.settings?.publicDisplay?.showTotals!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showTotals'], e.target.checked)} />{L('Visa totalsumma','Show total')}</label>
+                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700" title={L('Visa SÅLD-märkning och slutpris på publika sidan','Show SOLD badges and final price on public page')}><input type="checkbox" checked={ev.settings?.publicDisplay?.showSold!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showSold'], e.target.checked)} />{L('Visa sålda-status','Show sold status')}</label>
                 </div>
               </div>
               <div className="grid md:grid-cols-3 gap-3 mt-3">
                 <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.enabled!==false} onChange={(e)=>updateField(id,['settings','feedback','enabled'], e.target.checked)} />{L('Feedback aktiv','Feedback enabled')}</label>
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.rating!==false} onChange={(e)=>updateField(id,['settings','feedback','rating'], e.target.checked)} />{L('Stjärnbetyg','Star rating')}</label>
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.notes!==false} onChange={(e)=>updateField(id,['settings','feedback','notes'], e.target.checked)} />{L('Anteckningar','Notes')}</label>
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Aktivera insamling av feedback efter eventet','Enable collecting feedback after the event')}><input type="checkbox" checked={ev.settings?.feedback?.enabled!==false} onChange={(e)=>updateField(id,['settings','feedback','enabled'], e.target.checked)} />{L('Feedback aktiv','Feedback enabled')}</label>
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa stjärnor för helhetsbetyg','Show stars for overall rating')}><input type="checkbox" checked={ev.settings?.feedback?.rating!==false} onChange={(e)=>updateField(id,['settings','feedback','rating'], e.target.checked)} />{L('Stjärnbetyg','Star rating')}</label>
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Låt besökaren skriva fritext','Let visitors write free‑text notes')}><input type="checkbox" checked={ev.settings?.feedback?.notes!==false} onChange={(e)=>updateField(id,['settings','feedback','notes'], e.target.checked)} />{L('Anteckningar','Notes')}</label>
                 </div>
                 <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.contact!==false} onChange={(e)=>updateField(id,['settings','feedback','contact'], e.target.checked)} />{L('Kontaktuppgifter','Contact details')}</label>
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa fält för namn, email och telefon med samtycke','Show fields for name, email and phone with consent')}><input type="checkbox" checked={ev.settings?.feedback?.contact!==false} onChange={(e)=>updateField(id,['settings','feedback','contact'], e.target.checked)} />{L('Kontaktuppgifter','Contact details')}</label>
                 </div>
                 <div>
                   <label className="block text-xs text-neutral-600 mb-1">{L('Tack-meddelande (SV)','Thank-you message (SV)')}</label>
-                  <input className="w-full border rounded px-3 py-2" value={ev.settings?.messages?.thankYou?.sv||''} onChange={(e)=>updateField(id,['settings','messages','thankYou','sv'], e.target.value)} />
+                  <input className="w-full border rounded px-3 py-2" title={L('Text som visas över feedbackformuläret','Text shown above the feedback form')} value={ev.settings?.messages?.thankYou?.sv||''} onChange={(e)=>updateField(id,['settings','messages','thankYou','sv'], e.target.value)} />
                   <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Tack-meddelande (EN)','Thank-you message (EN)')}</label>
-                  <input className="w-full border rounded px-3 py-2" value={ev.settings?.messages?.thankYou?.en||''} onChange={(e)=>updateField(id,['settings','messages','thankYou','en'], e.target.value)} />
+                  <input className="w-full border rounded px-3 py-2" title={L('Text som visas över feedbackformuläret (engelska)','Text shown above the feedback form (English)')} value={ev.settings?.messages?.thankYou?.en||''} onChange={(e)=>updateField(id,['settings','messages','thankYou','en'], e.target.value)} />
                 </div>
               </div>
             </div>
@@ -575,7 +575,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
               <div className="flex items-center justify-between mb-2">
                 <div className="text-sm text-neutral-700">{L('Varor','Items')}</div>
                 <div className="flex items-center gap-2">
-                  <button type="button" className="btn-outline text-xs" onClick={()=>addItem(id)}>{L('Lägg till vara','Add item')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>addItem(id)} title={L('Lägg till en ny vara längst ned','Add a new item at the end')}>{L('Lägg till vara','Add item')}</button>
                   <button type="button" className="btn-outline text-xs" onClick={()=>exportItemsCsv(id)} title={L('Exportera varor som CSV','Export items as CSV')}>CSV {L('Export','Export')}</button>
                   <button type="button" className="btn-outline text-xs" onClick={downloadTemplateCsv} title={L('Ladda ned CSV-mall','Download CSV template')}>{L('CSV‑mall','CSV template')}</button>
                   <label className="btn-outline text-xs cursor-pointer" title={L('Importera varor från CSV','Import items from CSV')}>
@@ -584,9 +584,17 @@ export default function LiveActionAdmin({ data, setData, L }) {
                   </label>
                 </div>
               </div>
+              <details className="mb-3">
+                <summary className="cursor-pointer text-xs text-neutral-700">{L('Tips & Hjälp','Tips & Help')}</summary>
+                <div className="mt-2 text-xs text-neutral-700 space-y-1">
+                  <div>• {L('Dra en vara för att ändra ordning.','Drag an item to re‑order.')}</div>
+                  <div>• {L('Kortkommandon: Mellanslag = Start/Stop, N = Nästa, S = Såld.','Shortcuts: Space = Start/Stop, N = Next, S = Sold.')}</div>
+                  <div>• {L('CSV‑import stödjer beskrivning och taggar ("tags" separerade med |).','CSV import supports description and tags ("tags" separated by |).')}</div>
+                </div>
+              </details>
               <div className="grid gap-3">
                 {(ev.items||[]).map((it, idx) => (
-                  <div key={idx} className="p-3 rounded border bg-white" draggable onDragStart={dragStart(id, idx)} onDragOver={dragOver(idx)} onDrop={dropOn(id, idx)}>
+                  <div key={idx} className="p-3 rounded border bg-white" draggable onDragStart={dragStart(id, idx)} onDragOver={dragOver(idx)} onDrop={dropOn(id, idx)} title={L('Dra för att ändra ordning','Drag to re‑order')}>
                     <div className="grid md:grid-cols-4 gap-3 items-start">
                       <div>
                         <div className="aspect-[4/3] bg-neutral-100 rounded overflow-hidden grid place-items-center text-neutral-500">
@@ -600,17 +608,17 @@ export default function LiveActionAdmin({ data, setData, L }) {
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-xs text-neutral-600 mb-1">{L('Titel (SV)','Title (SV)')}</label>
-                        <input className="w-full border rounded px-3 py-2" value={it.title?.sv||''} onChange={(e)=>updateField(id,['items',idx,'title','sv'], e.target.value)} />
+                        <input className="w-full border rounded px-3 py-2" title={L('Svensk titel som visas publikt','Swedish title shown publicly')} value={it.title?.sv||''} onChange={(e)=>updateField(id,['items',idx,'title','sv'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Title (EN)','Title (EN)')}</label>
-                        <input className="w-full border rounded px-3 py-2" value={it.title?.en||''} onChange={(e)=>updateField(id,['items',idx,'title','en'], e.target.value)} />
+                        <input className="w-full border rounded px-3 py-2" title={L('Engelsk titel som visas publikt','English title shown publicly')} value={it.title?.en||''} onChange={(e)=>updateField(id,['items',idx,'title','en'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Beskrivning (SV)','Description (SV)')}</label>
-                        <textarea className="w-full border rounded px-3 py-2" value={it.desc?.sv||''} onChange={(e)=>updateField(id,['items',idx,'desc','sv'], e.target.value)} />
+                        <textarea className="w-full border rounded px-3 py-2" title={L('Svensk beskrivning (valfritt)','Swedish description (optional)')} value={it.desc?.sv||''} onChange={(e)=>updateField(id,['items',idx,'desc','sv'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Description (EN)','Description (EN)')}</label>
-                        <textarea className="w-full border rounded px-3 py-2" value={it.desc?.en||''} onChange={(e)=>updateField(id,['items',idx,'desc','en'], e.target.value)} />
+                        <textarea className="w-full border rounded px-3 py-2" title={L('Engelsk beskrivning (valfritt)','English description (optional)')} value={it.desc?.en||''} onChange={(e)=>updateField(id,['items',idx,'desc','en'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Utropspris (SEK)','Start price (SEK)')}</label>
-                        <input className="w-full border rounded px-3 py-2" value={it.startPrice||''} onChange={(e)=>updateField(id,['items',idx,'startPrice'], e.target.value)} />
+                        <input className="w-full border rounded px-3 py-2" title={L('Visas publikt som referenspris','Shown publicly as a reference price')} value={it.startPrice||''} onChange={(e)=>updateField(id,['items',idx,'startPrice'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Taggar (komma-separerade)','Tags (comma-separated)')}</label>
-                        <input className="w-full border rounded px-3 py-2" value={(it.tags||[]).join(', ')} onChange={(e)=>updateField(id,['items',idx,'tags'], e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} />
+                        <input className="w-full border rounded px-3 py-2" title={L('Skriv taggar separerade med komma – t.ex. antik, keramik','Write tags separated by commas – e.g., antique, ceramic')} value={(it.tags||[]).join(', ')} onChange={(e)=>updateField(id,['items',idx,'tags'], e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} />
                         <div className="mt-2 text-sm text-neutral-700">
                           {it.sold ? (
                             <span>{L('SÅLD','SOLD')} · {parseFloat(it.finalPrice||0).toLocaleString('sv-SE')} SEK</span>
@@ -620,9 +628,9 @@ export default function LiveActionAdmin({ data, setData, L }) {
                         </div>
                       </div>
                       <div className="flex flex-col items-stretch gap-2">
-                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, -1)}>{L('Upp','Up')}</button>
-                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, +1)}>{L('Ner','Down')}</button>
-                        <button type="button" className="btn-outline text-xs" onClick={()=>removeItem(id, idx)}>{L('Ta bort','Remove')}</button>
+                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, -1)} title={L('Flytta upp','Move up')}>{L('Upp','Up')}</button>
+                        <button type="button" className="btn-outline text-xs" onClick={()=>moveItem(id, idx, +1)} title={L('Flytta ned','Move down')}>{L('Ner','Down')}</button>
+                        <button type="button" className="btn-outline text-xs" onClick={()=>removeItem(id, idx)} title={L('Ta bort denna vara','Remove this item')}>{L('Ta bort','Remove')}</button>
                       </div>
                     </div>
                   </div>

@@ -7,10 +7,26 @@ import LiveActionAdmin from './LiveActionAdmin.jsx'
 import Sparkline from '../components/Sparkline.jsx'
 import { queryEvents as analyticsQueryEvents, summarize as analyticsSummarize, bucketize as analyticsBucketize, exportAnalyticsCsv as analyticsExportAnalyticsCsv, exportEventsCsv as analyticsExportEventsCsv, previousRange as analyticsPreviousRange } from '../services/analytics'
 
-function Section({ id, title, children, visible = true }) {
+function Section({ id, title, children, visible = true, help }) {
+  const [showHelp, setShowHelp] = React.useState(false)
   return (
     <section id={id} className={`section-card p-5 ${visible ? '' : 'hidden'}`}>
-      <h2 className="font-serif text-2xl mb-4">{title}</h2>
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <h2 className="font-serif text-2xl">{title}</h2>
+        {help ? (
+          <button
+            type="button"
+            className="btn-outline text-xs whitespace-nowrap"
+            onClick={()=>setShowHelp(v=>!v)}
+            aria-expanded={showHelp}
+            aria-controls={`${id}-help`}
+            title="Help / Hjälp"
+          >{showHelp ? '✕ ' : '❓ '}Help</button>
+        ) : null}
+      </div>
+      {help && showHelp && (
+        <div id={`${id}-help`} className="mb-4 p-3 rounded border bg-neutral-50 text-sm text-neutral-700 whitespace-pre-wrap">{help}</div>
+      )}
       {children}
     </section>
   )
@@ -582,7 +598,7 @@ export default function Admin() {
           <div className="col-span-12 md:col-span-9 lg:col-span-9 grid gap-6">
 
         {/* Analytics Dashboard */}
-        <Section id="admin-analytics" title={L('Analys','Analytics Dashboard')} visible={isSectionVisible('admin-analytics')}>
+        <Section id="admin-analytics" title={L('Analys','Analytics Dashboard')} visible={isSectionVisible('admin-analytics')} help={L('Visa trafik, händelser och toppsektioner. Justera tidsintervall, filtrera på språk, enhet och sidor. Exportera CSV från panelen.','View traffic, events and top sections. Adjust time range, filter by language, device and routes. Export CSV from the dashboard.') }>
           <div className="grid md:grid-cols-4 gap-3 mb-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Tidsintervall','Time range')}</label>
@@ -814,7 +830,7 @@ export default function Admin() {
           </div>
         )}
 
-        <Section id="admin-header" title={L('Header','Header')} visible={isSectionVisible('admin-header')}>
+        <Section id="admin-header" title={L('Header','Header')} visible={isSectionVisible('admin-header')} help={L('Ställ in logotyp, navigationsetiketter och aktiva språk.','Configure logo, navigation labels, and active languages.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
             <span>{L('Visa header','Show header')}</span>
@@ -865,7 +881,7 @@ export default function Admin() {
         {/* Registration moved to Engagement group below (after Ratings) */}
 
         {/* Marketing: Newsletter, Share, Chat */}
-        <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')} visible={isSectionVisible('admin-newsletter')}>
+        <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')} visible={isSectionVisible('admin-newsletter')} help={L('Aktivera popup för nyhetsbrev. Anpassa rubriker, fält och triggrar (timer eller scroll).','Enable the newsletter popup. Customize titles, fields and triggers (timer or scroll).') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera popup','Enable popup')}</span>
@@ -910,7 +926,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-share" title={L('Dela (Social)','Share (Social)')} visible={isSectionVisible('admin-share')}>
+        <Section id="admin-share" title={L('Dela (Social)','Share (Social)')} visible={isSectionVisible('admin-share')} help={L('Aktivera delningsmenyn och välj kanaler (Facebook, Twitter m.fl.).','Enable the share menu and choose platforms (Facebook, Twitter, etc.).') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.share?.enabled} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.enabled=e.target.checked; setData(n)}} />
             <span>{L('Aktivera delningsmeny','Enable share menu')}</span>
@@ -951,7 +967,7 @@ export default function Admin() {
           </p>
         </Section>
 
-        <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')} visible={isSectionVisible('admin-chat')}>
+        <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')} visible={isSectionVisible('admin-chat')} help={L('Aktivera WhatsApp-chatt och hälsningsmeddelande. Ange telefonnummer i E.164-format.','Enable WhatsApp chat and greeting text. Provide phone number in E.164 format.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.chat?.enabled} onChange={(e)=>{const n={...data}; n.chat = n.chat||{}; n.chat.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera WhatsApp-chat','Enable WhatsApp chat')}</span>
@@ -986,7 +1002,7 @@ export default function Admin() {
 
         {/* Newsletter moved above into Marketing group */}
 
-        <Section id="admin-faq" title="FAQ" visible={isSectionVisible('admin-faq')}>
+        <Section id="admin-faq" title="FAQ" visible={isSectionVisible('admin-faq')} help={L('Hantera vanliga frågor och svar. Lägg till, redigera och ordna poster.','Manage frequently asked questions. Add, edit, and arrange entries.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.faq?.visible} onChange={(e)=>{const n={...data}; n.faq = n.faq||{}; n.faq.visible = e.target.checked; setData(n)}} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -1022,7 +1038,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')} visible={isSectionVisible('admin-hero')}>
+        <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')} visible={isSectionVisible('admin-hero')} help={L('Hjälptext: Startsektion på hemsidan. Ange bakgrundsbild, nästa auktioner och CTA-knapp.','Help: Home hero section. Set background image, next auctions and CTA link/text.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
             <span>{L('Visa hero','Show hero')}</span>
@@ -1061,7 +1077,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-auctions" title={L('Kommande Auktioner','Upcoming Auctions')} visible={isSectionVisible('admin-auctions')}>
+        <Section id="admin-auctions" title={L('Kommande Auktioner','Upcoming Auctions')} visible={isSectionVisible('admin-auctions')} help={L('Lägg till och redigera platsauktioner med adress, visningstid, datum och start. Du kan skapa Live‑Event direkt från en auktion.','Add and edit in‑person auctions with address, viewing window, date and start time. You can create a Live Event directly from an auction.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -1095,7 +1111,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-items" title={L('Auktionsvaror','Auction Items')} visible={isSectionVisible('admin-items')}>
+        <Section id="admin-items" title={L('Auktionsvaror','Auction Items')} visible={isSectionVisible('admin-items')} help={L('Kategorisera och lista varor som visas på publika sidan. Varje post kan ha namn, typ, storlek och pris.','Categorize and list items shown on the public site. Each entry may include name, type, size and price.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.items.visible} onChange={handleToggle(['items','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -1106,7 +1122,7 @@ export default function Admin() {
         </Section>
 
         {/* Engagement: Registration then Ratings */}
-        <Section id="admin-registration" title={L('Registrering','Registration')} visible={isSectionVisible('admin-registration')}>
+        <Section id="admin-registration" title={L('Registrering','Registration')} visible={isSectionVisible('admin-registration')} help={L('Aktivera besökaranmälan före auktion. Ställ in fält och egna frågor. Exportera inskick via CSV.','Enable visitor registration before auctions. Configure fields and custom questions. Export submissions via CSV.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.registration?.enabled} onChange={(e)=>{const n={...data}; n.registration=n.registration||{}; n.registration.enabled=e.target.checked; setData(n)}} />
             <span>{L('Aktivera registrering','Enable registration')}</span>
@@ -1185,7 +1201,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-ratings" title={L('Betyg','Ratings')} visible={isSectionVisible('admin-ratings')}>
+        <Section id="admin-ratings" title={L('Betyg','Ratings')} visible={isSectionVisible('admin-ratings')} help={L('Aktivera stjärnbetyg för att samla in omdömen från besökare.','Enable star ratings to collect visitor feedback.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.ratings?.enabled} onChange={(e)=>{const n={...data}; n.ratings = n.ratings||{}; n.ratings.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera betygssystem (stjärnor)','Enable ratings (stars)')}</span>
@@ -1196,11 +1212,11 @@ export default function Admin() {
         </Section>
 
         {/* Live Action (Admin) */}
-        <Section id="admin-liveaction" title={L('Action (Live)','Action (Live)')} visible={isSectionVisible('admin-liveaction')}>
+        <Section id="admin-liveaction" title={L('Action (Live)','Action (Live)')} visible={isSectionVisible('admin-liveaction')} help={L('Skapa live‑event, länka till Kommande Auktioner, lägg in varor. Styr i realtid: Start/Stop, Visa nästa, Markera såld. CSV‑import/export stöds.','Create live events, link to Upcoming Auctions, add items. Control in real‑time: Start/Stop, Reveal next, Mark sold. CSV import/export supported.') }>
           <LiveActionAdmin data={data} setData={setData} L={L} />
         </Section>
 
-        <Section id="admin-terms" title={L('Auktionsvillkor','Terms')} visible={isSectionVisible('admin-terms')}>
+        <Section id="admin-terms" title={L('Auktionsvillkor','Terms')} visible={isSectionVisible('admin-terms')} help={L('Redigera villkorstexter på svenska och engelska.','Edit terms text in Swedish and English.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.terms.visible} onChange={handleToggle(['terms','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -1213,7 +1229,7 @@ export default function Admin() {
           ))}
         </Section>
 
-        <Section id="admin-instagram" title={L('Instagram','Instagram')} visible={isSectionVisible('admin-instagram')}>
+        <Section id="admin-instagram" title={L('Instagram','Instagram')} visible={isSectionVisible('admin-instagram')} help={L('Visa ett Instagramflöde på webbplatsen. Ange användarnamn och token.','Show an Instagram feed on the website. Provide username and token.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.instagram.visible} onChange={handleToggle(['instagram','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -1230,7 +1246,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-maps" title={L('Google Maps','Google Maps')} visible={isSectionVisible('admin-maps')}>
+        <Section id="admin-maps" title={L('Google Maps','Google Maps')} visible={isSectionVisible('admin-maps')} help={L('Ange Google Maps API‑nyckel, språk och standardzoom.','Provide Google Maps API key, language and default zoom.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.maps?.visible} onChange={handleToggle(['maps','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
@@ -1249,7 +1265,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-footer" title={L('Footer','Footer')} visible={isSectionVisible('admin-footer')}>
+        <Section id="admin-footer" title={L('Footer','Footer')} visible={isSectionVisible('admin-footer')} help={L('Redigera kontaktuppgifter, logotyp och sociala länkar i sidfoten.','Edit contact details, logo and social links in the footer.') }>
           <label className="flex items-center gap-2 mb-3">
             <Toggle checked={!!data.footer.visible} onChange={handleToggle(['footer','visible'])} />
             <span>{L('Visa footer','Show footer')}</span>
@@ -1304,7 +1320,7 @@ export default function Admin() {
           </div>
         </Section>
 
-        <Section id="admin-subscribers" title={L('Prenumeranter','Subscribers')} visible={isSectionVisible('admin-subscribers')}>
+        <Section id="admin-subscribers" title={L('Prenumeranter','Subscribers')} visible={isSectionVisible('admin-subscribers')} help={L('Visa och exportera nya prenumeranter som samlats in via nyhetsbrevs‑popupen.','View and export newsletter subscribers collected via the popup.') }>
           <div className="flex items-center justify-between mb-3">
             <div className="text-sm text-neutral-600">{L('Totalt','Total')}: {subscribers.length}</div>
             <button type="button" className="btn-outline" onClick={exportCsv}>{L('Exportera CSV','Export CSV')}</button>
