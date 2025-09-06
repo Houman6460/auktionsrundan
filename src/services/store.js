@@ -160,9 +160,9 @@ const defaults = {
         linkedAuctionIndex: 0,
         items: [
           { title: { sv: 'Antik väggklocka', en: 'Antique Wall Clock' }, desc: { sv: 'Fungerande, tidigt 1900-tal.', en: 'Working, early 20th century.' }, tags: ['antik','klocka'], startPrice: '300', img: 'https://images.unsplash.com/photo-1497493292307-31c376b6e479?q=80&w=1600&auto=format&fit=crop', sold: true,  finalPrice: '800' },
-          { title: { sv: 'Oljemålning, landskap', en: 'Oil Painting, Landscape' }, desc: { sv: 'Signerad, ramad.', en: 'Signed, framed.' }, tags: ['konst','målning'], startPrice: '900', img: 'https://images.unsplash.com/photo-1473186578172-c141e6798cf4?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Oljemålning, landskap', en: 'Oil Painting, Landscape' }, desc: { sv: 'Signerad, ramad.', en: 'Signed, framed.' }, tags: ['konst','målning'], startPrice: '900', img: 'https://images.unsplash.com/photo-1473186578172-c141e6798cf4?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '1400' },
           { title: { sv: 'Matta, persisk', en: 'Rug, Persian' }, desc: { sv: 'Ull, bra skick.', en: 'Wool, good condition.' }, tags: ['matta','persisk'], startPrice: '1500', img: 'https://images.unsplash.com/photo-1582582494700-1cdfd6d58f95?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
-          { title: { sv: 'Karmstol, vintage', en: 'Vintage Armchair' }, desc: { sv: 'Trä och tyg, bekväm.', en: 'Wood and fabric, comfortable.' }, tags: ['möbler','stol'], startPrice: '700', img: 'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Karmstol, vintage', en: 'Vintage Armchair' }, desc: { sv: 'Trä och tyg, bekväm.', en: 'Wood and fabric, comfortable.' }, tags: ['möbler','stol'], startPrice: '700', img: 'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '1150' },
           { title: { sv: 'Bordslampa, mässing', en: 'Brass Table Lamp' }, desc: { sv: 'Ny el, fungerar.', en: 'Rewired, working.' }, tags: ['belysning','lampa'], startPrice: '450', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
           { title: { sv: 'Vitrinskåp', en: 'Display Cabinet' }, desc: { sv: 'Glasdörrar, 1900-tal.', en: 'Glass doors, 20th century.' }, tags: ['möbler','skåp'], startPrice: '1800', img: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
           { title: { sv: 'Silverbestick (6 pers)', en: 'Silver Cutlery (6p)' }, desc: { sv: 'Komplett set.', en: 'Complete set.' }, tags: ['silver','bestick'], startPrice: '1200', img: 'https://images.unsplash.com/photo-1610398502695-932ce4c317b4?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
@@ -171,6 +171,14 @@ const defaults = {
           { title: { sv: 'Soffbord, teak', en: 'Teak Coffee Table' }, desc: { sv: 'Skandinaviskt 60-tal.', en: 'Scandinavian 60s.' }, tags: ['möbler','bord'], startPrice: '1100', img: 'https://images.unsplash.com/photo-1622015663319-f06a2e6c6c5a?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
           { title: { sv: 'Kristallkrona', en: 'Crystal Chandelier' }, desc: { sv: 'Komplett, fungerande.', en: 'Complete, working.' }, tags: ['belysning','krona'], startPrice: '2400', img: 'https://images.unsplash.com/photo-1503951458645-643d53bfd90f?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
           { title: { sv: 'Byrå, ek', en: 'Oak Dresser' }, desc: { sv: 'Fyra lådor.', en: 'Four drawers.' }, tags: ['möbler','byrå'], startPrice: '1600', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Kista, allmoge', en: 'Folk Art Chest' }, desc: { sv: 'Målad, 1800-tal.', en: 'Painted, 19th century.' }, tags: ['allmoge','kista'], startPrice: '2000', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Karaff, kristall', en: 'Crystal Decanter' }, desc: { sv: 'Slipad kristall.', en: 'Cut crystal.' }, tags: ['kristall','karaff'], startPrice: '500', img: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Pinnstolar, 4 st', en: 'Windsor Chairs, set of 4' }, desc: { sv: 'Stabila.', en: 'Sturdy.' }, tags: ['möbler','stolar'], startPrice: '900', img: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '1600' },
+          { title: { sv: 'Tavla, abstrakt', en: 'Abstract Painting' }, desc: { sv: 'Signatur n.a.', en: 'Unsigned.' }, tags: ['konst','abstrakt'], startPrice: '700', img: 'https://images.unsplash.com/photo-1472289065668-ce650ac443d2?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Klocka, golvur', en: 'Grandfather Clock' }, desc: { sv: 'Behöver service.', en: 'Needs service.' }, tags: ['antik','klocka'], startPrice: '2200', img: 'https://images.unsplash.com/photo-1497493292307-31c376b6e479?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Bokhylla, teak', en: 'Teak Bookcase' }, desc: { sv: 'Just ställbar.', en: 'Adjustable shelves.' }, tags: ['möbler','hylla'], startPrice: '1400', img: 'https://images.unsplash.com/photo-1455885662569-0b3b988f77f8?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Servis, Rörstrand', en: 'Rörstrand Dinnerware' }, desc: { sv: '24 delar.', en: '24 pieces.' }, tags: ['porslin'], startPrice: '800', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '1200' },
+          { title: { sv: 'Matbord, ek', en: 'Oak Dining Table' }, desc: { sv: '6–8 pers.', en: 'Seats 6–8.' }, tags: ['möbler','bord'], startPrice: '2800', img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
         ],
         settings: {
           durationMinutes: 60,
@@ -179,7 +187,14 @@ const defaults = {
           feedback: { enabled: true, rating: true, notes: true, contact: true },
           messages: { thankYou: { sv: 'Tack! Vi uppskattar din feedback.', en: 'Thank you! We appreciate your feedback.' } }
         },
-        state: { started: true, currentIndex: 1, startedAt: Date.now() - 2*60*1000, endedAt: 0, salesLog: [ { index: 0, price: 800, ts: Date.now() - 90*1000 }, { index: 7, price: 420, ts: Date.now() - 30*1000 } ] },
+        state: { started: true, currentIndex: 4, startedAt: Date.now() - 3*60*1000, endedAt: 0, salesLog: [
+          { index: 0, price: 800, ts: Date.now() - 160*1000 },
+          { index: 1, price: 1400, ts: Date.now() - 140*1000 },
+          { index: 3, price: 1150, ts: Date.now() - 120*1000 },
+          { index: 7, price: 420, ts: Date.now() - 60*1000 },
+          { index: 14, price: 1600, ts: Date.now() - 40*1000 },
+          { index: 19, price: 0, ts: Date.now() - 10*1000 } // placeholder future sale
+        ] },
         feedbackSubmissions: []
       },
       'act-demo-past': {
