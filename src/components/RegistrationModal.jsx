@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { loadContent, saveContent } from '../services/store'
 
@@ -16,6 +17,7 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
   }, [open])
 
   if (!open) return null
+  if (typeof document === 'undefined') return null
 
   const onChange = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const onAnswer = (qid, value) => (e) => {
@@ -56,15 +58,15 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-[60] grid items-start justify-center bg-black/30 p-4 overflow-y-auto" role="dialog" aria-modal="true">
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] grid items-start justify-center bg-black/30 p-4 overflow-y-auto" role="dialog" aria-modal="true">
       <div className="w-full max-w-lg max-h-[85vh] sm:max-h-[90vh] bg-white rounded-lg shadow-lg overflow-hidden flex flex-col min-h-0" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
         <div className="px-4 py-3 border-b flex items-center justify-between gap-2 shrink-0">
           <h3 className="font-serif text-lg flex-1">{t('auctions.reg_title')} — {title}</h3>
           <button className="btn-outline text-xs" onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <form id={`reg-form-${auctionId}`} onSubmit={submit} className="flex flex-col flex-1 min-h-0">
-          <div className="flex-1 overflow-y-auto p-4 pb-20 grid gap-3">
+        <form id={`reg-form-${auctionId}`} onSubmit={submit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 grid gap-3">
             {settings?.fields?.name && (
               <div>
                 <label className="block text-sm text-neutral-600 mb-1">{t('auctions.reg_name')}</label>
@@ -104,12 +106,13 @@ export default function RegistrationModal({ open, onClose, auctionId, title }) {
               </div>
             ))}
           </div>
-          <div className="sticky bottom-0 bg-white border-t px-4 py-3 flex items-center justify-end gap-2">
+          <div className="shrink-0 bg-white border-t px-4 py-3 flex items-center justify-end gap-2">
             <button type="button" className="btn-outline" onClick={onClose}>Avbryt</button>
             <button type="submit" className="btn-primary">{t('auctions.reg_submit')}</button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
