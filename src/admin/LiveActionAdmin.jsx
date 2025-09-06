@@ -81,6 +81,8 @@ function downloadBlob(filename, mime, data) {
 
 export default function LiveActionAdmin({ data, setData, L }) {
   const [linkCopied, setLinkCopied] = React.useState(null)
+  const [activeEventId, setActiveEventId] = React.useState(null)
+  const [dragging, setDragging] = React.useState({ eventId: null, from: -1 })
 
   const actions = (data.actions && typeof data.actions === 'object') ? data.actions : { order: [], events: {} }
   const auctionsList = (data.auctions && Array.isArray(data.auctions.list)) ? data.auctions.list : []
@@ -109,7 +111,15 @@ export default function LiveActionAdmin({ data, setData, L }) {
         visible: false,
         linkedAuctionIndex: null,
         items: [],
-        state: { started: false, currentIndex: -1 }
+        settings: {
+          durationMinutes: 60,
+          postMinutes: 10,
+          publicDisplay: { showTotals: true, showSold: true },
+          feedback: { enabled: true, rating: true, notes: true, contact: true },
+          messages: { thankYou: { sv: 'Tack! Vi uppskattar din feedback.', en: 'Thank you! We appreciate your feedback.' } }
+        },
+        state: { started: false, currentIndex: -1, startedAt: 0, endedAt: 0, salesLog: [] },
+        feedbackSubmissions: []
       }
       if (!next.actions.order.includes(id)) next.actions.order.unshift(id)
       saveNow(next)
@@ -154,7 +164,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
     upsert(data, setData, (next) => {
       const ev = next.actions.events[id]
       ev.items = Array.isArray(ev.items) ? ev.items : []
-      ev.items.push({ title: { sv: 'Ny vara', en: 'New item' }, startPrice: '', img: '', sold: false, finalPrice: '' })
+      ev.items.push({ title: { sv: 'Ny vara', en: 'New item' }, desc: { sv: '', en: '' }, tags: [], startPrice: '', img: '', sold: false, finalPrice: '' })
       saveNow(next)
     })
   }
@@ -180,9 +190,60 @@ export default function LiveActionAdmin({ data, setData, L }) {
     })
   }
 
+  const dragStart = (eventId, idx) => (e) => {
+    setDragging({ eventId, from: idx })
+    try { e.dataTransfer.effectAllowed = 'move' } catch {}
+  }
+  const dragOver = (idx) => (e) => {
+    e.preventDefault()
+    try { e.dataTransfer.dropEffect = 'move' } catch {}
+  }
+  const dropOn = (eventId, to) => (e) => {
+    e.preventDefault()
+    const { eventId: evId, from } = dragging
+    setDragging({ eventId: null, from: -1 })
+    if (evId !== eventId || from === -1 || from === to) return
+    upsert(data, setData, (next) => {
+      const ev = next.actions.events[eventId]
+      const arr = ev.items
+      const item = arr.splice(from, 1)[0]
+      arr.splice(to, 0, item)
+      saveNow(next)
+    })
+  }
+
+  async function fileToCompressedDataUrl(file, maxDim = 1600, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const img = new Image()
+        img.onload = () => {
+          const w = img.naturalWidth || img.width
+          const h = img.naturalHeight || img.height
+          let tw = w, th = h
+          if (w > h && w > maxDim) { tw = maxDim; th = Math.round(h * (maxDim / w)) }
+          else if (h >= w && h > maxDim) { th = maxDim; tw = Math.round(w * (maxDim / h)) }
+          const canvas = document.createElement('canvas')
+          canvas.width = tw; canvas.height = th
+          const ctx = canvas.getContext('2d')
+          const type = (file && file.type) ? file.type.toLowerCase() : ''
+          if (type.includes('svg')) return resolve(reader.result)
+          if (type.includes('png')) { ctx.drawImage(img, 0, 0, tw, th); try { return resolve(canvas.toDataURL('image/png')) } catch { return resolve(canvas.toDataURL()) } }
+          ctx.save(); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,tw,th); ctx.restore()
+          ctx.drawImage(img, 0, 0, tw, th)
+          try { resolve(canvas.toDataURL('image/jpeg', quality)) } catch { resolve(canvas.toDataURL()) }
+        }
+        img.onerror = () => resolve(reader.result)
+        img.src = reader.result
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
   const uploadImg = async (id, idx, file) => {
     try {
-      const dataUrl = await fileToDataUrl(file)
+      const dataUrl = await fileToCompressedDataUrl(file)
       upsert(data, setData, (next) => {
         const ev = next.actions.events[id]
         ev.items[idx].img = dataUrl
@@ -196,6 +257,8 @@ export default function LiveActionAdmin({ data, setData, L }) {
       const ev = next.actions.events[id]
       ev.state = ev.state || { started: false, currentIndex: -1 }
       ev.state.started = true
+      ev.state.startedAt = Date.now()
+      ev.state.endedAt = 0
       if (ev.state.currentIndex < 0) ev.state.currentIndex = 0
       saveNow(next)
     })
@@ -206,6 +269,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
       const ev = next.actions.events[id]
       ev.state = ev.state || { started: false, currentIndex: -1 }
       ev.state.started = false
+      ev.state.endedAt = Date.now()
       saveNow(next)
     })
   }
@@ -232,6 +296,8 @@ export default function LiveActionAdmin({ data, setData, L }) {
     const price = String(p).replace(/[^0-9.,]/g,'').replace(',', '.')
     ev.items[cur].sold = true
     ev.items[cur].finalPrice = price
+    try { ev.state.salesLog = Array.isArray(ev.state.salesLog) ? ev.state.salesLog : [] } catch {}
+    ev.state.salesLog.push({ index: cur, price: parseFloat(price)||0, ts: Date.now() })
     setData(nextData)
     saveNow(nextData)
   }
@@ -247,13 +313,67 @@ export default function LiveActionAdmin({ data, setData, L }) {
 
   const getTotal = (ev) => (ev.items||[]).reduce((sum, it) => sum + (it.sold ? (parseFloat(it.finalPrice) || 0) : 0), 0)
 
+  const exportFeedbackCsv = (id) => {
+    const ev = actions.events[id]
+    if (!ev) return
+    const list = Array.isArray(ev.feedbackSubmissions) ? ev.feedbackSubmissions : []
+    const headers = ['ts','lang','overall','interested_indices','time_place','found_location','categories','notes','consent','name','email','tel']
+    const rows = list.map(f => [
+      new Date(f.ts||0).toISOString(),
+      csvEscape(f.lang||''),
+      csvEscape(f.overall||''),
+      csvEscape((f.interested||[]).join('|')),
+      csvEscape(f.timePlace||''),
+      csvEscape(f.foundLocation||''),
+      csvEscape(f.categories||''),
+      csvEscape(f.notes||''),
+      csvEscape(f.consent ? 'TRUE' : 'FALSE'),
+      csvEscape(f.consent ? (f.name||'') : ''),
+      csvEscape(f.consent ? (f.email||'') : ''),
+      csvEscape(f.consent ? (f.tel||'') : ''),
+    ])
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    downloadBlob(`live-action-feedback-${id}.csv`, 'text/csv;charset=utf-8;', csv)
+  }
+
+  const exportSalesCsv = (id) => {
+    const ev = actions.events[id]
+    if (!ev) return
+    const headers = ['index','title_sv','title_en','start_price','sold','final_price']
+    const rows = (ev.items||[]).map((it, i) => [
+      String(i),
+      csvEscape(it.title?.sv||''),
+      csvEscape(it.title?.en||''),
+      csvEscape(it.startPrice||''),
+      it.sold ? 'TRUE' : 'FALSE',
+      csvEscape(it.finalPrice||''),
+    ])
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    downloadBlob(`live-action-sales-${id}.csv`, 'text/csv;charset=utf-8;', csv)
+  }
+
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (!activeEventId) return
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return
+      if (e.code === 'Space') { e.preventDefault(); const ev = actions.events[activeEventId]; if (ev?.state?.started) stopEvent(activeEventId); else startEvent(activeEventId); }
+      else if (e.key?.toLowerCase() === 'n') { e.preventDefault(); revealNext(activeEventId) }
+      else if (e.key?.toLowerCase() === 's') { e.preventDefault(); markSold(activeEventId) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [activeEventId, actions])
+
   const exportItemsCsv = (id) => {
     const ev = actions.events[id]
     if (!ev) return
-    const headers = ['title_sv','title_en','start_price_sek','img','sold','final_price_sek']
+    const headers = ['title_sv','title_en','desc_sv','desc_en','tags','start_price_sek','img','sold','final_price_sek']
     const rows = (ev.items||[]).map(it => [
       csvEscape(it.title?.sv || ''),
       csvEscape(it.title?.en || ''),
+      csvEscape(it.desc?.sv || ''),
+      csvEscape(it.desc?.en || ''),
+      csvEscape((it.tags||[]).join('|')),
       csvEscape(it.startPrice || ''),
       csvEscape(it.img || ''),
       csvEscape(it.sold ? 'TRUE' : 'FALSE'),
@@ -264,8 +384,8 @@ export default function LiveActionAdmin({ data, setData, L }) {
   }
 
   const downloadTemplateCsv = () => {
-    const headers = ['title_sv','title_en','start_price_sek','img','sold','final_price_sek']
-    const sample = ['Exempelvara','Sample item','100','','FALSE','']
+    const headers = ['title_sv','title_en','desc_sv','desc_en','tags','start_price_sek','img','sold','final_price_sek']
+    const sample = ['Exempelvara','Sample item','Kort beskrivning','Short description','antik|retro','100','','FALSE','']
     const csv = [headers.join(','), sample.map(csvEscape).join(',')].join('\n')
     downloadBlob('live-action-items-template.csv', 'text/csv;charset=utf-8;', csv)
   }
@@ -281,22 +401,25 @@ export default function LiveActionAdmin({ data, setData, L }) {
       const idx = {
         sv: idxOf('title_sv'),
         en: idxOf('title_en'),
+        dsv: idxOf('desc_sv'),
+        den: idxOf('desc_en'),
+        tags: idxOf('tags'),
         start: idxOf('start_price_sek'),
         img: idxOf('img'),
         sold: idxOf('sold'),
         final: idxOf('final_price_sek'),
       }
-      const missing = ['title_sv','title_en','start_price_sek','img','sold','final_price_sek'].filter(h => !headers.includes(h))
-      if (missing.length) {
-        alert(L('Ogiltig CSV. Saknade kolumner: ','Invalid CSV. Missing columns: ') + missing.join(', '))
-        return
-      }
+      const required = ['title_sv','title_en','start_price_sek']
+      const missing = required.filter(h => !headers.includes(h))
+      if (missing.length) { alert(L('Ogiltig CSV. Saknade kolumner: ','Invalid CSV. Missing columns: ') + missing.join(', ')); return }
       const items = rows.slice(1).filter(r => r.some(cell => String(cell||'').trim() !== '')).map(r => {
         const soldRaw = String((idx.sold>=0 ? r[idx.sold] : '') || '').trim().toLowerCase()
         const isSold = ['true','1','yes','y','ja'].includes(soldRaw)
         const final = String((idx.final>=0 ? r[idx.final] : '') || '').replace(/[^0-9.,]/g,'').replace(',', '.')
         return {
           title: { sv: String((idx.sv>=0 ? r[idx.sv] : '') || '').trim(), en: String((idx.en>=0 ? r[idx.en] : '') || '').trim() },
+          desc: { sv: String((idx.dsv>=0 ? r[idx.dsv] : '') || '').trim(), en: String((idx.den>=0 ? r[idx.den] : '') || '').trim() },
+          tags: String((idx.tags>=0 ? r[idx.tags] : '') || '').split('|').map(s=>s.trim()).filter(Boolean),
           startPrice: String((idx.start>=0 ? r[idx.start] : '') || '').trim(),
           img: String((idx.img>=0 ? r[idx.img] : '') || '').trim(),
           sold: isSold,
@@ -336,7 +459,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
         const total = getTotal(ev)
         const publicUrl = (typeof window !== 'undefined') ? new URL(`/action/${id}`, window.location.origin).toString() : ''
         return (
-          <div key={id} className="section-card p-4">
+          <div key={id} className="section-card p-4" onMouseEnter={()=>setActiveEventId(id)}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
                 {/* Link to auction */}
@@ -393,6 +516,10 @@ export default function LiveActionAdmin({ data, setData, L }) {
                   <button type="button" className="btn-outline text-xs" onClick={()=>copyLink(id)}>{linkCopied===id ? L('Kopierad!','Copied!') : L('Kopiera länk','Copy link')}</button>
                   <button type="button" className="btn-outline text-xs" onClick={()=>removeEvent(id)}>{L('Ta bort','Remove')}</button>
                 </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <button type="button" className="btn-outline text-xs" onClick={()=>exportSalesCsv(id)} title={L('Exportera försäljning (CSV)','Export sales (CSV)')}>{L('Försäljning CSV','Sales CSV')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>exportFeedbackCsv(id)} title={L('Exportera feedback (CSV)','Export feedback (CSV)')}>{L('Feedback CSV','Feedback CSV')}</button>
+                </div>
               </div>
             </div>
 
@@ -410,6 +537,38 @@ export default function LiveActionAdmin({ data, setData, L }) {
                 </div>
               </div>
               <div className="text-xs text-neutral-600 mb-3">{L('Aktuell index','Current index')}: {Number.isInteger(ev.state?.currentIndex) ? ev.state.currentIndex : -1}</div>
+
+              {/* Event settings */}
+              <div className="grid md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs text-neutral-600 mb-1">{L('Varaktighet (minuter)','Duration (minutes)')}</label>
+                  <input type="number" min="1" className="w-full border rounded px-3 py-2" value={ev.settings?.durationMinutes||60} onChange={(e)=>updateField(id,['settings','durationMinutes'], Math.max(1, parseInt(e.target.value||'60',10)||60))} />
+                </div>
+                <div>
+                  <label className="block text-xs text-neutral-600 mb-1">{L('Efterfönster (minuter)','Post window (minutes)')}</label>
+                  <input type="number" min="0" className="w-full border rounded px-3 py-2" value={ev.settings?.postMinutes||10} onChange={(e)=>updateField(id,['settings','postMinutes'], Math.max(0, parseInt(e.target.value||'10',10)||10))} />
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.publicDisplay?.showTotals!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showTotals'], e.target.checked)} />{L('Visa totalsumma','Show total')}</label>
+                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.publicDisplay?.showSold!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showSold'], e.target.checked)} />{L('Visa sålda-status','Show sold status')}</label>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-3 mt-3">
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.enabled!==false} onChange={(e)=>updateField(id,['settings','feedback','enabled'], e.target.checked)} />{L('Feedback aktiv','Feedback enabled')}</label>
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.rating!==false} onChange={(e)=>updateField(id,['settings','feedback','rating'], e.target.checked)} />{L('Stjärnbetyg','Star rating')}</label>
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.notes!==false} onChange={(e)=>updateField(id,['settings','feedback','notes'], e.target.checked)} />{L('Anteckningar','Notes')}</label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700"><input type="checkbox" checked={ev.settings?.feedback?.contact!==false} onChange={(e)=>updateField(id,['settings','feedback','contact'], e.target.checked)} />{L('Kontaktuppgifter','Contact details')}</label>
+                </div>
+                <div>
+                  <label className="block text-xs text-neutral-600 mb-1">{L('Tack-meddelande (SV)','Thank-you message (SV)')}</label>
+                  <input className="w-full border rounded px-3 py-2" value={ev.settings?.messages?.thankYou?.sv||''} onChange={(e)=>updateField(id,['settings','messages','thankYou','sv'], e.target.value)} />
+                  <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Tack-meddelande (EN)','Thank-you message (EN)')}</label>
+                  <input className="w-full border rounded px-3 py-2" value={ev.settings?.messages?.thankYou?.en||''} onChange={(e)=>updateField(id,['settings','messages','thankYou','en'], e.target.value)} />
+                </div>
+              </div>
             </div>
 
             <div className="mt-3">
@@ -427,7 +586,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
               </div>
               <div className="grid gap-3">
                 {(ev.items||[]).map((it, idx) => (
-                  <div key={idx} className="p-3 rounded border bg-white">
+                  <div key={idx} className="p-3 rounded border bg-white" draggable onDragStart={dragStart(id, idx)} onDragOver={dragOver(idx)} onDrop={dropOn(id, idx)}>
                     <div className="grid md:grid-cols-4 gap-3 items-start">
                       <div>
                         <div className="aspect-[4/3] bg-neutral-100 rounded overflow-hidden grid place-items-center text-neutral-500">
@@ -444,8 +603,14 @@ export default function LiveActionAdmin({ data, setData, L }) {
                         <input className="w-full border rounded px-3 py-2" value={it.title?.sv||''} onChange={(e)=>updateField(id,['items',idx,'title','sv'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Title (EN)','Title (EN)')}</label>
                         <input className="w-full border rounded px-3 py-2" value={it.title?.en||''} onChange={(e)=>updateField(id,['items',idx,'title','en'], e.target.value)} />
+                        <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Beskrivning (SV)','Description (SV)')}</label>
+                        <textarea className="w-full border rounded px-3 py-2" value={it.desc?.sv||''} onChange={(e)=>updateField(id,['items',idx,'desc','sv'], e.target.value)} />
+                        <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Description (EN)','Description (EN)')}</label>
+                        <textarea className="w-full border rounded px-3 py-2" value={it.desc?.en||''} onChange={(e)=>updateField(id,['items',idx,'desc','en'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Utropspris (SEK)','Start price (SEK)')}</label>
                         <input className="w-full border rounded px-3 py-2" value={it.startPrice||''} onChange={(e)=>updateField(id,['items',idx,'startPrice'], e.target.value)} />
+                        <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Taggar (komma-separerade)','Tags (comma-separated)')}</label>
+                        <input className="w-full border rounded px-3 py-2" value={(it.tags||[]).join(', ')} onChange={(e)=>updateField(id,['items',idx,'tags'], e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} />
                         <div className="mt-2 text-sm text-neutral-700">
                           {it.sold ? (
                             <span>{L('SÅLD','SOLD')} · {parseFloat(it.finalPrice||0).toLocaleString('sv-SE')} SEK</span>

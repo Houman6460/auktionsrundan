@@ -353,6 +353,36 @@ export default function Admin() {
     setData(next)
   }
 
+  const createLiveEventFromAuction = (idx) => {
+    const next = { ...data }
+    // Ensure actions namespace exists
+    next.actions = (next.actions && typeof next.actions === 'object') ? next.actions : { order: [], events: {} }
+    next.actions.order = Array.isArray(next.actions.order) ? next.actions.order : []
+    next.actions.events = (next.actions.events && typeof next.actions.events === 'object') ? next.actions.events : {}
+    const id = 'act-' + Date.now()
+    const a = next.auctions.list[idx]
+    next.actions.events[id] = {
+      id,
+      title: { sv: a?.title?.sv || 'Live Event', en: a?.title?.en || 'Live Event' },
+      startIso: '',
+      visible: false,
+      linkedAuctionIndex: idx,
+      items: [],
+      settings: {
+        durationMinutes: 60,
+        postMinutes: 10,
+        publicDisplay: { showTotals: true, showSold: true },
+        feedback: { enabled: true, rating: true, notes: true, contact: true },
+        messages: { thankYou: { sv: 'Tack! Vi uppskattar din feedback.', en: 'Thank you! We appreciate your feedback.' } }
+      },
+      state: { started: false, currentIndex: -1, salesLog: [] }
+    }
+    if (!next.actions.order.includes(id)) next.actions.order.unshift(id)
+    setData(next)
+    // Auto-focus Live Action section for convenience
+    try { document.querySelector('a[href="#admin-liveaction"]').click() } catch {}
+  }
+
   const updateAuction = (idx, key, value) => {
     const next = { ...data }
     next.auctions.list[idx][key] = value
@@ -1058,6 +1088,7 @@ export default function Admin() {
                 </div>
                 <div className="mt-3 flex gap-2">
                   <button className="btn-outline" onClick={()=>removeAuction(idx)}>{L('Ta bort','Remove')}</button>
+                  <button className="btn-primary" onClick={()=>createLiveEventFromAuction(idx)}>{L('Skapa Live Event','Create Live Event')}</button>
                 </div>
               </div>
             ))}
