@@ -159,9 +159,18 @@ const defaults = {
         visible: false,
         linkedAuctionIndex: 0,
         items: [
-          { title: { sv: 'Antik väggklocka', en: 'Antique Wall Clock' }, desc: { sv: 'Fungerande, 1900-tal.', en: 'Working, early 20th century.' }, tags: ['antik','klocka'], startPrice: '300', img: '', sold: true,  finalPrice: '800' },
-          { title: { sv: 'Oljemålning, landskap', en: 'Oil Painting, Landscape' }, desc: { sv: 'Signerad, ramad.', en: 'Signed, framed.' }, tags: ['konst','målning'], startPrice: '900', img: '', sold: false, finalPrice: '' },
-          { title: { sv: 'Matta, persisk', en: 'Rug, Persian' }, desc: { sv: 'Ull, bra skick.', en: 'Wool, good condition.' }, tags: ['matta','persisk'], startPrice: '1500', img: '', sold: false, finalPrice: '' },
+          { title: { sv: 'Antik väggklocka', en: 'Antique Wall Clock' }, desc: { sv: 'Fungerande, tidigt 1900-tal.', en: 'Working, early 20th century.' }, tags: ['antik','klocka'], startPrice: '300', img: 'https://images.unsplash.com/photo-1497493292307-31c376b6e479?q=80&w=1600&auto=format&fit=crop', sold: true,  finalPrice: '800' },
+          { title: { sv: 'Oljemålning, landskap', en: 'Oil Painting, Landscape' }, desc: { sv: 'Signerad, ramad.', en: 'Signed, framed.' }, tags: ['konst','målning'], startPrice: '900', img: 'https://images.unsplash.com/photo-1473186578172-c141e6798cf4?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Matta, persisk', en: 'Rug, Persian' }, desc: { sv: 'Ull, bra skick.', en: 'Wool, good condition.' }, tags: ['matta','persisk'], startPrice: '1500', img: 'https://images.unsplash.com/photo-1582582494700-1cdfd6d58f95?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Karmstol, vintage', en: 'Vintage Armchair' }, desc: { sv: 'Trä och tyg, bekväm.', en: 'Wood and fabric, comfortable.' }, tags: ['möbler','stol'], startPrice: '700', img: 'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Bordslampa, mässing', en: 'Brass Table Lamp' }, desc: { sv: 'Ny el, fungerar.', en: 'Rewired, working.' }, tags: ['belysning','lampa'], startPrice: '450', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Vitrinskåp', en: 'Display Cabinet' }, desc: { sv: 'Glasdörrar, 1900-tal.', en: 'Glass doors, 20th century.' }, tags: ['möbler','skåp'], startPrice: '1800', img: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Silverbestick (6 pers)', en: 'Silver Cutlery (6p)' }, desc: { sv: 'Komplett set.', en: 'Complete set.' }, tags: ['silver','bestick'], startPrice: '1200', img: 'https://images.unsplash.com/photo-1610398502695-932ce4c317b4?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Vas, keramik', en: 'Ceramic Vase' }, desc: { sv: 'Handgjord.', en: 'Handmade.' }, tags: ['keramik','inredning'], startPrice: '250', img: 'https://images.unsplash.com/photo-1612198186444-8f3fbd3a1f3b?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '420' },
+          { title: { sv: 'Spegel, förgylld', en: 'Gilded Mirror' }, desc: { sv: 'Dekorativ ram.', en: 'Decorative frame.' }, tags: ['inredning','spegel'], startPrice: '900', img: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Soffbord, teak', en: 'Teak Coffee Table' }, desc: { sv: 'Skandinaviskt 60-tal.', en: 'Scandinavian 60s.' }, tags: ['möbler','bord'], startPrice: '1100', img: 'https://images.unsplash.com/photo-1622015663319-f06a2e6c6c5a?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Kristallkrona', en: 'Crystal Chandelier' }, desc: { sv: 'Komplett, fungerande.', en: 'Complete, working.' }, tags: ['belysning','krona'], startPrice: '2400', img: 'https://images.unsplash.com/photo-1503951458645-643d53bfd90f?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Byrå, ek', en: 'Oak Dresser' }, desc: { sv: 'Fyra lådor.', en: 'Four drawers.' }, tags: ['möbler','byrå'], startPrice: '1600', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
         ],
         settings: {
           durationMinutes: 60,
@@ -170,7 +179,7 @@ const defaults = {
           feedback: { enabled: true, rating: true, notes: true, contact: true },
           messages: { thankYou: { sv: 'Tack! Vi uppskattar din feedback.', en: 'Thank you! We appreciate your feedback.' } }
         },
-        state: { started: true, currentIndex: 1, startedAt: Date.now() - 5*60*1000, endedAt: 0, salesLog: [ { index: 0, price: 800, ts: Date.now() - 4*60*1000 } ] },
+        state: { started: true, currentIndex: 1, startedAt: Date.now() - 2*60*1000, endedAt: 0, salesLog: [ { index: 0, price: 800, ts: Date.now() - 90*1000 }, { index: 7, price: 420, ts: Date.now() - 30*1000 } ] },
         feedbackSubmissions: []
       },
       'act-demo-past': {
@@ -180,9 +189,14 @@ const defaults = {
         visible: true,
         linkedAuctionIndex: 1,
         items: [
-          { title: { sv: 'Porslin, servis', en: 'Porcelain set' }, desc: { sv: '12 delar.', en: '12 pieces.' }, tags: ['porslin'], startPrice: '400', img: '', sold: true,  finalPrice: '950' },
-          { title: { sv: 'Golvlampa', en: 'Floor Lamp' }, desc: { sv: 'Fint skick.', en: 'Great condition.' }, tags: ['belysning'], startPrice: '300', img: '', sold: false, finalPrice: '' },
-          { title: { sv: 'Skåp, 1900-tal', en: 'Cabinet, 20th century' }, desc: { sv: 'Massivt trä.', en: 'Solid wood.' }, tags: ['möbler'], startPrice: '1200', img: '', sold: true, finalPrice: '2200' },
+          { title: { sv: 'Porslin, servis', en: 'Porcelain Set' }, desc: { sv: '12 delar.', en: '12 pieces.' }, tags: ['porslin'], startPrice: '400', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1600&auto=format&fit=crop', sold: true,  finalPrice: '950' },
+          { title: { sv: 'Golvlampa', en: 'Floor Lamp' }, desc: { sv: 'Fint skick.', en: 'Great condition.' }, tags: ['belysning'], startPrice: '300', img: 'https://images.unsplash.com/photo-1538688423619-a81d3f23454b?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Skåp, 1900-tal', en: 'Cabinet, 20th century' }, desc: { sv: 'Massivt trä.', en: 'Solid wood.' }, tags: ['möbler'], startPrice: '1200', img: 'https://images.unsplash.com/photo-1503602642458-232111445657?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '2200' },
+          { title: { sv: 'Servett-ringar, silver', en: 'Napkin Rings, Silver' }, desc: { sv: '6 st.', en: 'Set of 6.' }, tags: ['silver'], startPrice: '350', img: 'https://images.unsplash.com/photo-1598300183876-81c52694f3b8?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '620' },
+          { title: { sv: 'Spegel, art deco', en: 'Art Deco Mirror' }, desc: { sv: 'Originalglas.', en: 'Original glass.' }, tags: ['spegel'], startPrice: '800', img: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
+          { title: { sv: 'Fåtölj, läder', en: 'Leather Armchair' }, desc: { sv: 'Patinerad.', en: 'Lovely patina.' }, tags: ['möbler','fåtölj'], startPrice: '1800', img: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '2600' },
+          { title: { sv: 'Ljusstakar, mässing', en: 'Brass Candlesticks' }, desc: { sv: 'Par.', en: 'Pair.' }, tags: ['inredning'], startPrice: '300', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1600&auto=format&fit=crop', sold: true, finalPrice: '550' },
+          { title: { sv: 'Vas, blå keramik', en: 'Blue Ceramic Vase' }, desc: { sv: 'Signerad.', en: 'Signed.' }, tags: ['keramik'], startPrice: '250', img: 'https://images.unsplash.com/photo-1612198186444-8f3fbd3a1f3b?q=80&w=1600&auto=format&fit=crop', sold: false, finalPrice: '' },
         ],
         settings: {
           durationMinutes: 60,
