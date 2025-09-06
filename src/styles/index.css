@@ -44,15 +44,15 @@ html, body {
   left: 50%;
   bottom: calc(100% + 8px);
   transform: translateX(-50%);
-  background: rgba(30, 27, 22, 0.95); /* dark neutral */
-  color: #fff;
+  background: var(--tooltip-bg, rgba(82, 65, 43, 0.96));
+  color: var(--tooltip-fg, #ffffff);
   padding: 6px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
-  line-height: 1.2;
+  line-height: 1.25;
   white-space: pre-wrap;
-  max-width: 260px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+  max-width: 280px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.20);
   pointer-events: none;
   z-index: 50;
   display: none;
@@ -66,7 +66,7 @@ html, body {
   width: 0; height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 6px solid rgba(30, 27, 22, 0.95);
+  border-top: 6px solid var(--tooltip-bg, rgba(82, 65, 43, 0.96));
   pointer-events: none;
   z-index: 50;
   display: none;
@@ -76,6 +76,59 @@ html, body {
 .tooltip-root [data-tip]:hover::before,
 .tooltip-root [data-tip]:focus::before {
   display: block;
+}
+
+/* Positional variants */
+/* Default is top (above). Use data-tip-pos to override. */
+.tooltip-root [data-tip][data-tip-pos="bottom"]::after {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+.tooltip-root [data-tip][data-tip-pos="bottom"]::before {
+  top: calc(100% + 2px);
+  bottom: auto;
+  border-top: 0;
+  border-bottom: 6px solid var(--tooltip-bg, rgba(82, 65, 43, 0.96));
+}
+.tooltip-root [data-tip][data-tip-pos="right"]::after {
+  left: calc(100% + 10px);
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+.tooltip-root [data-tip][data-tip-pos="right"]::before {
+  left: calc(100% + 2px);
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  border-left: 6px solid var(--tooltip-bg, rgba(82, 65, 43, 0.96));
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 0;
+}
+.tooltip-root [data-tip][data-tip-pos="left"]::after {
+  right: calc(100% + 10px);
+  left: auto;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+.tooltip-root [data-tip][data-tip-pos="left"]::before {
+  right: calc(100% + 2px);
+  left: auto;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  border-right: 6px solid var(--tooltip-bg, rgba(82, 65, 43, 0.96));
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 0;
+}
+
+/* Disable entirely when tips are off */
+.tooltip-root.tips-off [data-tip]::after,
+.tooltip-root.tips-off [data-tip]::before {
+  display: none !important;
 }
 
 /* stylelint-enable at-rule-no-unknown */
