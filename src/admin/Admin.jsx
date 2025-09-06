@@ -496,17 +496,16 @@ export default function Admin() {
             el.style.removeProperty('--tip-top')
             return
           }
-          // Sidebar overlay: fixed and centered on the element
+          // Sidebar overlay: fixed and centered (or aligned) on the element
           const rect = el.getBoundingClientRect()
-          const vw = window.innerWidth || document.documentElement.clientWidth
-          const vh = window.innerHeight || document.documentElement.clientHeight
-          const margin = 4
-          const { w: estW, h: estH } = measureTip(el)
-          const halfW = estW / 2, halfH = estH / 2
+          const align = el.getAttribute('data-tip-align') || 'center' // start|center|end
           let left = rect.left + rect.width / 2
           let top = rect.top + rect.height / 2
-          left = Math.min(Math.max(left, halfW + margin), vw - halfW - margin)
-          top = Math.min(Math.max(top, halfH + margin), vh - halfH - margin)
+          if (align === 'start') {
+            left = rect.left
+          } else if (align === 'end') {
+            left = rect.right
+          }
           el.setAttribute('data-tip-pos-active', 'overlay')
           el.style.setProperty('--tip-left', `${Math.round(left)}px`)
           el.style.setProperty('--tip-top', `${Math.round(top)}px`)
