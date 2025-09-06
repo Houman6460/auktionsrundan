@@ -129,6 +129,7 @@ export default function Admin() {
   const [expandIntegrations, setExpandIntegrations] = React.useState(true)
   const [expandAnalytics, setExpandAnalytics] = React.useState(true)
   const [expandSubscribers, setExpandSubscribers] = React.useState(true)
+  const rootRef = React.useRef(null)
   // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
   const [activeFilter, setActiveFilter] = React.useState(null)
   const groupSections = React.useMemo(() => ({
@@ -450,6 +451,58 @@ export default function Admin() {
     return () => window.removeEventListener('storage', handler)
   }, [])
 
+  // Custom tooltip behavior inside Admin: use CSS [data-tip] and avoid native title tooltip
+  React.useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    const show = (el) => {
+      try {
+        const t = el.getAttribute('title')
+        if (!t) return
+        el.__tipTitle = t
+        el.setAttribute('data-tip', t)
+        el.removeAttribute('title')
+      } catch {}
+    }
+    const hide = (el) => {
+      try {
+        if (el && el.__tipTitle != null) {
+          el.setAttribute('title', el.__tipTitle)
+          delete el.__tipTitle
+        }
+        if (el) el.removeAttribute('data-tip')
+      } catch {}
+    }
+    const onOver = (e) => {
+      const el = e.target && e.target.closest('[title]')
+      if (el && root.contains(el)) show(el)
+    }
+    const onOut = (e) => {
+      const el = e.target && (e.target.closest('[data-tip]') || e.target.closest('[title]'))
+      if (!el) return
+      if (el.contains(e.relatedTarget)) return
+      hide(el)
+    }
+    const onFocusIn = (e) => {
+      const el = e.target && e.target.closest('[title]')
+      if (el && root.contains(el)) show(el)
+    }
+    const onFocusOut = (e) => {
+      const el = e.target && e.target.closest('[data-tip]')
+      if (el) hide(el)
+    }
+    root.addEventListener('mouseover', onOver)
+    root.addEventListener('mouseout', onOut)
+    root.addEventListener('focusin', onFocusIn)
+    root.addEventListener('focusout', onFocusOut)
+    return () => {
+      root.removeEventListener('mouseover', onOver)
+      root.removeEventListener('mouseout', onOut)
+      root.removeEventListener('focusin', onFocusIn)
+      root.removeEventListener('focusout', onFocusOut)
+    }
+  }, [])
+
   if (!authed) {
     return (
       <div className="min-h-screen grid place-items-center bg-vintage-cream px-4">
@@ -476,7 +529,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-vintage-cream">
+    <div ref={rootRef} className="min-h-screen bg-vintage-cream tooltip-root">
       <header className="border-b bg-white/80 backdrop-blur">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">

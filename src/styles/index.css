@@ -34,4 +34,48 @@ html, body {
   @apply inline-flex items-center gap-2 px-4 py-2 rounded-md border border-earth-dark text-earth-dark hover:bg-earth-light/30 transition;
 }
 
+/* Admin tooltips based on [data-tip] (set by Admin.jsx). Works on hover and keyboard focus. */
+.tooltip-root [data-tip] {
+  position: relative;
+}
+.tooltip-root [data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: rgba(30, 27, 22, 0.95); /* dark neutral */
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: pre-wrap;
+  max-width: 260px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+  pointer-events: none;
+  z-index: 50;
+  display: none;
+}
+.tooltip-root [data-tip]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(30, 27, 22, 0.95);
+  pointer-events: none;
+  z-index: 50;
+  display: none;
+}
+.tooltip-root [data-tip]:hover::after,
+.tooltip-root [data-tip]:focus::after,
+.tooltip-root [data-tip]:hover::before,
+.tooltip-root [data-tip]:focus::before {
+  display: block;
+}
+
 /* stylelint-enable at-rule-no-unknown */
