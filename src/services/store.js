@@ -148,6 +148,54 @@ const defaults = {
     // submissions keyed by auction anchor id (e.g., "auction-0"): array of entries
     submissions: {}
   },
+  // Demo Live Actions: one ongoing and one past with sample items
+  actions: {
+    order: ['act-demo-now','act-demo-past'],
+    events: {
+      'act-demo-now': {
+        id: 'act-demo-now',
+        title: { sv: 'Live Action Demo (Pågår)', en: 'Live Action Demo (Ongoing)' },
+        startIso: '',
+        visible: false,
+        linkedAuctionIndex: 0,
+        items: [
+          { title: { sv: 'Antik väggklocka', en: 'Antique Wall Clock' }, desc: { sv: 'Fungerande, 1900-tal.', en: 'Working, early 20th century.' }, tags: ['antik','klocka'], startPrice: '300', img: '', sold: true,  finalPrice: '800' },
+          { title: { sv: 'Oljemålning, landskap', en: 'Oil Painting, Landscape' }, desc: { sv: 'Signerad, ramad.', en: 'Signed, framed.' }, tags: ['konst','målning'], startPrice: '900', img: '', sold: false, finalPrice: '' },
+          { title: { sv: 'Matta, persisk', en: 'Rug, Persian' }, desc: { sv: 'Ull, bra skick.', en: 'Wool, good condition.' }, tags: ['matta','persisk'], startPrice: '1500', img: '', sold: false, finalPrice: '' },
+        ],
+        settings: {
+          durationMinutes: 60,
+          postMinutes: 10,
+          publicDisplay: { showTotals: true, showSold: true },
+          feedback: { enabled: true, rating: true, notes: true, contact: true },
+          messages: { thankYou: { sv: 'Tack! Vi uppskattar din feedback.', en: 'Thank you! We appreciate your feedback.' } }
+        },
+        state: { started: true, currentIndex: 1, startedAt: Date.now() - 5*60*1000, endedAt: 0, salesLog: [ { index: 0, price: 800, ts: Date.now() - 4*60*1000 } ] },
+        feedbackSubmissions: []
+      },
+      'act-demo-past': {
+        id: 'act-demo-past',
+        title: { sv: 'Live Action Maj 2025', en: 'Live Action May 2025' },
+        startIso: '',
+        visible: true,
+        linkedAuctionIndex: 1,
+        items: [
+          { title: { sv: 'Porslin, servis', en: 'Porcelain set' }, desc: { sv: '12 delar.', en: '12 pieces.' }, tags: ['porslin'], startPrice: '400', img: '', sold: true,  finalPrice: '950' },
+          { title: { sv: 'Golvlampa', en: 'Floor Lamp' }, desc: { sv: 'Fint skick.', en: 'Great condition.' }, tags: ['belysning'], startPrice: '300', img: '', sold: false, finalPrice: '' },
+          { title: { sv: 'Skåp, 1900-tal', en: 'Cabinet, 20th century' }, desc: { sv: 'Massivt trä.', en: 'Solid wood.' }, tags: ['möbler'], startPrice: '1200', img: '', sold: true, finalPrice: '2200' },
+        ],
+        settings: {
+          durationMinutes: 60,
+          postMinutes: 10,
+          publicDisplay: { showTotals: true, showSold: true },
+          feedback: { enabled: true, rating: true, notes: true, contact: true },
+          messages: { thankYou: { sv: 'Tack! Vi uppskattar din feedback.', en: 'Thank you! We appreciate your feedback.' } }
+        },
+        state: { started: false, currentIndex: 2, startedAt: Date.now() - 60*60*1000, endedAt: Date.now() - 30*60*1000, salesLog: [ { index: 0, price: 950, ts: Date.now() - 55*60*1000 }, { index: 2, price: 2200, ts: Date.now() - 40*60*1000 } ] },
+        feedbackSubmissions: []
+      }
+    }
+  },
 }
 
 function deepClone(obj) {
