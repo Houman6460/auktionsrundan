@@ -183,6 +183,153 @@ export default function Admin() {
     return steps
   }, [currentLang])
 
+  // Detailed per-section tour configuration (selectors must exist in DOM)
+  const getSectionTourConfig = React.useCallback((id) => {
+    if (id === 'admin-analytics') {
+      const steps = [
+        L('Välj tidsintervall för analysen här.','Choose the analytics time range.'),
+        L('Jämför med föregående period i nyckeltal och diagram.','Compare with the previous period in KPIs and charts.'),
+        L('Exportera sammanfattningen till CSV.','Export the summary as CSV.'),
+        L('Visa eller dölj händelsetyper i graferna.','Show or hide event types in the charts.'),
+        L('Filtrera på språk.','Filter by language.'),
+        L('Filtrera på enhet.','Filter by device.'),
+        L('Filtrera på sida/route.','Filter by route.'),
+        L('Nyckeltal för vald period.','Key KPIs for the selected period.'),
+        L('Diagram över händelser över tid.','Events over time chart.'),
+        L('Toppsektioner med flest visningar.','Top sections with most views.'),
+        L('Toppauktioner baserat på anmälningar.','Top auctions by registrations.'),
+        L('Lägg till interna anteckningar för teamet.','Add internal notes for your team.'),
+        L('Klicka Spara när du är klar.','Click Save when you are finished.'),
+      ]
+      const targets = [
+        '#analytics-range-select',
+        '#analytics-compare-toggle',
+        '#analytics-export-btn',
+        '#analytics-types',
+        '#analytics-seg-lang',
+        '#analytics-seg-device',
+        '#analytics-seg-route',
+        '#analytics-kpis',
+        '#analytics-chart',
+        '#analytics-top-sections',
+        '#analytics-top-auctions',
+        '#analytics-notes',
+        '#admin-save',
+      ]
+      return { steps, targets }
+    }
+    if (id === 'admin-header') {
+      const steps = [
+        L('Visa/Dölj sidhuvudet.','Show/Hide the site header.'),
+        L('Länka eller ladda upp din logotyp.','Link or upload your logo.'),
+        L('Välj vilka språk som är aktiva.','Choose which languages are active.'),
+        L('Ange menynamn: Hem.','Set menu label: Home.'),
+        L('Ange menynamn: Kommande auktioner.','Set menu label: Upcoming Auctions.'),
+        L('Ange menynamn: Auktionsvaror.','Set menu label: Auction Items.'),
+        L('Ange menynamn: Auktionsvillkor.','Set menu label: Terms.'),
+        L('Klicka Spara när du är klar.','Click Save when finished.'),
+      ]
+      const targets = [
+        '#header-visible-toggle',
+        '#header-logo-url',
+        '#header-lang-sv',
+        '#header-nav-home',
+        '#header-nav-auctions',
+        '#header-nav-items',
+        '#header-nav-terms',
+        '#admin-save',
+      ]
+      return { steps, targets }
+    }
+    if (id === 'admin-newsletter') {
+      const steps = [
+        L('Aktivera popup för nyhetsbrev.','Enable newsletter popup.'),
+        L('Ange titel för popupen.','Set popup title.'),
+        L('Ange undertitel för popupen.','Set popup subtitle.'),
+        L('Välj vilka fält som ska visas.','Choose which fields to show.'),
+        L('Välj trigger-läge.','Select trigger mode.'),
+        L('Ange fördröjning i millisekunder.','Set delay in milliseconds.'),
+        L('Ange scroll-procent för visning.','Set scroll percentage before showing.'),
+        L('Visa endast en gång per session.','Show only once per session.'),
+        L('Visa antal prenumeranter och exportera CSV.','View subscriber count and export CSV.'),
+        L('Klicka Spara när du är klar.','Click Save when finished.'),
+      ]
+      const targets = [
+        '#newsletter-enabled',
+        '#newsletter-title',
+        '#newsletter-subtitle',
+        '#newsletter-fields',
+        '#newsletter-trigger-mode',
+        '#newsletter-trigger-delay',
+        '#newsletter-trigger-scroll',
+        '#newsletter-trigger-once',
+        '#newsletter-subscribers-card',
+        '#admin-save',
+      ]
+      return { steps, targets }
+    }
+    if (id === 'admin-share') {
+      const steps = [
+        L('Aktivera delningsmenyn.','Enable the share menu.'),
+        L('Välj placering.','Choose placement.'),
+        L('Ange omslagsbildens URL.','Set cover image URL.'),
+        L('Ange delningstext på svenska.','Set share text (Swedish).'),
+        L('Ange delningstext på engelska.','Set share text (English).'),
+        L('Välj plattformar som ska visas.','Choose platforms to show.'),
+        L('Klicka Spara när du är klar.','Click Save when finished.'),
+      ]
+      const targets = [
+        '#share-enabled',
+        '#share-position',
+        '#share-cover-url',
+        '#share-text-sv',
+        '#share-text-en',
+        '#share-platforms',
+        '#admin-save',
+      ]
+      return { steps, targets }
+    }
+    if (id === 'admin-chat') {
+      const steps = [
+        L('Aktivera WhatsApp-chatten.','Enable WhatsApp chat.'),
+        L('Ange telefonnumret i E.164-format.','Enter phone number in E.164 format.'),
+        L('Välj var knappen ska visas.','Choose button position.'),
+        L('Ange hälsningstext på svenska.','Set greeting text (Swedish).'),
+        L('Ange hälsningstext på engelska.','Set greeting text (English).'),
+        L('Klicka Spara när du är klar.','Click Save when finished.'),
+      ]
+      const targets = [
+        '#chat-enabled',
+        '#chat-phone',
+        '#chat-position',
+        '#chat-greeting-sv',
+        '#chat-greeting-en',
+        '#admin-save',
+      ]
+      return { steps, targets }
+    }
+    if (id === 'admin-hero') {
+      const steps = [
+        L('Visa/Dölj hero‑sektionen.','Show/Hide the hero section.'),
+        L('Ange titel.','Set the title.'),
+        L('Ange undertitel.','Set the subtitle.'),
+        L('Ange eller ladda upp bakgrundsbild.','Set or upload the background image.'),
+        L('Förhandsgranska bilden.','Preview the image.'),
+        L('Klicka Spara när du är klar.','Click Save when finished.'),
+      ]
+      const targets = [
+        '#hero-visible',
+        '#hero-title',
+        '#hero-subtitle',
+        '#hero-bg-url',
+        '#hero-bg-preview',
+        '#admin-save',
+      ]
+      return { steps, targets }
+    }
+    return null
+  }, [currentLang])
+
   const startGeneralTour = React.useCallback(() => {
     if (!generalTourEnabled) return
     const steps = getGeneralTourSteps()
@@ -202,18 +349,31 @@ export default function Admin() {
 
   const startSectionTour = React.useCallback((id, helpText, sectionTitle) => {
     if (!sectionTourEnabled) return
+    const cfg = getSectionTourConfig(id)
+    if (cfg) {
+      const steps = cfg.steps.map((t,i)=>({ text: t, key: `c${i}` }))
+      const resolver = (idx) => {
+        const sel = cfg.targets[idx]
+        if (sel) return document.querySelector(sel)
+        const sec = document.getElementById(id)
+        return sec || null
+      }
+      setTour({ open: true, title: sectionTitle || L('Sektion','Section'), steps, idx: 0 })
+      setTourGetTarget(() => resolver)
+      return
+    }
+    // Fallback generic
     const steps = getSectionSteps(id, helpText).map((t, i) => ({ text: t, key: `s${i}` }))
     const resolver = (idx) => {
       const sec = document.getElementById(id)
       if (!sec) return null
       if (idx === 0) return sec.querySelector('h2') || sec
       if (idx === (steps.length - 1)) return document.getElementById('admin-save')
-      // try first interactive control inside the section
       return sec.querySelector('input, textarea, select, button') || sec
     }
     setTour({ open: true, title: sectionTitle || L('Sektion','Section'), steps, idx: 0 })
     setTourGetTarget(() => resolver)
-  }, [sectionTourEnabled, getSectionSteps, currentLang])
+  }, [sectionTourEnabled, getSectionSteps, currentLang, getSectionTourConfig])
 
   // Auto-run general tour on login if enabled (once per mount)
   React.useEffect(() => {
@@ -1035,7 +1195,7 @@ export default function Admin() {
           <div className="grid md:grid-cols-4 gap-3 mb-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Tidsintervall','Time range')}</label>
-              <select className="w-full border rounded px-3 py-2" title={L('Välj tidsintervall för analyspanelen','Choose time range for the analytics dashboard')} value={analyticsRange} onChange={(e)=>setAnalyticsRange(e.target.value)}>
+              <select id="analytics-range-select" className="w-full border rounded px-3 py-2" title={L('Välj tidsintervall för analyspanelen','Choose time range for the analytics dashboard')} value={analyticsRange} onChange={(e)=>setAnalyticsRange(e.target.value)}>
                 <option value="now">{L('Idag','Today')}</option>
                 <option value="week">{L('Denna vecka','This week')}</option>
                 <option value="month">{L('Denna månad','This month')}</option>
@@ -1056,17 +1216,17 @@ export default function Admin() {
               </>
             )}
             <div className="flex items-end justify-end gap-2">
-              <label className="inline-flex items-center gap-2 text-sm text-neutral-700 mr-2" title={L('Jämför mot föregående period i grafer och nyckeltal','Compare against previous period in charts and KPIs')} data-tip-pos="bottom">
+              <label id="analytics-compare-toggle" className="inline-flex items-center gap-2 text-sm text-neutral-700 mr-2" title={L('Jämför mot föregående period i grafer och nyckeltal','Compare against previous period in charts and KPIs')} data-tip-pos="bottom">
                 <Toggle checked={analyticsCompare} onChange={(e)=>setAnalyticsCompare(e.target.checked)} />
                 <span>{L('Jämför föregående period','Compare previous period')}</span>
               </label>
-              <button type="button" className="btn-outline" onClick={()=>analyticsExportAnalyticsCsv()} title={L('Exportera sammanfattning som CSV','Export summary as CSV')}>{L('Exportera CSV','Export CSV')}</button>
+              <button id="analytics-export-btn" type="button" className="btn-outline" onClick={()=>analyticsExportAnalyticsCsv()} title={L('Exportera sammanfattning som CSV','Export summary as CSV')}>{L('Exportera CSV','Export CSV')}</button>
             </div>
           </div>
 
           {/* Event filters row */}
           <div className="section-card p-3 mb-4 sticky top-0 z-10">
-            <div className="flex flex-wrap items-center gap-4">
+            <div id="analytics-types" className="flex flex-wrap items-center gap-4">
               {([
                 { key: 'page_view', label: L('Sidvisningar','Page views') },
                 { key: 'section_view', label: L('Sektionsvisningar','Section views') },
@@ -1085,7 +1245,7 @@ export default function Admin() {
           {/* Segmentation filters */}
           <div className="section-card p-3 mb-4">
             <div className="grid md:grid-cols-3 gap-3">
-              <div>
+              <div id="analytics-seg-lang">
                 <div className="text-xs text-neutral-600 mb-1">{L('Språk','Language')}</div>
                 <div className="flex flex-wrap gap-2">
                   {analyticsSelection.langs.map((v)=> (
@@ -1093,7 +1253,7 @@ export default function Admin() {
                   ))}
                 </div>
               </div>
-              <div>
+              <div id="analytics-seg-device">
                 <div className="text-xs text-neutral-600 mb-1">{L('Enhet','Device')}</div>
                 <div className="flex flex-wrap gap-2">
                   {analyticsSelection.devices.map((v)=> (
@@ -1101,7 +1261,7 @@ export default function Admin() {
                   ))}
                 </div>
               </div>
-              <div>
+              <div id="analytics-seg-route">
                 <div className="text-xs text-neutral-600 mb-1">{L('Sida','Route')}</div>
                 <div className="flex flex-wrap gap-2 max-h-16 overflow-y-auto">
                   {analyticsSelection.routes.map((v)=> (
@@ -1112,7 +1272,7 @@ export default function Admin() {
             </div>
           </div>
 
-          <div className="section-card p-3 mb-4">
+          <div id="analytics-kpis" className="section-card p-3 mb-4">
             <div className="grid md:grid-cols-5 gap-3">
               {([
                 { key: 'page_view', label: L('Sidvisningar','Page views') },
@@ -1144,13 +1304,13 @@ export default function Admin() {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <h3 className="font-serif text-lg mb-2">{L('Händelser över tid','Events over time')}</h3>
-              <div className="section-card p-3">
+              <div id="analytics-chart" className="section-card p-3">
                 <AnalyticsChart data={analyticsSelection.buckets} />
               </div>
             </div>
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Toppsektioner','Top sections')}</h3>
-              <div className="section-card p-3">
+              <div id="analytics-top-sections" className="section-card p-3">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-neutral-100 text-left">
@@ -1177,7 +1337,7 @@ export default function Admin() {
           <div className="grid md:grid-cols-2 gap-6 mt-6">
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Toppauktioner (anmälningar)','Top auctions (registrations)')}</h3>
-              <div className="section-card p-3">
+              <div id="analytics-top-auctions" className="section-card p-3">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-neutral-100 text-left">
@@ -1202,7 +1362,7 @@ export default function Admin() {
           </div>
 
           {/* Annotations simple list */}
-          <div className="section-card p-3">
+          <div id="analytics-notes" className="section-card p-3">
             <h3 className="font-serif text-lg mb-2">{L('Anteckningar','Annotations')}</h3>
             <form className="flex gap-2 mb-3" onSubmit={(e)=>{e.preventDefault(); const f = e.currentTarget; const txt = f.note?.value?.trim(); if (!txt) return; setAnnotations((a)=>[{ ts: Date.now(), text: txt }, ...a]); f.reset();}}>
               <input name="note" className="flex-1 border rounded px-3 py-2" placeholder={L('Lägg till notering (syns här som historik)','Add a note (appears here as history)')} />
@@ -1264,16 +1424,16 @@ export default function Admin() {
         )}
 
         <Section id="admin-header" title={L('Header','Header')} visible={isSectionVisible('admin-header')} help={L('Ställ in logotyp, navigationsetiketter och aktiva språk.','Configure logo, navigation labels, and active languages.') }>
-          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj headern på webbplatsen','Show/Hide the header on the site')}>
+          <label id="header-visible-toggle" className="flex items-center gap-2 mb-3" title={L('Visa/Dölj headern på webbplatsen','Show/Hide the header on the site')}>
             <Toggle checked={!!data.header.visible} onChange={handleToggle(['header','visible'])} />
             <span>{L('Visa header','Show header')}</span>
           </label>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Logotyp URL','Logo URL')}</label>
-              <input className="w-full border rounded px-3 py-2" title={L('Länk till logotypbilden (URL)','Link to logo image (URL)')} value={data.header.logo || ''} onChange={handleChange(['header','logo'])} placeholder="https://..." />
+              <input id="header-logo-url" className="w-full border rounded px-3 py-2" title={L('Länk till logotypbilden (URL)','Link to logo image (URL)')} value={data.header.logo || ''} onChange={handleChange(['header','logo'])} placeholder="https://..." />
               <div className="mt-2 flex items-center gap-2">
-                <input type="file" accept="image/*" title={L('Ladda upp logotypbild','Upload logo image')} onChange={handleFileToDataUrl(['header','logo'])} />
+                <input id="header-logo-upload" type="file" accept="image/*" title={L('Ladda upp logotypbild','Upload logo image')} onChange={handleFileToDataUrl(['header','logo'])} />
                 <button type="button" className="btn-outline text-xs" onClick={clearField(['header','logo'])} title={L('Rensa fältet','Clear the field')}>{L('Rensa','Clear')}</button>
               </div>
               {data.header.logo && (
@@ -1285,11 +1445,11 @@ export default function Admin() {
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Språk aktiva (SV/EN)','Languages enabled (SV/EN)')}</label>
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2">
+                <label id="header-lang-sv" className="flex items-center gap-2">
                   <Toggle checked={!!data.header.languages.sv} onChange={(e)=>{const n={...data};n.header.languages.sv=e.target.checked;setData(n)}} />
                   <span>SV</span>
                 </label>
-                <label className="flex items-center gap-2">
+                <label id="header-lang-en" className="flex items-center gap-2">
                   <Toggle checked={!!data.header.languages.en} onChange={(e)=>{const n={...data};n.header.languages.en=e.target.checked;setData(n)}} />
                   <span>EN</span>
                 </label>
@@ -1300,13 +1460,13 @@ export default function Admin() {
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Navigering','Navigation')} ({currentLang.toUpperCase()})</h3>
               <label className="block text-sm text-neutral-600 mb-1">{L('Hem','Home')}</label>
-              <input className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Hem‑länken i menyn','Text for Home link in the menu')} value={data.header.nav.home?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.home[currentLang]=e.target.value; setData(n)}} />
+              <input id="header-nav-home" className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Hem‑länken i menyn','Text for Home link in the menu')} value={data.header.nav.home?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.home[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Kommande auktioner','Upcoming auctions')}</label>
-              <input className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Kommande Auktioner i menyn','Text for Upcoming Auctions in the menu')} value={data.header.nav.auctions?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.auctions[currentLang]=e.target.value; setData(n)}} />
+              <input id="header-nav-auctions" className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Kommande Auktioner i menyn','Text for Upcoming Auctions in the menu')} value={data.header.nav.auctions?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.auctions[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvaror','Auction items')}</label>
-              <input className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Auktionsvaror i menyn','Text for Auction Items in the menu')} value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
+              <input id="header-nav-items" className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Auktionsvaror i menyn','Text for Auction Items in the menu')} value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvillkor','Terms')}</label>
-              <input className="w-full border rounded px-3 py-2" title={L('Text för Auktionsvillkor i menyn','Text for Terms in the menu')} value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
+              <input id="header-nav-terms" className="w-full border rounded px-3 py-2" title={L('Text för Auktionsvillkor i menyn','Text for Terms in the menu')} value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
             </div>
           </div>
         </Section>
@@ -1315,43 +1475,43 @@ export default function Admin() {
 
         {/* Marketing: Newsletter, Share, Chat */}
         <Section id="admin-newsletter" title={L('Nyhetsbrev','Newsletter')} visible={isSectionVisible('admin-newsletter')} help={L('Aktivera popup för nyhetsbrev. Anpassa rubriker, fält och triggrar (timer eller scroll).','Enable the newsletter popup. Customize titles, fields and triggers (timer or scroll).') }>
-          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera popup för nyhetsbrev','Enable/disable newsletter popup')}>
+          <label id="newsletter-enabled" className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera popup för nyhetsbrev','Enable/disable newsletter popup')}>
             <Toggle checked={!!data.newsletter?.popupEnabled} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.popupEnabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera popup','Enable popup')}</span>
           </label>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" title={L('Rubrik i popup (aktuellt språk)','Popup headline (current language)')} value={data.newsletter?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.title = { ...(n.newsletter.title||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input id="newsletter-title" className="w-full border rounded px-3 py-2" title={L('Rubrik i popup (aktuellt språk)','Popup headline (current language)')} value={data.newsletter?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.title = { ...(n.newsletter.title||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" title={L('Underrubrik i popup (aktuellt språk)','Popup subtitle (current language)')} value={data.newsletter?.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.subtitle = { ...(n.newsletter.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input id="newsletter-subtitle" className="w-full border rounded px-3 py-2" title={L('Underrubrik i popup (aktuellt språk)','Popup subtitle (current language)')} value={data.newsletter?.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.newsletter = n.newsletter||{}; n.newsletter.subtitle = { ...(n.newsletter.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
           </div>
           <div className="mt-4 grid md:grid-cols-3 gap-4">
-            <div>
+            <div id="newsletter-fields">
               <h3 className="font-serif text-lg mb-2">{L('Fält','Fields')}</h3>
-              <label className="flex items-center gap-2 mb-1" title={L('Visa fält för namn i popupen','Show name field in the popup')}><Toggle checked={!!data.newsletter?.fields?.name} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.name=e.target.checked; setData(n)}} />{L('Namn','Name')}</label>
-              <label className="flex items-center gap-2 mb-1" title={L('Visa fält för e‑post i popupen','Show email field in the popup')}><Toggle checked={data.newsletter?.fields?.email !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.email=e.target.checked; setData(n)}} />Email</label>
-              <label className="flex items-center gap-2" title={L('Visa fält för telefon i popupen','Show phone field in the popup')}><Toggle checked={!!data.newsletter?.fields?.tel} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.tel=e.target.checked; setData(n)}} />{L('Telefon','Phone')}</label>
+              <label id="newsletter-field-name" className="flex items-center gap-2 mb-1" title={L('Visa fält för namn i popupen','Show name field in the popup')}><Toggle checked={!!data.newsletter?.fields?.name} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.name=e.target.checked; setData(n)}} />{L('Namn','Name')}</label>
+              <label id="newsletter-field-email" className="flex items-center gap-2 mb-1" title={L('Visa fält för e‑post i popupen','Show email field in the popup')}><Toggle checked={data.newsletter?.fields?.email !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.email=e.target.checked; setData(n)}} />Email</label>
+              <label id="newsletter-field-tel" className="flex items-center gap-2" title={L('Visa fält för telefon i popupen','Show phone field in the popup')}><Toggle checked={!!data.newsletter?.fields?.tel} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.fields=n.newsletter.fields||{}; n.newsletter.fields.tel=e.target.checked; setData(n)}} />{L('Telefon','Phone')}</label>
             </div>
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Utlösare','Triggers')}</h3>
               <label className="block text-sm text-neutral-600 mb-1">{L('Läge','Mode')}</label>
-              <select className="w-full border rounded px-3 py-2 mb-2" title={L('Välj hur popupen ska triggas','Choose how the popup should trigger')} value={data.newsletter?.triggers?.mode || 'timer'} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), mode: e.target.value }; setData(n)}}>
+              <select id="newsletter-trigger-mode" className="w-full border rounded px-3 py-2 mb-2" title={L('Välj hur popupen ska triggas','Choose how the popup should trigger')} value={data.newsletter?.triggers?.mode || 'timer'} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), mode: e.target.value }; setData(n)}}>
                 <option value="timer">{L('Timer','Timer')}</option>
                 <option value="scroll">{L('Skroll','Scroll')}</option>
               </select>
               <label className="block text-sm text-neutral-600 mb-1">{L('Fördröjning (ms)','Delay (ms)')}</label>
-              <input type="number" className="w-full border rounded px-3 py-2 mb-2" title={L('Fördröjning i millisekunder innan popup visas','Delay in milliseconds before popup shows')} value={data.newsletter?.triggers?.delayMs ?? 5000} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), delayMs: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <input id="newsletter-trigger-delay" type="number" className="w-full border rounded px-3 py-2 mb-2" title={L('Fördröjning i millisekunder innan popup visas','Delay in milliseconds before popup shows')} value={data.newsletter?.triggers?.delayMs ?? 5000} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), delayMs: parseInt(e.target.value||'0',10) }; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Scroll %','Scroll %')}</label>
-              <input type="number" min="0" max="100" className="w-full border rounded px-3 py-2 mb-2" title={L('Procent scroll på sidan innan popup visas','Page scroll percentage before popup shows')} value={data.newsletter?.triggers?.scrollPercent ?? 50} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), scrollPercent: parseInt(e.target.value||'0',10) }; setData(n)}} />
-              <label className="flex items-center gap-2"><Toggle checked={data.newsletter?.triggers?.oncePerSession !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), oncePerSession: e.target.checked }; setData(n)}} />{L('Visa en gång per session','Show once per session')}</label>
+              <input id="newsletter-trigger-scroll" type="number" min="0" max="100" className="w-full border rounded px-3 py-2 mb-2" title={L('Procent scroll på sidan innan popup visas','Page scroll percentage before popup shows')} value={data.newsletter?.triggers?.scrollPercent ?? 50} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), scrollPercent: parseInt(e.target.value||'0',10) }; setData(n)}} />
+              <label id="newsletter-trigger-once" className="flex items-center gap-2"><Toggle checked={data.newsletter?.triggers?.oncePerSession !== false} onChange={(e)=>{const n={...data}; n.newsletter=n.newsletter||{}; n.newsletter.triggers = { ...(n.newsletter.triggers||{}), oncePerSession: e.target.checked }; setData(n)}} />{L('Visa en gång per session','Show once per session')}</label>
             </div>
             <div>
               <h3 className="font-serif text-lg mb-2">{L('Prenumeranter','Subscribers')}</h3>
-              <div className="section-card p-3">
+              <div id="newsletter-subscribers-card" className="section-card p-3">
                 <div className="text-sm mb-2">{L('Antal','Count')}: {loadSubscribers().length}</div>
                 <button type="button" className="btn-outline" onClick={exportCsv} title={L('Exportera prenumeranter som CSV','Export subscribers as CSV')}>{L('Exportera CSV','Export CSV')}</button>
               </div>
@@ -1360,34 +1520,34 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-share" title={L('Dela (Social)','Share (Social)')} visible={isSectionVisible('admin-share')} help={L('Aktivera delningsmenyn och välj kanaler (Facebook, Twitter m.fl.).','Enable the share menu and choose platforms (Facebook, Twitter, etc.).') }>
-          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera delningsmenyn','Enable/disable the share menu')}>
+          <label id="share-enabled" className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera delningsmenyn','Enable/disable the share menu')}>
             <Toggle checked={!!data.share?.enabled} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.enabled=e.target.checked; setData(n)}} />
             <span>{L('Aktivera delningsmeny','Enable share menu')}</span>
           </label>
           <div className="grid md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Position','Position')}</label>
-              <select className="w-full border rounded px-3 py-2" title={L('Placering av delningsmeny','Placement of the share menu')} value={data.share?.position||'right'} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.position = e.target.value==='left'?'left':'right'; setData(n)}}>
+              <select id="share-position" className="w-full border rounded px-3 py-2" title={L('Placering av delningsmeny','Placement of the share menu')} value={data.share?.position||'right'} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.position = e.target.value==='left'?'left':'right'; setData(n)}}>
                 <option value="right">{L('Höger','Right')}</option>
                 <option value="left">{L('Vänster','Left')}</option>
               </select>
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm text-neutral-600 mb-1">{L('Omslagsbild (URL)','Cover image (URL)')}</label>
-              <input className="w-full border rounded px-3 py-2" title={L('OG‑bild/omslagsbild som används vid delning','Open Graph / cover image used when sharing')} value={data.share?.coverUrl||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.coverUrl=e.target.value; setData(n)}} placeholder="https://..." />
+              <input id="share-cover-url" className="w-full border rounded px-3 py-2" title={L('OG‑bild/omslagsbild som används vid delning','Open Graph / cover image used when sharing')} value={data.share?.coverUrl||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.coverUrl=e.target.value; setData(n)}} placeholder="https://..." />
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4 mt-4">
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Delningstext (SV)','Share text (SV)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Text som följer med vid delning (svenska)','Text included when sharing (Swedish)')} value={data.share?.text?.sv||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), sv: e.target.value }; setData(n)}} />
+              <textarea id="share-text-sv" className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Text som följer med vid delning (svenska)','Text included when sharing (Swedish)')} value={data.share?.text?.sv||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), sv: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Delningstext (EN)','Share text (EN)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Text som följer med vid delning (engelska)','Text included when sharing (English)')} value={data.share?.text?.en||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), en: e.target.value }; setData(n)}} />
+              <textarea id="share-text-en" className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Text som följer med vid delning (engelska)','Text included when sharing (English)')} value={data.share?.text?.en||''} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.text = { ...(n.share.text||{}), en: e.target.value }; setData(n)}} />
             </div>
           </div>
-          <div className="grid md:grid-cols-5 gap-4 mt-4">
+          <div id="share-platforms" className="grid md:grid-cols-5 gap-4 mt-4">
             {['facebook','twitter','linkedin','telegram','copy'].map((k)=> (
               <label key={k} className="flex items-center gap-2">
                 <Toggle size="sm" title={L('Visa/dölj kanal','Show/hide platform')} checked={data.share?.platforms?.[k]!==false} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.platforms = { ...(n.share.platforms||{}), [k]: e.target.checked }; setData(n)}} />
@@ -1401,18 +1561,18 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-chat" title={L('Chat (WhatsApp)','Chat (WhatsApp)')} visible={isSectionVisible('admin-chat')} help={L('Aktivera WhatsApp-chatt och hälsningsmeddelande. Ange telefonnummer i E.164-format.','Enable WhatsApp chat and greeting text. Provide phone number in E.164 format.') }>
-          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera WhatsApp‑chatten','Enable/disable WhatsApp chat')}>
-            <Toggle checked={!!data.chat?.enabled} onChange={(e)=>{const n={...data}; n.chat = n.chat||{}; n.chat.enabled = e.target.checked; setData(n)}} />
+          <label id="chat-enabled" className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera WhatsApp‑chatten','Enable/disable WhatsApp chat')}>
+            <Toggle id="chat-enabled-toggle" checked={!!data.chat?.enabled} onChange={(e)=>{const n={...data}; n.chat = n.chat||{}; n.chat.enabled = e.target.checked; setData(n)}} />
             <span>{L('Aktivera WhatsApp-chat','Enable WhatsApp chat')}</span>
           </label>
           <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Telefon (E.164, t.ex. +46701234567)','Phone (E.164, e.g. +46701234567)')}</label>
-              <input className="w-full border rounded px-3 py-2" title={L('Telefon i E.164‑format, t.ex. +46701234567','Phone in E.164 format, e.g. +46701234567')} value={data.chat?.phoneE164||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.phoneE164=e.target.value; setData(n)}} placeholder="+4670..." />
+              <label id="chat-phone-label" className="block text-sm text-neutral-600 mb-1">{L('Telefon (E.164, t.ex. +46701234567)','Phone (E.164, e.g. +46701234567)')}</label>
+              <input id="chat-phone" className="w-full border rounded px-3 py-2" title={L('Telefon i E.164‑format, t.ex. +46701234567','Phone in E.164 format, e.g. +46701234567')} value={data.chat?.phoneE164||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.phoneE164=e.target.value; setData(n)}} placeholder="+4670..." />
             </div>
             <div>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Position','Position')}</label>
-              <select className="w-full border rounded px-3 py-2" title={L('Placering av chatknappen','Placement of the chat button')} value={data.chat?.position||'right'} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.position = e.target.value==='left'?'left':'right'; setData(n)}}>
+              <label id="chat-position-label" className="block text-sm text-neutral-600 mb-1">{L('Position','Position')}</label>
+              <select id="chat-position" className="w-full border rounded px-3 py-2" title={L('Placering av chatknappen','Placement of the chat button')} value={data.chat?.position||'right'} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.position = e.target.value==='left'?'left':'right'; setData(n)}}>
                 <option value="right">{L('Höger','Right')}</option>
                 <option value="left">{L('Vänster','Left')}</option>
               </select>
@@ -1420,17 +1580,14 @@ export default function Admin() {
           </div>
           <div className="grid md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Hälsning (SV)','Greeting (SV)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Hälsningsmeddelande på svenska','Greeting message in Swedish')} value={data.chat?.greeting?.sv||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), sv: e.target.value }; setData(n)}} />
+              <label id="chat-greeting-sv-label" className="block text-sm text-neutral-600 mb-1">{L('Hälsning (SV)','Greeting (SV)')}</label>
+              <textarea id="chat-greeting-sv" className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Hälsningsmeddelande på svenska','Greeting message in Swedish')} value={data.chat?.greeting?.sv||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), sv: e.target.value }; setData(n)}} />
             </div>
             <div>
-              <label className="block text-sm text-neutral-600 mb-1">{L('Hälsning (EN)','Greeting (EN)')}</label>
-              <textarea className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Hälsningsmeddelande på engelska','Greeting message in English')} value={data.chat?.greeting?.en||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), en: e.target.value }; setData(n)}} />
+              <label id="chat-greeting-en-label" className="block text-sm text-neutral-600 mb-1">{L('Hälsning (EN)','Greeting (EN)')}</label>
+              <textarea id="chat-greeting-en" className="w-full border rounded px-3 py-2 min-h-[80px]" title={L('Hälsningsmeddelande på engelska','Greeting message in English')} value={data.chat?.greeting?.en||''} onChange={(e)=>{const n={...data}; n.chat=n.chat||{}; n.chat.greeting = { ...(n.chat.greeting||{}), en: e.target.value }; setData(n)}} />
             </div>
           </div>
-          <p className="text-xs text-neutral-600 mt-3">
-            {L('Knappen öppnar WhatsApp i en ny flik och förifyller ditt meddelande.','The button opens WhatsApp in a new tab and pre-fills your message.')}
-          </p>
         </Section>
 
         {/* Newsletter moved above into Marketing group */}
@@ -1472,7 +1629,7 @@ export default function Admin() {
         </Section>
 
         <Section id="admin-hero" title={L('Hero (Hem)','Hero (Home)')} visible={isSectionVisible('admin-hero')} help={L('Hjälptext: Startsektion på hemsidan. Ange bakgrundsbild, nästa auktioner och CTA-knapp.','Help: Home hero section. Set background image, next auctions and CTA link/text.') }>
-          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj Hero‑sektionen på startsidan','Show/Hide the Home hero section')}>
+          <label id="hero-visible" className="flex items-center gap-2 mb-3" title={L('Visa/Dölj Hero‑sektionen på startsidan','Show/Hide the Home hero section')}>
             <Toggle checked={!!data.hero.visible} onChange={handleToggle(['hero','visible'])} />
             <span>{L('Visa hero','Show hero')}</span>
           </label>
@@ -1480,15 +1637,16 @@ export default function Admin() {
             {/* hero details form fields here */}
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" title={L('Hjälprubrik på startsidan (aktuellt språk)','Home hero title (current language)')} value={data.hero.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.title = { ...(n.hero.title||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input id="hero-title" className="w-full border rounded px-3 py-2" title={L('Hjälprubrik på startsidan (aktuellt språk)','Home hero title (current language)')} value={data.hero.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.title = { ...(n.hero.title||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
             <div>
               <label className="block text-sm text-neutral-600 mb-1">{L('Undertitel','Subtitle')} ({currentLang.toUpperCase()})</label>
-              <input className="w-full border rounded px-3 py-2" title={L('Underrubrik på startsidan (aktuellt språk)','Home hero subtitle (current language)')} value={data.hero.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.subtitle = { ...(n.hero.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
+              <input id="hero-subtitle" className="w-full border rounded px-3 py-2" title={L('Underrubrik på startsidan (aktuellt språk)','Home hero subtitle (current language)')} value={data.hero.subtitle?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.hero.subtitle = { ...(n.hero.subtitle||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm text-neutral-600 mb-1">{L('Bakgrundsbild (URL)','Background image (URL)')}</label>
               <input
+                id="hero-bg-url"
                 className="w-full border rounded px-3 py-2"
                 title={L('Länk till bakgrundsbild (URL)','Link to background image (URL)')}
                 value={data.hero.bg || ''}
@@ -1496,11 +1654,11 @@ export default function Admin() {
                 placeholder="https://..."
               />
               <div className="mt-2 flex items-center gap-2">
-                <input type="file" accept="image/*" title={L('Ladda upp bakgrundsbild','Upload background image')} onChange={handleFileToDataUrl(['hero','bg'])} />
+                <input id="hero-bg-upload" type="file" accept="image/*" title={L('Ladda upp bakgrundsbild','Upload background image')} onChange={handleFileToDataUrl(['hero','bg'])} />
                 <button type="button" className="btn-outline text-xs" onClick={clearField(['hero','bg'])} title={L('Rensa fältet','Clear the field')}>{L('Rensa','Clear')}</button>
               </div>
               {data.hero.bg && (
-                <div className="mt-2">
+                <div id="hero-bg-preview" className="mt-2">
                   <img src={data.hero.bg} alt={L('Hero bakgrund','Hero background')} className="h-32 w-auto border rounded bg-white object-cover" />
                 </div>
               )}
