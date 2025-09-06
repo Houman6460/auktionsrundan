@@ -540,7 +540,7 @@ export default function Admin() {
                 <div key={key} className="p-3 rounded border bg-white">
                   <label className="flex items-center justify-between text-sm text-neutral-600 mb-2">
                     <span>{label}</span>
-                    <input type="checkbox" checked={!!analyticsTypes[key]} onChange={(e)=>setAnalyticsTypes((t)=>({ ...t, [key]: e.target.checked }))} />
+                    <Toggle checked={!!analyticsTypes[key]} onChange={(e)=>setAnalyticsTypes((t)=>({ ...t, [key]: e.target.checked }))} />
                   </label>
                   <div className="text-2xl font-serif">{analyticsSelection.sum[key] || 0}</div>
                 </div>

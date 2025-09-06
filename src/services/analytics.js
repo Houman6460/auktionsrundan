@@ -90,26 +90,48 @@ export function summarize(events) {
 
 export function bucketize(events, granularity = 'day') {
   // granularity: 'hour' | 'day' | 'week' | 'month'
-  const buckets = {}
+  const buckets = new Map()
   for (const e of events) {
     const d = new Date(e.ts)
-    let key
+    let tsFloor
     if (granularity === 'hour') {
-      key = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:00`
+      tsFloor = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours())
     } else if (granularity === 'week') {
-      const ww = weekKey(d)
-      key = `${ww}`
+      const iso = isoWeekStartUTC(d)
+      tsFloor = iso.getTime()
     } else if (granularity === 'month') {
-      key = `${d.getFullYear()}-${pad(d.getMonth()+1)}`
+      tsFloor = Date.UTC(d.getFullYear(), d.getMonth(), 1)
     } else {
-      key = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+      tsFloor = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
     }
-    buckets[key] = (buckets[key] || 0) + 1
+    const prev = buckets.get(tsFloor) || 0
+    buckets.set(tsFloor, prev + 1)
   }
-  // return sorted array
-  return Object.entries(buckets)
-    .map(([label, count]) => ({ label, count }))
-    .sort((a, b) => new Date(a.label) - new Date(b.label))
+  const rows = Array.from(buckets.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([ts, count]) => ({ label: formatBucketLabel(ts, granularity), count }))
+  return rows
+}
+
+function isoWeekStartUTC(dLocal) {
+  const d = new Date(Date.UTC(dLocal.getFullYear(), dLocal.getMonth(), dLocal.getDate()))
+  const dayNum = d.getUTCDay() || 7
+  if (dayNum !== 1) d.setUTCDate(d.getUTCDate() - (dayNum - 1))
+  return d
+}
+
+function formatBucketLabel(tsUTC, granularity) {
+  const d = new Date(tsUTC)
+  const y = d.getUTCFullYear()
+  const m = pad(d.getUTCMonth() + 1)
+  const day = pad(d.getUTCDate())
+  if (granularity === 'hour') {
+    const h = pad(d.getUTCHours())
+    return `${y}-${m}-${day} ${h}:00`
+  }
+  if (granularity === 'month') return `${y}-${m}`
+  if (granularity === 'week') return weekKey(new Date(tsUTC))
+  return `${y}-${m}-${day}`
 }
 
 function weekKey(d) {
