@@ -4,9 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Auktionsrundan</title>
+    <meta name="description" content="Auktionsrundan – auktioner, auktionsvaror och villkor. Följ kommande auktioner och utforska objekt." />
+    <link rel="canonical" href="http://auktionsrundan.com/" />
+    <meta name="robots" content="index, follow" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png" />
+    <meta property="og:site_name" content="Auktionsrundan" />
+    <meta property="og:type" content="website" />
+    <!-- Google Analytics (GA4) injected via Vite env var VITE_GA_ID -->
+    <script type="module">
+      const GA_ID = import.meta.env.VITE_GA_ID;
+      if (GA_ID) {
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ window.dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', GA_ID, { anonymize_ip: true });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
-</html>
+  </html>

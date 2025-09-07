@@ -10,6 +10,7 @@ export default function SeoHead() {
     const image = content.share?.coverUrl || ''
     setMeta('og:title', title)
     setMeta('og:description', description)
+    try { setMeta('og:url', window.location?.href || 'http://auktionsrundan.com/') } catch {}
     if (image) setMeta('og:image', image)
     setMeta('twitter:card', image ? 'summary_large_image' : 'summary')
     setMeta('twitter:title', title)
@@ -42,10 +43,64 @@ export default function SeoHead() {
       document.head.appendChild(script)
     } catch {}
 
+    // JSON-LD Organization and WebSite
+    try {
+      const org = {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        '@id': 'http://auktionsrundan.com/#organization',
+        name: 'Auktionsrundan',
+        url: 'http://auktionsrundan.com/',
+        logo: image || undefined
+      }
+      const wsite = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        '@id': 'http://auktionsrundan.com/#website',
+        url: 'http://auktionsrundan.com/',
+        name: 'Auktionsrundan',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: 'http://auktionsrundan.com/?q={search_term_string}',
+          'query-input': 'required name=search_term_string'
+        }
+      }
+      const rm = (id) => { const el = document.getElementById(id); if (el) el.remove() }
+      rm('jsonld-org'); rm('jsonld-website')
+      const s1 = document.createElement('script'); s1.type='application/ld+json'; s1.id='jsonld-org'; s1.textContent = JSON.stringify(org); document.head.appendChild(s1)
+      const s2 = document.createElement('script'); s2.type='application/ld+json'; s2.id='jsonld-website'; s2.textContent = JSON.stringify(wsite); document.head.appendChild(s2)
+    } catch {}
+
+    // JSON-LD FAQPage if FAQ items exist
+    try {
+      const items = content.faq?.items || []
+      if (Array.isArray(items) && items.length) {
+        const faq = {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: items.map((q) => ({
+            '@type': 'Question',
+            name: (q.q?.sv || q.q?.en || ''),
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: (q.a?.sv || q.a?.en || '')
+            }
+          }))
+        }
+        const exist = document.getElementById('jsonld-faq')
+        if (exist) exist.remove()
+        const s = document.createElement('script'); s.type='application/ld+json'; s.id='jsonld-faq'; s.textContent = JSON.stringify(faq); document.head.appendChild(s)
+      }
+    } catch {}
+
     return () => {
       removeMeta('og:title'); removeMeta('og:description'); removeMeta('og:image')
+      removeMeta('og:url')
       removeMeta('twitter:card'); removeMeta('twitter:title'); removeMeta('twitter:description')
       const existing = document.getElementById('jsonld-events'); if (existing) existing.remove()
+      const e1 = document.getElementById('jsonld-org'); if (e1) e1.remove()
+      const e2 = document.getElementById('jsonld-website'); if (e2) e2.remove()
+      const e3 = document.getElementById('jsonld-faq'); if (e3) e3.remove()
     }
   }, [])
   return null

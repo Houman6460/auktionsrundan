@@ -63,6 +63,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-vintage-cream text-vintage-black">
       <Header />
+      <SeoHead />
       <NewsletterPopup />
       <ScrollToHash />
       <Routes>
@@ -70,7 +71,6 @@ export default function App() {
           path="/"
           element={
             <main>
-              <SeoHead />
               <Hero />
               <section id="auctions" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
