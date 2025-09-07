@@ -46,7 +46,7 @@ export default function Items() {
               <h3 className="font-serif text-xl mb-3">{cat}</h3>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {(arr||[]).map((it, idx) => (
-                  <figure key={idx} id={`item-${cat}-${idx}`} className="section-card overflow-hidden">
+                  <figure key={idx} id={`item-${cat}-${idx}`} className="section-card overflow-hidden cv-auto">
                     <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                       {it.img ? (
                         <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" loading="lazy" decoding="async" />
@@ -104,7 +104,7 @@ export default function Items() {
           <h3 className="font-serif text-xl mb-3">{filter}</h3>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {shown.map((it, idx) => (
-              <figure key={idx} id={`item-${it._cat}-${it._idx}`} className="section-card overflow-hidden">
+              <figure key={idx} id={`item-${it._cat}-${it._idx}`} className="section-card overflow-hidden cv-auto">
                 <div className="aspect-[4/3] bg-vintage-cream/70 rounded overflow-hidden">
                   {it.img ? (
                     <img src={it.img} alt={getText(it.name) || 'Auktionsvara'} className="block w-full h-full object-cover" loading="lazy" decoding="async" />

@@ -52,12 +52,37 @@ function AuctionCard({ a, idx, now, lang }) {
   const datePart = a.date ? a.date : ''
   const timePart = a.start ? a.start : ''
   const dateTimeLine = [datePart, timePart].filter(Boolean).join(' ')
+  const viewingT = a.viewing && (a.viewing[lang] || a.viewing.sv || a.viewing.en)
   const shareText = [
     titleT,
+    viewingT && `${t('auctions.viewing') || 'Visning'}: ${viewingT}`,
+    a.start && `${t('auctions.start') || 'Start'}: ${a.start}`,
     dateTimeLine && `${t('auctions.date')}: ${dateTimeLine}`,
     addrT && `${t('auctions.address') || 'Adress'}: ${addrT}`,
     mapUrl && `${t('auctions.map') || 'Karta'}: ${mapUrl}`,
   ].filter(Boolean).join('\n')
+
+  // Build a Google Static Map URL if we have an API key configured; otherwise omit (share will still include directions link)
+  const staticMapUrl = (() => {
+    try {
+      const raw = localStorage.getItem('ar_site_content_v1')
+      const parsed = raw ? JSON.parse(raw) : {}
+      const apiKey = parsed?.maps?.apiKey || ''
+      if (!addrT) return ''
+      const params = new URLSearchParams({
+        center: addrT,
+        zoom: '15',
+        size: '800x400',
+        scale: '2',
+        maptype: 'roadmap',
+        markers: `color:red|${addrT}`,
+      })
+      if (apiKey) params.set('key', apiKey)
+      return `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`
+    } catch {
+      return ''
+    }
+  })()
 
   React.useEffect(() => {
     try {
@@ -94,7 +119,7 @@ function AuctionCard({ a, idx, now, lang }) {
           </div>
         </div>
         <div className="mt-3">
-          <ShareButtons title={titleT} url={shareUrl} text={shareText}>
+          <ShareButtons title={titleT} url={shareUrl} text={shareText} image={staticMapUrl} mapUrl={mapUrl}>
             {/* Register button styled like the social buttons - icon removed per request */}
             <button type="button" className="btn-outline text-xs relative px-3 whitespace-nowrap" onClick={()=>{ setOpenReg(true); try { trackEvent('register_open', { auctionId: anchorId, title: titleT }) } catch {} }} title={t('auctions.registerBtn')} aria-label={t('auctions.registerBtn')}>
               {t('auctions.registerShort')}

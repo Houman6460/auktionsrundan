@@ -9,6 +9,8 @@
     <meta name="robots" content="index, follow" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png" />
+    <link rel="alternate" href="http://auktionsrundan.com/" hreflang="sv-SE" />
+    <link rel="alternate" href="http://auktionsrundan.com/" hreflang="x-default" />
     <meta property="og:site_name" content="Auktionsrundan" />
     <meta property="og:type" content="website" />
     <!-- Google Analytics (GA4) injected via Vite env var VITE_GA_ID -->
@@ -25,6 +27,32 @@
         gtag('js', new Date());
         gtag('config', GA_ID, { anonymize_ip: true });
       }
+    </script>
+    <!-- Fallback: generate apple-touch-icon PNG at runtime if the file is missing -->
+    <script>
+      (function(){
+        function generate(){
+          try{
+            var size=180; var c=document.createElement('canvas'); c.width=c.height=size;
+            var ctx=c.getContext('2d');
+            ctx.fillStyle='#1f2937'; ctx.fillRect(0,0,size,size);
+            ctx.fillStyle='#FDE68A'; ctx.font='bold 96px Arial, Helvetica, sans-serif';
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText('AR', size/2, size/2+8);
+            var href=c.toDataURL('image/png');
+            var l=document.querySelector('link[rel="apple-touch-icon"]');
+            if(!l){ l=document.createElement('link'); l.rel='apple-touch-icon'; l.sizes='180x180'; document.head.appendChild(l); }
+            l.href=href;
+          }catch(e){}
+        }
+        var link=document.querySelector('link[rel="apple-touch-icon"]');
+        if(link){
+          var img=new Image();
+          img.onload=function(){};
+          img.onerror=function(){ generate(); };
+          img.src=link.href;
+        } else { generate(); }
+      })();
     </script>
   </head>
   <body>

@@ -1,6 +1,7 @@
 import React from 'react'
 
-export default function ShareButtons({ title, url, text, image, children }) {
+// Rich social share with optional static map image (if provided) and platform-specific links.
+export default function ShareButtons({ title, url, text, image, mapUrl, children }) {
   const absoluteUrl = (u) => {
     if (!u && typeof window !== 'undefined') return window.location.href
     try {
@@ -22,6 +23,16 @@ export default function ShareButtons({ title, url, text, image, children }) {
   const doWebShare = async () => {
     try {
       if (navigator.share) {
+        // If we have an image URL and the browser supports file sharing, try sharing the image too
+        if (image && typeof navigator.canShare === 'function') {
+          try {
+            const file = await downloadImageAsFile(image, 'map.png')
+            if (file && navigator.canShare({ files: [file] })) {
+              await navigator.share({ title: shareTitle, text: shareText, url: shareUrl, files: [file] })
+              return
+            }
+          } catch {}
+        }
         await navigator.share({ title: shareTitle, text: shareText, url: shareUrl })
       } else {
         // Fallback: open twitter share
@@ -38,6 +49,8 @@ export default function ShareButtons({ title, url, text, image, children }) {
     whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
     telegram: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
     mail: `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(shareText + '\n' + shareUrl)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+    sms: `sms:?&body=${encodeURIComponent(shareText + '\n' + shareUrl)}`,
   }
 
   const copyToClipboard = async (val) => {
@@ -61,6 +74,17 @@ export default function ShareButtons({ title, url, text, image, children }) {
       return ok
     } catch {
       return false
+    }
+  }
+
+  async function downloadImageAsFile(src, filename) {
+    try {
+      const resp = await fetch(src, { mode: 'cors' })
+      const blob = await resp.blob()
+      const type = blob.type || 'image/png'
+      return new File([blob], filename, { type })
+    } catch {
+      return null
     }
   }
 
@@ -96,6 +120,10 @@ export default function ShareButtons({ title, url, text, image, children }) {
         {/* X icon */}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 3l7.5 9.5L3 21h3l6-6.5L18.5 21H21l-7.5-9.5L21 3h-3l-5.5 6L7 3H3z"/></svg>
       </a>
+      <a className="btn-outline text-xs" href={links.linkedin} target="_blank" rel="noopener noreferrer" aria-label="Dela på LinkedIn" title="LinkedIn">
+        {/* LinkedIn icon */}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4V8zm7 0h3.8v2.2h.1c.5-.9 1.7-2.2 3.6-2.2 3.9 0 4.6 2.6 4.6 6V24h-4v-7.1c0-1.7 0-3.9-2.4-3.9-2.4 0-2.8 1.9-2.8 3.8V24h-4V8z"/></svg>
+      </a>
       <a className="btn-outline text-xs" href={links.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Dela på WhatsApp" title="WhatsApp">
         {/* WhatsApp icon */}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.52 3.48A11.86 11.86 0 0012.04 0 11.94 11.94 0 000 12c0 2.11.55 4.07 1.61 5.84L0 24l6.34-1.64A11.93 11.93 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.2-3.48-8.52zM12 21.6c-1.98 0-3.86-.58-5.48-1.68l-.39-.25-3.77.97.99-3.67-.26-.42A9.58 9.58 0 012.4 12c0-5.31 4.3-9.6 9.6-9.6 2.57 0 4.98 1 6.8 2.81A9.56 9.56 0 0121.6 12c0 5.3-4.29 9.6-9.6 9.6zm5.13-6.07c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.17-.43-2.24-1.37-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.12-.12.28-.32.42-.48.14-.16.18-.28.28-.46.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2-.22-.52-.44-.45-.61-.46l-.52-.01c-.18 0-.48.07-.73.34-.25.28-.96.94-.96 2.29 0 1.35.98 2.66 1.12 2.85.14.18 1.93 2.95 4.67 4.02.65.28 1.16.45 1.56.57.65.21 1.24.18 1.71.11.52-.08 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.2-.52-.34z"/></svg>
@@ -108,10 +136,24 @@ export default function ShareButtons({ title, url, text, image, children }) {
         {/* Instagram icon */}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2C4.24 2 2 4.24 2 7v10c0 2.76 2.24 5 5 5h10c2.76 0 5-2.24 5-5V7c0-2.76-2.24-5-5-5H7zm10 2c1.66 0 3 1.34 3 3v10c0 1.66-1.34 3-3 3H7c-1.66 0-3-1.34-3-3V7c0-1.66 1.34-3 3-3h10zm-5 3.5A4.5 4.5 0 1016.5 12 4.5 4.5 0 0012 7.5zm0 2A2.5 2.5 0 1114.5 12 2.5 2.5 0 0112 9.5zM18 6.5a1 1 0 11-1-1 1 1 0 011 1z"/></svg>
       </button>
+      <a className="btn-outline text-xs" href={links.sms} aria-label="Dela via SMS" title="SMS">
+        {/* SMS icon */}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4a2 2 0 00-2 2v14l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2z"/></svg>
+      </a>
+      {mapUrl && (
+        <a className="btn-outline text-xs" href={mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Öppna karta" title="Karta/Directions">
+          {/* Map/Pin icon */}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 119.5 9 2.5 2.5 0 0112 11.5z"/></svg>
+        </a>
+      )}
       <a className="btn-outline text-xs" href={links.mail} aria-label="Dela via e-post" title="E‑post">
         {/* Mail icon */}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 6c0-1.1.9-2 2-2h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm2 0l8 5 8-5H4zm16 12V8l-8 5-8-5v10h16z"/></svg>
       </a>
+      <button type="button" className="btn-outline text-xs" onClick={() => copyToClipboard(`${shareText}\n${shareUrl}`)} aria-label="Kopiera" title="Kopiera">
+        {/* Copy icon */}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 1H4a2 2 0 00-2 2v12h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>
+      </button>
       {children}
     </div>
   )

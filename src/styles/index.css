@@ -33,6 +33,37 @@ html, body {
 
 .section-card {
   @apply bg-white/80 backdrop-blur shadow-sm rounded-lg border border-amber-900/10;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+/* Subtle lift on hover for pointer devices only */
+@media (hover: hover) and (pointer: fine) {
+  .section-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.06);
+  }
+}
+
+/* Focus-visible ring for accessibility */
+.section-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(253, 230, 138, 0.9), 0 10px 24px rgba(0,0,0,0.08);
+}
+
+/* Opt-in content-visibility helper for large lists */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 250px; /* fallback size to prevent layout jumps */
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .section-card {
+    transition: none !important;
+  }
+  .animate-spin {
+    animation: none !important;
+  }
 }
 
 .btn-primary {

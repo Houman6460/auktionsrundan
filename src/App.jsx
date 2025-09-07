@@ -5,19 +5,21 @@ import { useTranslation } from 'react-i18next'
 import Header from './components/Header.jsx'
 import SeoHead from './components/SeoHead.jsx'
 import NewsletterPopup from './components/NewsletterPopup.jsx'
-import Hero from './sections/Hero.jsx'
-import Auctions from './sections/Auctions.jsx'
-import Items from './sections/Items.jsx'
-import Terms from './sections/Terms.jsx'
-import InstagramFeed from './sections/InstagramFeed.jsx'
-import FAQ from './sections/FAQ.jsx'
-import FAQPreview from './sections/FAQPreview.jsx'
-import LiveAction from './sections/LiveAction.jsx'
-import ActionsHistory from './sections/ActionsHistory.jsx'
-import Footer from './components/Footer.jsx'
-import Admin from './admin/Admin.jsx'
-import ChatWidget from './components/ChatWidget.jsx'
-import ShareMenu from './components/ShareMenu.jsx'
+import Loader from './components/Loader.jsx'
+import LazySection from './components/LazySection.jsx'
+const Hero = React.lazy(() => import('./sections/Hero.jsx'))
+const Auctions = React.lazy(() => import('./sections/Auctions.jsx'))
+const Items = React.lazy(() => import('./sections/Items.jsx'))
+const Terms = React.lazy(() => import('./sections/Terms.jsx'))
+const InstagramFeed = React.lazy(() => import('./sections/InstagramFeed.jsx'))
+const FAQ = React.lazy(() => import('./sections/FAQ.jsx'))
+const FAQPreview = React.lazy(() => import('./sections/FAQPreview.jsx'))
+const LiveAction = React.lazy(() => import('./sections/LiveAction.jsx'))
+const ActionsHistory = React.lazy(() => import('./sections/ActionsHistory.jsx'))
+const Footer = React.lazy(() => import('./components/Footer.jsx'))
+const Admin = React.lazy(() => import('./admin/Admin.jsx'))
+const ChatWidget = React.lazy(() => import('./components/ChatWidget.jsx'))
+const ShareMenu = React.lazy(() => import('./components/ShareMenu.jsx'))
 
 function ScrollToHash() {
   const { hash } = useLocation()
@@ -66,6 +68,7 @@ export default function App() {
       <SeoHead />
       <NewsletterPopup />
       <ScrollToHash />
+      <React.Suspense fallback={<Loader variant="page" label={t('loading') || 'Laddar…'} />}>
       <Routes>
         <Route
           path="/"
@@ -92,18 +95,18 @@ export default function App() {
               </section>
               <section className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-8">
-                  <FAQPreview />
+                  <LazySection><FAQPreview /></LazySection>
                 </div>
               </section>
               <section id="instagram" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">Instagram</h2>
-                  <InstagramFeed />
+                  <LazySection><InstagramFeed /></LazySection>
                 </div>
               </section>
               <section id="faq" className="scroll-mt-24">
                 <div className="container mx-auto px-4 py-16">
-                  <FAQ />
+                  <LazySection><FAQ /></LazySection>
                 </div>
               </section>
               <Footer />
@@ -183,6 +186,7 @@ export default function App() {
       </Routes>
       <ChatWidget />
       <ShareMenu />
+      </React.Suspense>
     </div>
   )
 }
