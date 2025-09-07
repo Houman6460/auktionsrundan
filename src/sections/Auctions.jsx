@@ -53,9 +53,7 @@ function AuctionCard({ a, idx, now, lang }) {
   const timePart = a.start ? a.start : ''
   const dateTimeLine = [datePart, timePart].filter(Boolean).join(' ')
   const viewingT = a.viewing && (a.viewing[lang] || a.viewing.sv || a.viewing.en)
-  const inviteLine = (lang === 'en') ? 'You are invited to our auction:' : 'Välkommen på auktion:'
   const shareText = [
-    inviteLine,
     titleT,
     viewingT && `${t('auctions.viewing') || 'Visning'}: ${viewingT}`,
     a.start && `${t('auctions.start') || 'Start'}: ${a.start}`,
