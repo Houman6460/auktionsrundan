@@ -94,8 +94,8 @@ function AuctionCard({ a, idx, now, lang }) {
   }, [anchorId, openReg])
 
   return (
-    <div id={anchorId} className="section-card p-4 grid md:grid-cols-2 gap-4">
-      <div>
+    <div id={anchorId} className="section-card p-4 grid md:grid-cols-12 gap-4">
+      <div className="md:col-span-7 lg:col-span-8">
         <h3 className="font-serif text-xl">{titleT}</h3>
         <p className="text-sm text-neutral-700 mt-1">{addrT}</p>
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
@@ -129,7 +129,7 @@ function AuctionCard({ a, idx, now, lang }) {
           <RegistrationModal open={openReg} onClose={()=>setOpenReg(false)} auctionId={anchorId} title={titleT} date={a.date} start={a.start} address={addrT} />
         </div>
       </div>
-      <div className="rounded overflow-hidden border border-amber-900/10 min-h-[220px]">
+      <div className="md:col-span-5 lg:col-span-4 rounded overflow-hidden border border-amber-900/10 min-h-[220px]">
         {/* Prefer real Google Map if API key set and we have an address; fallback to iframe if provided */}
         {(() => {
           const addr = a.address && (a.address[lang] || a.address.sv || a.address.en)
