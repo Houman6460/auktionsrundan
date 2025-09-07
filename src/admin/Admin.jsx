@@ -1861,6 +1861,25 @@ export default function Admin() {
                     <input className="w-full border rounded px-3 py-2" title={L('Auktionens adress (aktuellt språk)','Auction address (current language)')} value={a.address?.[currentLang] || ''} onChange={(e)=>updateAuction(idx,'address',{...(a.address||{}), [currentLang]: e.target.value})} />
                   </div>
                 </div>
+                <div className="grid md:grid-cols-2 gap-3 mt-2">
+                  <div>
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Bild (URL)','Image (URL)')}</label>
+                    <input className="w-full border rounded px-3 py-2" placeholder="https://..." title={L('URL till bild som representerar auktionen','Image URL representing the auction')} value={a.img || ''} onChange={(e)=>updateAuction(idx,'img', e.target.value)} />
+                    <div className="mt-2 flex items-center gap-2">
+                      <input type="file" accept="image/*" title={L('Ladda upp bild','Upload image')} onChange={handleFileToDataUrl(['auctions','list', idx, 'img'])} />
+                      <button type="button" className="btn-outline text-xs" onClick={()=>updateAuction(idx,'img','')} title={L('Rensa bilden','Clear image')}>{L('Rensa','Clear')}</button>
+                    </div>
+                  </div>
+                  <div>
+                    {a.img ? (
+                      <div className="rounded border bg-white overflow-hidden w-full aspect-[3/2] grid place-items-center">
+                        <img src={a.img} alt={L('Auktionsbild','Auction image')} className="block w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="text-xs text-neutral-500 mt-8">{L('Ingen bild vald','No image selected')}</div>
+                    )}
+                  </div>
+                </div>
                 <div className="mt-3 flex gap-2">
                   <button className="btn-outline" onClick={()=>removeAuction(idx)} title={L('Ta bort denna auktion','Remove this auction')}>{L('Ta bort','Remove')}</button>
                   <button className="btn-primary" onClick={()=>createLiveEventFromAuction(idx)} title={L('Skapa ett Live‑Event kopplat till denna auktion','Create a Live Event linked to this auction')}>{L('Skapa Live Event','Create Live Event')}</button>
