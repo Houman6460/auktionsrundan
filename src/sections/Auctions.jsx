@@ -93,9 +93,23 @@ function AuctionCard({ a, idx, now, lang }) {
     } catch {}
   }, [anchorId, openReg])
 
+  // Load platform toggles from site content
+  const contentRaw = (typeof window !== 'undefined') ? localStorage.getItem('ar_site_content_v1') : null
+  const contentObj = (()=>{ try { return contentRaw ? JSON.parse(contentRaw) : {} } catch { return {} } })()
+  const platforms = contentObj?.share?.platforms || {}
+  const shareEnabled = contentObj?.share?.enabled !== false
+  const anyPlatformOn = Object.values({
+    system:true, facebook:true, twitter:true, linkedin:true, whatsapp:true,
+    telegram:true, instagram:true, sms:true, mail:true, map:true, copy:true,
+    ...platforms
+  }).some(v => v !== false)
+
+  const layoutLeftColsMd = (shareEnabled && anyPlatformOn) ? 'md:col-span-7 lg:col-span-8' : 'md:col-span-6 lg:col-span-6'
+  const layoutRightColsMd = (shareEnabled && anyPlatformOn) ? 'md:col-span-5 lg:col-span-4' : 'md:col-span-6 lg:col-span-6'
+
   return (
     <div id={anchorId} className="section-card p-4 grid md:grid-cols-12 gap-4">
-      <div className="md:col-span-7 lg:col-span-8">
+      <div className={layoutLeftColsMd}>
         <h3 className="font-serif text-xl">{titleT}</h3>
         <p className="text-sm text-neutral-700 mt-1">{addrT}</p>
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
@@ -119,17 +133,19 @@ function AuctionCard({ a, idx, now, lang }) {
           </div>
         </div>
         <div className="mt-3">
-          <ShareButtons title={titleT} url={shareUrl} text={shareText} image={staticMapUrl} mapUrl={mapUrl}>
+          {shareEnabled && anyPlatformOn && (
+          <ShareButtons title={titleT} url={shareUrl} text={shareText} image={staticMapUrl} mapUrl={mapUrl} platforms={platforms}>
             {/* Register button styled like the social buttons - icon removed per request */}
             <button type="button" className="btn-outline text-xs relative px-3 whitespace-nowrap" onClick={()=>{ setOpenReg(true); try { trackEvent('register_open', { auctionId: anchorId, title: titleT }) } catch {} }} title={t('auctions.registerBtn')} aria-label={t('auctions.registerBtn')}>
               {t('auctions.registerShort')}
               {regCount>0 && (<span className="absolute -top-2 -right-2 bg-earth-dark text-white rounded-full text-[10px] leading-none px-1 py-0.5">{regCount}</span>)}
             </button>
           </ShareButtons>
+          )}
           <RegistrationModal open={openReg} onClose={()=>setOpenReg(false)} auctionId={anchorId} title={titleT} date={a.date} start={a.start} address={addrT} />
         </div>
       </div>
-      <div className="md:col-span-5 lg:col-span-4 rounded overflow-hidden border border-amber-900/10 min-h-[220px]">
+      <div className={`${layoutRightColsMd} rounded overflow-hidden border border-amber-900/10 min-h-[220px]`}>
         {/* Prefer real Google Map if API key set and we have an address; fallback to iframe if provided */}
         {(() => {
           const addr = a.address && (a.address[lang] || a.address.sv || a.address.en)

@@ -1622,10 +1622,22 @@ export default function Admin() {
             </div>
           </div>
           <div id="share-platforms" className="grid md:grid-cols-5 gap-4 mt-4">
-            {['facebook','twitter','linkedin','telegram','copy'].map((k)=> (
+            {[
+              {key:'system', label:L('Systemdelning','System share')},
+              {key:'facebook', label:'Facebook'},
+              {key:'twitter', label:'Twitter / X'},
+              {key:'linkedin', label:'LinkedIn'},
+              {key:'whatsapp', label:'WhatsApp'},
+              {key:'telegram', label:'Telegram'},
+              {key:'instagram', label:'Instagram'},
+              {key:'sms', label:'SMS'},
+              {key:'mail', label:L('E‑post','Email')},
+              {key:'map', label:L('Karta','Map/Directions')},
+              {key:'copy', label:L('Kopiera text','Copy text')},
+            ].map(({key:k,label})=> (
               <label key={k} className="flex items-center gap-2">
                 <Toggle size="sm" title={L('Visa/dölj kanal','Show/hide platform')} checked={data.share?.platforms?.[k]!==false} onChange={(e)=>{const n={...data}; n.share=n.share||{}; n.share.platforms = { ...(n.share.platforms||{}), [k]: e.target.checked }; setData(n)}} />
-                <span className="capitalize">{k}</span>
+                <span className="truncate">{label}</span>
               </label>
             ))}
           </div>
