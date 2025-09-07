@@ -1,5 +1,5 @@
 import React from 'react'
-import { trackRating } from '../services/analytics'
+import { trackRating, loadEvents } from '../services/analytics'
 
 // RatingStars component
 // Props:
@@ -32,6 +32,16 @@ export default function RatingStars({ targetType, targetId, className }) {
       if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
         setMsg('Ratings API is unavailable in local dev. Deploy to Cloudflare Pages with D1 bound to use ratings.')
       }
+      // Fallback: compute local average from analytics store so Admin can see aggregated results
+      try {
+        const ev = loadEvents().filter(e => e.type === 'rating_submit' && e.payload?.itemId === key)
+        const total = ev.length
+        const sum = ev.reduce((acc, e) => acc + Number(e.payload?.value || 0), 0)
+        if (total > 0) {
+          setAvg(sum / total)
+          setCount(total)
+        }
+      } catch {}
     }
   }
 
@@ -67,10 +77,33 @@ export default function RatingStars({ targetType, targetId, className }) {
         try { trackRating({ itemId: key, value: score }) } catch {}
         setMsg('Thanks for rating!')
       } else {
-        setMsg('Could not submit rating. If this is production, ensure Cloudflare D1 is configured.')
+        // Backend not available – record locally so Admin receives the rating in analytics
+        try { trackRating({ itemId: key, value: score }) } catch {}
+        setMine(score)
+        try { localStorage.setItem(lsKey, String(score)) } catch {}
+        // Update visible average from local analytics store
+        try {
+          const ev = loadEvents().filter(e => e.type === 'rating_submit' && e.payload?.itemId === key)
+          const total = ev.length
+          const sum = ev.reduce((acc, e) => acc + Number(e.payload?.value || 0), 0)
+          setAvg(total ? (sum / total) : score)
+          setCount(total)
+        } catch { setAvg(score); setCount((c)=>c||1) }
+        setMsg('Thanks for rating! (saved locally)')
       }
     } catch {
-      setMsg('Network error while submitting rating.')
+      // Network failure – still track locally
+      try { trackRating({ itemId: key, value: score }) } catch {}
+      setMine(score)
+      try { localStorage.setItem(lsKey, String(score)) } catch {}
+      try {
+        const ev = loadEvents().filter(e => e.type === 'rating_submit' && e.payload?.itemId === key)
+        const total = ev.length
+        const sum = ev.reduce((acc, e) => acc + Number(e.payload?.value || 0), 0)
+        setAvg(total ? (sum / total) : score)
+        setCount(total)
+      } catch { setAvg(score); setCount((c)=>c||1) }
+      setMsg('Network error – rating saved locally.')
     } finally {
       setPending(false)
     }

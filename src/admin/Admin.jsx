@@ -1345,6 +1345,67 @@ export default function Admin() {
                 </div>
               </div>
             </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Betyg per auktion','Ratings per auction')}</h3>
+              <div id="analytics-ratings-auctions" className="section-card p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm text-neutral-700">{L('Sammanställning av betyg','Ratings summary')}</div>
+                  <button type="button" className="btn-outline text-sm" onClick={()=>{
+                    const rows = analyticsSelection.events.filter(e=>e.type==='rating_submit')
+                    analyticsExportEventsCsv(rows)
+                  }} title={L('Exportera alla betyg','Export all ratings')}>{L('Exportera CSV','Export CSV')}</button>
+                </div>
+                {(() => {
+                  try {
+                    const map = {}
+                    analyticsSelection.events.forEach((e)=>{
+                      if (e.type !== 'rating_submit') return
+                      const itemId = e.payload?.itemId || ''
+                      if (!/^item:auction-/.test(itemId)) return
+                      const v = Number(e.payload?.value||0)
+                      const cur = map[itemId] || { sum: 0, count: 0 }
+                      cur.sum += v
+                      cur.count += 1
+                      map[itemId] = cur
+                    })
+                    const rows = Object.entries(map).map(([itemId, agg])=>{
+                      let label = itemId
+                      try {
+                        const m = itemId.match(/^item:auction-(\d+)/)
+                        const idx = m ? parseInt(m[1], 10) : -1
+                        const a = data.auctions?.list?.[idx]
+                        const title = a?.title?.[currentLang] || a?.title?.sv || a?.title?.en || ''
+                        label = title ? `${title} (#${idx+1})` : label
+                      } catch {}
+                      return { itemId, label, average: agg.count ? (agg.sum/agg.count) : 0, count: agg.count }
+                    }).sort((a,b)=> b.count - a.count)
+                    return (
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-neutral-100 text-left">
+                            <th className="px-2 py-1">{L('Auktion','Auction')}</th>
+                            <th className="px-2 py-1">{L('Snitt','Average')}</th>
+                            <th className="px-2 py-1">{L('Antal','Count')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.length===0 && (<tr><td className="px-2 py-2 text-neutral-600" colSpan={3}>{L('Inga betyg ännu.','No ratings yet.')}</td></tr>)}
+                          {rows.map((r,i)=> (
+                            <tr key={r.itemId} className="border-t">
+                              <td className="px-2 py-1">{r.label}</td>
+                              <td className="px-2 py-1">{r.average.toFixed(2)}</td>
+                              <td className="px-2 py-1">{r.count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )
+                  } catch (err) {
+                    return <div className="text-neutral-600 text-sm">{L('Kunde inte läsa betyg.','Could not load ratings.')}</div>
+                  }
+                })()}
+              </div>
+            </div>
           </div>
 
           <div id="analytics-kpis" className="section-card p-3 mb-4">

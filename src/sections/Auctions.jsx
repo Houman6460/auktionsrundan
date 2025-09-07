@@ -106,6 +106,7 @@ function AuctionCard({ a, idx, now, lang }) {
 
   const layoutLeftColsMd = (shareEnabled && anyPlatformOn) ? 'md:col-span-7 lg:col-span-8' : 'md:col-span-6 lg:col-span-6'
   const layoutRightColsMd = (shareEnabled && anyPlatformOn) ? 'md:col-span-5 lg:col-span-4' : 'md:col-span-6 lg:col-span-6'
+  const ratingsEnabled = contentObj?.ratings?.enabled !== false
 
   return (
     <div id={anchorId} className="section-card p-4 grid md:grid-cols-12 gap-4">
@@ -150,6 +151,12 @@ function AuctionCard({ a, idx, now, lang }) {
             </div>
           )}
           <RegistrationModal open={openReg} onClose={()=>setOpenReg(false)} auctionId={anchorId} title={titleT} date={a.date} start={a.start} address={addrT} />
+          {ratingsEnabled && (
+            <div className="mt-2">
+              <div className="text-xs text-neutral-600 mb-1">{t('ratings.title') || 'Betygsätt denna auktion'}</div>
+              <RatingStars targetType="item" targetId={anchorId} />
+            </div>
+          )}
         </div>
       </div>
       <div className={`${layoutRightColsMd} rounded overflow-hidden border border-amber-900/10 min-h-[220px]`}>
@@ -210,12 +217,6 @@ export default function Auctions() {
   const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('lang') || 'sv')
   return (
     <div className="grid gap-6">
-      {content?.ratings?.enabled && (
-        <div className="section-card p-3">
-          <div className="text-sm text-neutral-700 mb-1">{t('auctions.title') || 'Upcoming Auctions'}</div>
-          <RatingStars targetType="upcoming" />
-        </div>
-      )}
       {list.map((a, idx) => (
         <AuctionCard key={idx} a={a} idx={idx} now={now} lang={lang} />
       ))}
