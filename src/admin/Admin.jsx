@@ -154,7 +154,7 @@ export default function Admin() {
   // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
   const [activeFilter, setActiveFilter] = React.useState(null)
   const groupSections = React.useMemo(() => ({
-    design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
+    design: ['admin-header','admin-hero','admin-slider','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
     marketing: ['admin-newsletter','admin-share','admin-chat'],
     engagement: ['admin-liveaction','admin-registration','admin-ratings'],
     integrations: ['admin-maps'],
@@ -1172,6 +1172,7 @@ export default function Admin() {
                       <a href="#admin-header" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Konfigurera logotyp, navigering och språk','Configure logo, navigation and languages')} onClick={()=>setActiveFilter('admin-header')}>{L('Header','Header')}</a>
                       <a href="#admin-hero" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Lägg till hero‑bild och rubriker för startsidan','Add hero image and titles for the homepage')} onClick={()=>setActiveFilter('admin-hero')}>{L('Hero (Hem)','Hero (Home)')}</a>
                       <a href="#admin-auctions" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}>{L('Kommande Auktioner','Upcoming Auctions')}</a>
+                      <a href="#admin-slider" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Ställ in bildspel/slider för auktioner','Configure auctions slider')} onClick={()=>setActiveFilter('admin-slider')}>{L('Slider (Auktioner)','Slider (Auctions)')}</a>
                       <a href="#admin-items" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}>{L('Auktionsvaror','Auction Items')}</a>
                       <a href="#admin-terms" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}>{L('Auktionsvillkor','Terms')}</a>
                       <a href="#admin-instagram" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}>{L('Instagram','Instagram')}</a>
@@ -1603,6 +1604,24 @@ export default function Admin() {
               <input id="header-nav-items" className="w-full border rounded px-3 py-2 mb-2" title={L('Text för Auktionsvaror i menyn','Text for Auction Items in the menu')} value={data.header.nav.items?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.items[currentLang]=e.target.value; setData(n)}} />
               <label className="block text-sm text-neutral-600 mb-1">{L('Auktionsvillkor','Terms')}</label>
               <input id="header-nav-terms" className="w-full border rounded px-3 py-2" title={L('Text för Auktionsvillkor i menyn','Text for Terms in the menu')} value={data.header.nav.terms?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.header.nav.terms[currentLang]=e.target.value; setData(n)}} />
+            </div>
+          </div>
+        </Section>
+
+        {/* Slider (Auctions) */}
+        <Section id="admin-slider" title={L('Slider (Auktioner)','Slider (Auctions)')} visible={isSectionVisible('admin-slider')} help={L('Aktivera ett automatiskt rullande bildspel som visar varje kommande auktion som en liten ruta. Muspekaren över pausar bildspelet.','Enable an auto-scrolling slider that shows each upcoming auction as a small tile. Hover pauses the slider.') }>
+          <label className="flex items-center gap-2 mb-3" title={L('Aktivera/avaktivera auktions‑slider','Enable/disable auctions slider')}>
+            <Toggle checked={!!data.slider?.events?.enabled} onChange={(e)=>{const n={...data}; n.slider=n.slider||{}; n.slider.events=n.slider.events||{}; n.slider.events.enabled=e.target.checked; setData(n)}} />
+            <span>{L('Aktivera slider','Enable slider')}</span>
+          </label>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Rubrik','Title')} ({currentLang.toUpperCase()})</label>
+              <input className="w-full border rounded px-3 py-2" title={L('Rubrik ovanför bildspelet (aktuellt språk)','Headline above the slider (current language)')} value={data.slider?.events?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.slider=n.slider||{}; n.slider.events=n.slider.events||{}; n.slider.events.title = { ...(n.slider.events.title||{}), [currentLang]: e.target.value }; setData(n)}} />
+            </div>
+            <div>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Hastighet (px/s)','Speed (px/s)')}</label>
+              <input type="number" min="10" max="200" step="5" className="w-full border rounded px-3 py-2" title={L('Hur snabbt bildspelet rullar (pixlar per sekund)','How fast the slider moves (pixels per second)')} value={data.slider?.events?.speed ?? 40} onChange={(e)=>{const n={...data}; n.slider=n.slider||{}; n.slider.events=n.slider.events||{}; n.slider.events.speed = parseInt(e.target.value||'40',10); setData(n)}} />
             </div>
           </div>
         </Section>

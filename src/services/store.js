@@ -126,6 +126,14 @@ const defaults = {
   ratings: {
     enabled: true,
   },
+  // Sliders configuration (auto-scrolling components)
+  slider: {
+    events: {
+      enabled: true,
+      title: { sv: 'Kommande auktioner', en: 'Upcoming auctions' },
+      speed: 40, // pixels per second
+    },
+  },
   // Social share settings
   share: {
     enabled: true,
@@ -451,6 +459,22 @@ function normalize(content) {
       out.ratings = deepClone(defaults.ratings)
     } else {
       out.ratings.enabled = out.ratings.enabled ?? defaults.ratings.enabled
+    }
+    // Ensure slider config exists
+    if (!out.slider || typeof out.slider !== 'object') {
+      out.slider = deepClone(defaults.slider)
+    } else {
+      const ev = out.slider.events || {}
+      const ensureBilingual = (val, enDefault='') => {
+        if (typeof val === 'string') return { sv: val, en: enDefault }
+        if (val && typeof val === 'object') return { sv: val.sv ?? '', en: val.en ?? enDefault }
+        return { sv: '', en: enDefault }
+      }
+      out.slider.events = {
+        enabled: ev.enabled !== false,
+        title: ensureBilingual(ev.title, defaults.slider.events.title.en),
+        speed: Number.isFinite(parseInt(ev.speed,10)) ? parseInt(ev.speed,10) : defaults.slider.events.speed,
+      }
     }
     // Ensure share section exists and normalize
     if (!out.share || typeof out.share !== 'object') {

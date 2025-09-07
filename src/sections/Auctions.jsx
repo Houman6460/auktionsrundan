@@ -6,6 +6,7 @@ import RatingStars from '../components/RatingStars'
 import ShareButtons from '../components/ShareButtons'
 import RegistrationModal from '../components/RegistrationModal'
 import { trackEvent } from '../services/analytics'
+import EventSlider from '../components/EventSlider'
 
 function AuctionCard({ a, idx, now, lang }) {
   const { t } = useTranslation()
@@ -215,8 +216,33 @@ export default function Auctions() {
 
   const list = content.auctions?.list || []
   const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('lang') || 'sv')
+  const sliderCfg = content?.slider?.events || { enabled: false, title: { sv: '', en: '' }, speed: 40 }
+  const sliderTitle = (sliderCfg?.title && (sliderCfg.title[lang] || sliderCfg.title.sv || sliderCfg.title.en)) || ''
+  const sliderEnabled = sliderCfg?.enabled && list.length > 0
+  const sliderSpeed = Number(sliderCfg?.speed || 40)
   return (
     <div className="grid gap-6">
+      {sliderEnabled && (
+        <EventSlider
+          title={sliderTitle}
+          items={list.map((a, idx) => ({ a, idx }))}
+          speed={sliderSpeed}
+          renderItem={(it) => {
+            const a = it.a
+            const idx = it.idx
+            const anchorId = `auction-${idx}`
+            const titleT = (a.title && (a.title[lang] || a.title.sv || a.title.en)) || ''
+            const addrT = a.address && (a.address[lang] || a.address.sv || a.address.en) || ''
+            return (
+              <a href={`#${anchorId}`} className="block border rounded bg-white hover:bg-neutral-50 p-2">
+                <div className="font-medium line-clamp-1">{titleT}</div>
+                <div className="text-xs text-neutral-600 mt-0.5 line-clamp-2">{addrT}</div>
+                <div className="text-xs text-neutral-700 mt-1">{a.date || ''}{a.start ? ` • ${a.start}` : ''}</div>
+              </a>
+            )
+          }}
+        />
+      )}
       {list.map((a, idx) => (
         <AuctionCard key={idx} a={a} idx={idx} now={now} lang={lang} />
       ))}
