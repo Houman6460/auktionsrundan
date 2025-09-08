@@ -146,6 +146,22 @@ function AuctionCard({ a, idx, now, lang }) {
             )}
           </div>
         </div>
+        {images.length > 0 && (
+          <div className="mt-3">
+            <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 -mx-1 snap-x snap-mandatory" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
+              {images.map((src, j) => (
+                <div
+                  key={j}
+                  className="inline-block shrink-0 w-14 h-14 rounded border overflow-hidden bg-white snap-start"
+                  title={`${t('auctions.image') || 'Bild'} ${j+1}`}
+                  aria-label={`${t('auctions.image') || 'Bild'} ${j+1}`}
+                >
+                  <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="mt-3">
           {shareEnabled && anyPlatformOn ? (
             <ShareButtons title={titleT} url={shareUrl} text={shareText} image={staticMapUrl} mapUrl={mapUrl} platforms={platforms}>
