@@ -155,6 +155,7 @@ function AuctionCard({ a, idx, now, lang }) {
     const totalWRef = React.useRef(0) // total width of one sequence
     const rafRef = React.useRef(0)
     const [hover, setHover] = React.useState({ on:false, idx:0, x:0, scale:1 })
+    const enableScroll = false // turn off movement per request
 
     // Measure tile width + gap and compute total track width
     const measure = React.useCallback(() => {
@@ -200,29 +201,10 @@ function AuctionCard({ a, idx, now, lang }) {
 
     // Animation loop using translateX
     React.useEffect(() => {
-      const tick = (ts) => {
-        if (!wrapRef.current || !trackRef.current) { rafRef.current = requestAnimationFrame(tick); return }
-        if (!paused) {
-          const speed = 110 // px/sec
-          const now = ts
-          if (!tick.last) tick.last = now
-          const dt = (now - tick.last) / 1000
-          tick.last = now
-          const total = totalWRef.current || 0
-          if (total <= 0) { rafRef.current = requestAnimationFrame(tick); return }
-          // advance
-          offsetRef.current = (offsetRef.current + speed * dt) % total
-          try {
-            trackRef.current.style.transform = `translate3d(-${offsetRef.current}px,0,0)`
-          } catch {}
-        } else {
-          // keep reference time fresh while paused to avoid jump on resume
-          if (!tick.last) tick.last = ts; else tick.last = ts
-        }
-        rafRef.current = requestAnimationFrame(tick)
-      }
-      rafRef.current = requestAnimationFrame(tick)
-      return () => { cancelAnimationFrame(rafRef.current); rafRef.current = 0; tick.last = 0 }
+      // movement disabled: ensure transform reset and stop any RAF
+      try { if (trackRef.current) trackRef.current.style.transform = 'translate3d(0,0,0)' } catch {}
+      if (rafRef.current) { try { cancelAnimationFrame(rafRef.current) } catch {} ; rafRef.current = 0 }
+      return () => { if (rafRef.current) { try { cancelAnimationFrame(rafRef.current) } catch {} ; rafRef.current = 0 } }
     }, [paused, imgs])
 
     // Dock-like magnification using overlay + neighbor wave (transform-only)
