@@ -166,8 +166,12 @@ function AuctionCard({ a, idx, now, lang }) {
         const first = track.firstElementChild
         const rect = first.getBoundingClientRect()
         const cs = window.getComputedStyle(track)
-        const gap = parseFloat(cs.columnGap || cs.gap || '0') || 0
-        stepWRef.current = rect.width + gap
+        // Support browsers reporting row/column gap separately
+        let gap = 0
+        const cg = parseFloat(cs.columnGap || '0')
+        const g = cs.gap ? parseFloat(cs.gap) : 0
+        gap = Number.isFinite(cg) && cg > 0 ? cg : (Number.isFinite(g) ? g : 0)
+        stepWRef.current = Math.max(1, Math.round(rect.width + gap))
       } catch {}
     }, [])
     React.useEffect(() => {
@@ -190,6 +194,7 @@ function AuctionCard({ a, idx, now, lang }) {
           const dx = speed * dt
           offsetRef.current += dx
           const stepW = stepWRef.current || 88 // fallback ~ w-20 + gap-2
+          // Rotate once the first tile has fully exited the left edge
           if (offsetRef.current >= stepW && order.length > 1) {
             // rotate one tile and keep smooth motion
             offsetRef.current -= stepW
@@ -210,12 +215,48 @@ function AuctionCard({ a, idx, now, lang }) {
       return () => { cancelAnimationFrame(rafRef.current); rafRef.current = 0; tick.last = 0 }
     }, [paused, order.length])
 
+    // Dock-like magnification on hover
+    const applyMagnify = React.useCallback((clientX) => {
+      try {
+        const track = trackRef.current
+        if (!track) return
+        const btns = track.querySelectorAll('button')
+        const radius = 140 // px influence radius
+        btns.forEach((btn) => {
+          const r = btn.getBoundingClientRect()
+          const cx = r.left + r.width/2
+          const d = Math.abs(clientX - cx)
+          const influence = Math.max(0, 1 - (d / radius)) // linear falloff
+          const scale = 1 + influence * 0.8 // up to 1.8x
+          btn.style.transformOrigin = 'bottom center'
+          btn.style.transform = `scale(${scale})`
+          btn.style.zIndex = String( Math.round( scale * 100 ) )
+        })
+      } catch {}
+    }, [])
+
+    const handleEnter = React.useCallback(() => {
+      setPaused(true)
+    }, [])
+    const handleLeave = React.useCallback(() => {
+      setPaused(false)
+      try {
+        const track = trackRef.current
+        if (!track) return
+        track.querySelectorAll('button').forEach((btn) => {
+          btn.style.transform = 'scale(1)'
+          btn.style.zIndex = '1'
+        })
+      } catch {}
+    }, [])
+
     return (
       <div
         ref={wrapRef}
-        className="relative overflow-hidden"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
+        className="relative overflow-x-hidden overflow-y-visible"
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        onMouseMove={(e)=> applyMagnify(e.clientX)}
         aria-label={t('auctions.thumbnails') || 'Thumbnails'}
       >
         <div ref={trackRef} className="flex gap-2 will-change-transform">
