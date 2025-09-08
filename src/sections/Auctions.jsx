@@ -148,7 +148,7 @@ function AuctionCard({ a, idx, now, lang }) {
     const trackRef = React.useRef(null)
     const [paused, setPaused] = React.useState(false)
     const offsetRef = React.useRef(0)
-    const stepWRef = React.useRef(0) // width of single tile incl. gap
+    const stepWRef = React.useRef(0) // width of single tile incl. gap (approx)
     const totalWRef = React.useRef(0) // total width of one sequence
     const rafRef = React.useRef(0)
 
@@ -167,8 +167,9 @@ function AuctionCard({ a, idx, now, lang }) {
         gap = Number.isFinite(cg) && cg > 0 ? cg : (Number.isFinite(g) ? g : 0)
         const stepW = Math.max(1, Math.round(rect.width + gap))
         stepWRef.current = stepW
-        const n = Array.isArray(imgs) ? imgs.length : 0
-        totalWRef.current = Math.max(1, stepW * n)
+        // Use actual rendered width for single sequence to avoid drift
+        const full = track.scrollWidth || 0
+        totalWRef.current = Math.max(1, Math.round(full / 2))
       } catch {}
     }, [imgs])
 
@@ -176,7 +177,21 @@ function AuctionCard({ a, idx, now, lang }) {
       measure()
       const onResize = () => measure()
       window.addEventListener('resize', onResize)
-      return () => window.removeEventListener('resize', onResize)
+      // Re-measure after images load/render
+      const t1 = setTimeout(measure, 50)
+      const t2 = setTimeout(measure, 500)
+      let ro = null
+      try {
+        if ('ResizeObserver' in window && trackRef.current) {
+          ro = new ResizeObserver(() => measure())
+          ro.observe(trackRef.current)
+        }
+      } catch {}
+      return () => {
+        window.removeEventListener('resize', onResize)
+        clearTimeout(t1); clearTimeout(t2)
+        try { if (ro) ro.disconnect() } catch {}
+      }
     }, [measure])
 
     // Animation loop using translateX
@@ -197,6 +212,9 @@ function AuctionCard({ a, idx, now, lang }) {
           try {
             trackRef.current.style.transform = `translateX(-${offsetRef.current}px)`
           } catch {}
+        } else {
+          // keep reference time fresh while paused to avoid jump on resume
+          if (!tick.last) tick.last = ts; else tick.last = ts
         }
         rafRef.current = requestAnimationFrame(tick)
       }
@@ -210,7 +228,7 @@ function AuctionCard({ a, idx, now, lang }) {
         const track = trackRef.current
         if (!track) return
         const btns = track.querySelectorAll('button')
-        const radius = 140 // px influence radius
+        const radius = 160 // px influence radius
         btns.forEach((btn) => {
           const r = btn.getBoundingClientRect()
           const cx = r.left + r.width/2
@@ -219,16 +237,15 @@ function AuctionCard({ a, idx, now, lang }) {
           const scale = 1 + influence * 0.8 // up to 1.8x
           btn.style.transformOrigin = 'bottom center'
           btn.style.transform = `scale(${scale})`
-          btn.style.zIndex = String( Math.round( scale * 100 ) )
+          btn.style.zIndex = String( 1000 + Math.round( scale * 100 ) )
         })
       } catch {}
     }, [])
 
     const handleEnter = React.useCallback(() => {
-      setPaused(true)
+      // keep moving; only magnify
     }, [])
     const handleLeave = React.useCallback(() => {
-      setPaused(false)
       try {
         const track = trackRef.current
         if (!track) return
@@ -242,7 +259,7 @@ function AuctionCard({ a, idx, now, lang }) {
     return (
       <div
         ref={wrapRef}
-        className="relative overflow-x-hidden overflow-y-visible"
+        className="relative z-[40] overflow-visible"
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
         onMouseMove={(e)=> applyMagnify(e.clientX)}
@@ -253,7 +270,7 @@ function AuctionCard({ a, idx, now, lang }) {
             <button
               type="button"
               key={`${j}-${src}`}
-              className="shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40 transition-transform duration-150"
+              className="relative shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40 transition-transform duration-150"
               title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
               aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
               onClick={() => openLightboxAt(j % Math.max(1, (imgs?.length||1)))}
@@ -355,7 +372,7 @@ function AuctionCard({ a, idx, now, lang }) {
       </div>
     </div>
     {images.length > 0 && (
-      <div className="section-card p-2 overflow-visible">
+      <div className="section-card relative z-[60] p-2 overflow-visible">
         <ThumbsAutoRow imgs={images} />
       </div>
     )}
