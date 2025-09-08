@@ -142,52 +142,93 @@ function AuctionCard({ a, idx, now, lang }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [lightbox.open, closeLightbox, nextImg, prevImg])
 
-  // Auto‑scrolling thumbnails row (marquee‑style, duplicates list for seamless loop)
+  // Auto‑scrolling thumbnails row (no duplicated DOM). We translate the track and rotate order when a tile passes fully.
   function ThumbsAutoRow({ imgs }) {
-    const scrollerRef = React.useRef(null)
+    const wrapRef = React.useRef(null)
+    const trackRef = React.useRef(null)
     const [paused, setPaused] = React.useState(false)
-    const loopImgs = React.useMemo(() => (Array.isArray(imgs) ? [...imgs, ...imgs] : []), [imgs])
+    const [order, setOrder] = React.useState(() => (Array.isArray(imgs) ? imgs.map((_, i) => i) : []))
+    const offsetRef = React.useRef(0)
+    const stepWRef = React.useRef(0)
+    const rafRef = React.useRef(0)
+
+    // Reset order when imgs change
     React.useEffect(() => {
-      const el = scrollerRef.current
-      if (!el) return
-      let raf = 0
-      let last = 0
-      const speed = 40 // px/sec
-      const step = (ts) => {
-        if (!last) last = ts
-        const dt = (ts - last) / 1000
-        last = ts
+      setOrder(Array.isArray(imgs) ? imgs.map((_, i) => i) : [])
+      offsetRef.current = 0
+    }, [imgs])
+
+    // Measure tile width + gap
+    const measureStepWidth = React.useCallback(() => {
+      try {
+        const track = trackRef.current
+        if (!track || !track.firstElementChild) return
+        const first = track.firstElementChild
+        const rect = first.getBoundingClientRect()
+        const cs = window.getComputedStyle(track)
+        const gap = parseFloat(cs.columnGap || cs.gap || '0') || 0
+        stepWRef.current = rect.width + gap
+      } catch {}
+    }, [])
+    React.useEffect(() => {
+      measureStepWidth()
+      const onResize = () => measureStepWidth()
+      window.addEventListener('resize', onResize)
+      return () => window.removeEventListener('resize', onResize)
+    }, [measureStepWidth])
+
+    // Animation loop using translateX
+    React.useEffect(() => {
+      const tick = (ts) => {
+        if (!wrapRef.current || !trackRef.current) { rafRef.current = requestAnimationFrame(tick); return }
         if (!paused) {
+          const speed = 120 // px/sec
+          const now = ts
+          if (!tick.last) tick.last = now
+          const dt = (now - tick.last) / 1000
+          tick.last = now
+          const dx = speed * dt
+          offsetRef.current += dx
+          const stepW = stepWRef.current || 88 // fallback ~ w-20 + gap-2
+          if (offsetRef.current >= stepW && order.length > 1) {
+            // rotate one tile and keep smooth motion
+            offsetRef.current -= stepW
+            setOrder((prev) => {
+              if (!prev || prev.length <= 1) return prev
+              const [first, ...rest] = prev
+              return [...rest, first]
+            })
+          }
+          // apply transform
           try {
-            el.scrollLeft += speed * dt
-            const half = el.scrollWidth / 2
-            if (el.scrollLeft >= half) el.scrollLeft -= half
+            trackRef.current.style.transform = `translateX(-${offsetRef.current}px)`
           } catch {}
         }
-        raf = requestAnimationFrame(step)
+        rafRef.current = requestAnimationFrame(tick)
       }
-      raf = requestAnimationFrame(step)
-      return () => cancelAnimationFrame(raf)
-    }, [paused, imgs])
+      rafRef.current = requestAnimationFrame(tick)
+      return () => { cancelAnimationFrame(rafRef.current); rafRef.current = 0; tick.last = 0 }
+    }, [paused, order.length])
+
     return (
       <div
-        ref={scrollerRef}
-        className="relative overflow-x-hidden"
+        ref={wrapRef}
+        className="relative overflow-hidden"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         aria-label={t('auctions.thumbnails') || 'Thumbnails'}
       >
-        <div className="flex gap-2">
-          {loopImgs.map((src, j) => (
+        <div ref={trackRef} className="flex gap-2 will-change-transform">
+          {order.map((idxVal, j) => (
             <button
               type="button"
-              key={j}
+              key={`${idxVal}-${j}`}
               className="shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40"
-              title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
-              aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
-              onClick={() => openLightboxAt(j % Math.max(1, imgs.length))}
+              title={`${t('auctions.image') || 'Bild'} ${idxVal+1}`}
+              aria-label={`${t('auctions.image') || 'Bild'} ${idxVal+1}`}
+              onClick={() => openLightboxAt(idxVal)}
             >
-              <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
+              <img src={imgs[idxVal]} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
             </button>
           ))}
         </div>
