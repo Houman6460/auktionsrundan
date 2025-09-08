@@ -144,13 +144,15 @@ function AuctionCard({ a, idx, now, lang }) {
 
   // Auto‑scrolling thumbnails row (full‑track loop). Duplicate sequence once for seamless wrap.
   function ThumbsAutoRow({ imgs }) {
-    const wrapRef = React.useRef(null)
+    const containerRef = React.useRef(null) // outer container (no clip)
+    const wrapRef = React.useRef(null)      // inner scroller (clips horizontally)
     const trackRef = React.useRef(null)
     const [paused, setPaused] = React.useState(false)
     const offsetRef = React.useRef(0)
     const stepWRef = React.useRef(0) // width of single tile incl. gap (approx)
     const totalWRef = React.useRef(0) // total width of one sequence
     const rafRef = React.useRef(0)
+    const [hover, setHover] = React.useState({ on:false, idx:0, x:0, scale:1 })
 
     // Measure tile width + gap and compute total track width
     const measure = React.useCallback(() => {
@@ -222,63 +224,72 @@ function AuctionCard({ a, idx, now, lang }) {
       return () => { cancelAnimationFrame(rafRef.current); rafRef.current = 0; tick.last = 0 }
     }, [paused, imgs])
 
-    // Dock-like magnification on hover
+    // Dock-like magnification via overlay (not clipped by scroller)
     const applyMagnify = React.useCallback((clientX) => {
       try {
         const track = trackRef.current
-        if (!track) return
+        const container = containerRef.current
+        if (!track || !container) return
         const btns = track.querySelectorAll('button')
         const radius = 160 // px influence radius
-        btns.forEach((btn) => {
+        // Find nearest button center to cursor X
+        let best = { idx: 0, d: Infinity, cx: 0 }
+        btns.forEach((btn, j) => {
           const r = btn.getBoundingClientRect()
           const cx = r.left + r.width/2
           const d = Math.abs(clientX - cx)
-          const influence = Math.max(0, 1 - (d / radius)) // linear falloff
-          const scale = 1 + influence * 0.8 // up to 1.8x
-          btn.style.transformOrigin = 'bottom center'
-          btn.style.transform = `scale(${scale})`
-          btn.style.zIndex = String( 1000 + Math.round( scale * 100 ) )
+          if (d < best.d) best = { idx: j % Math.max(1, (imgs?.length||1)), d, cx }
         })
+        const influence = Math.max(0, 1 - (best.d / radius))
+        const scale = 1 + influence * 0.9 // up to ~1.9x
+        // Translate clientX to container-local X
+        const cr = container.getBoundingClientRect()
+        const localX = Math.max(0, Math.min(cr.width, clientX - cr.left))
+        setHover({ on: true, idx: best.idx, x: localX, scale })
       } catch {}
-    }, [])
+    }, [imgs])
 
-    const handleEnter = React.useCallback(() => {
-      // keep moving; only magnify
-    }, [])
+    const handleEnter = React.useCallback(() => { /* keep moving */ }, [])
     const handleLeave = React.useCallback(() => {
-      try {
-        const track = trackRef.current
-        if (!track) return
-        track.querySelectorAll('button').forEach((btn) => {
-          btn.style.transform = 'scale(1)'
-          btn.style.zIndex = '1'
-        })
-      } catch {}
+      setHover({ on:false, idx:0, x:0, scale:1 })
     }, [])
 
     return (
-      <div
-        ref={wrapRef}
-        className="relative z-[40] overflow-visible"
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
-        onMouseMove={(e)=> applyMagnify(e.clientX)}
-        aria-label={t('auctions.thumbnails') || 'Thumbnails'}
-      >
-        <div ref={trackRef} className="flex gap-2 will-change-transform">
-          {[...(imgs||[]), ...(imgs||[])].map((src, j) => (
-            <button
-              type="button"
-              key={`${j}-${src}`}
-              className="relative shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40 transition-transform duration-150"
-              title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
-              aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
-              onClick={() => openLightboxAt(j % Math.max(1, (imgs?.length||1)))}
-            >
-              <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
-            </button>
-          ))}
+      <div ref={containerRef} className="relative z-[70] overflow-visible" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
+        {/* Scroller (clips horizontally) */}
+        <div
+          ref={wrapRef}
+          className="overflow-x-hidden overflow-y-visible"
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+          onMouseMove={(e)=> applyMagnify(e.clientX)}
+        >
+          <div ref={trackRef} className="flex gap-2 will-change-transform">
+            {[...(imgs||[]), ...(imgs||[])].map((src, j) => (
+              <button
+                type="button"
+                key={`${j}-${src}`}
+                className="relative shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40"
+                title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
+                aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
+                onClick={() => openLightboxAt(j % Math.max(1, (imgs?.length||1)))}
+              >
+                <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
+              </button>
+            ))}
+          </div>
         </div>
+        {/* Overlay magnified copy (not clipped) */}
+        {hover.on && imgs && imgs.length > 0 && (
+          <div className="pointer-events-none absolute inset-0 z-[90] overflow-visible">
+            <img
+              src={imgs[hover.idx]}
+              alt="hover"
+              className="absolute bottom-0 rounded border bg-white shadow-xl"
+              style={{ left: `${hover.x}px`, transform: `translateX(-50%) scale(${hover.scale})`, transformOrigin: 'bottom center', width: '80px', height: '80px' }}
+            />
+          </div>
+        )}
       </div>
     )
   }
