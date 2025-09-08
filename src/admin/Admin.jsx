@@ -727,15 +727,22 @@ export default function Admin() {
   }
 
   // Convert an uploaded image to compressed Data URL and store at given path
-  const handleFileToDataUrl = (path) => async (e) => {
+  const handleFileToDataUrl = (path, opts = {}) => async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      const dataUrl = await fileToCompressedDataUrl(file)
+      const dataUrl = await fileToCompressedDataUrl(file, opts.maxDim || 1600, opts.quality ?? 0.8)
       const next = { ...data }
       let cur = next
       for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
       cur[path[path.length - 1]] = dataUrl
+      // If updating an auction's primary img, keep images[0] in sync so thumbnails show
+      const lastKey = path[path.length - 1]
+      if (lastKey === 'img' && cur && typeof cur === 'object') {
+        const arr = Array.isArray(cur.images) ? cur.images : []
+        if (arr.length === 0) cur.images = [dataUrl]
+        else cur.images[0] = dataUrl
+      }
       setData(next)
     } catch (err) {
       alert('Kunde inte läsa bilden. Försök med en annan fil.')
@@ -743,13 +750,13 @@ export default function Admin() {
   }
 
   // Convert multiple uploaded images to Data URLs and append to an array at given path
-  const handleFilesToDataUrls = (path) => async (e) => {
+  const handleFilesToDataUrls = (path, opts = {}) => async (e) => {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
     try {
       const urls = []
       for (const f of files) {
-        const u = await fileToCompressedDataUrl(f)
+        const u = await fileToCompressedDataUrl(f, opts.maxDim || 1600, opts.quality ?? 0.8)
         urls.push(u)
       }
       const next = { ...data }
@@ -835,6 +842,17 @@ export default function Admin() {
     if (key === 'images') {
       const arr = Array.isArray(value) ? value : []
       next.auctions.list[idx].img = arr[0] || ''
+    } else if (key === 'img') {
+      // Keep primary image and gallery in sync when editing Image (URL)
+      const arr = Array.isArray(next.auctions.list[idx].images) ? [...next.auctions.list[idx].images] : []
+      if (value) {
+        if (arr.length === 0) arr.push(value)
+        else arr[0] = value
+      } else {
+        // cleared: remove first, keep others
+        if (arr.length > 0) arr.shift()
+      }
+      next.auctions.list[idx].images = arr
     }
     setData(next)
   }
@@ -862,16 +880,110 @@ export default function Admin() {
     setData(next)
   }
 
-  const save = () => {
+  // Re-compress an existing data URL to enforce a size/dimension budget
+  async function compressDataUrl(dataUrl, maxDim = 900, quality = 0.65) {
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) return dataUrl
+    await new Promise((r) => setTimeout(r, 0))
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image()
+      image.onload = () => resolve(image)
+      image.onerror = reject
+      image.src = dataUrl
+    })
+    const w = img.naturalWidth || img.width || 0
+    const h = img.naturalHeight || img.height || 0
+    if (!w || !h) return dataUrl
+    let targetW = w, targetH = h
+    if (w > h && w > maxDim) {
+      targetW = maxDim
+      targetH = Math.round(h * (maxDim / w))
+    } else if (h >= w && h > maxDim) {
+      targetH = maxDim
+      targetW = Math.round(w * (maxDim / h))
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = targetW
+    canvas.height = targetH
+    const ctx = canvas.getContext('2d')
+    const lower = (dataUrl.split(';')[0] || '').toLowerCase()
+    if (lower.includes('image/png')) {
+      ctx.drawImage(img, 0, 0, targetW, targetH)
+      try { return canvas.toDataURL('image/png') } catch { return canvas.toDataURL() }
+    }
+    ctx.save(); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, targetW, targetH); ctx.restore()
+    ctx.drawImage(img, 0, 0, targetW, targetH)
+    try { return canvas.toDataURL('image/jpeg', quality) } catch { return canvas.toDataURL() }
+  }
+
+  const textSize = (s) => (typeof s === 'string' ? (new TextEncoder()).encode(s).length : 0)
+  const jsonSize = (obj) => {
+    try { return (new TextEncoder()).encode(JSON.stringify(obj)).length } catch { return 0 }
+  }
+
+  async function shrinkForLocalStorage(content) {
+    const next = JSON.parse(JSON.stringify(content))
     try {
-      saveContent(data)
+      // Shrink heavy images: auctions images + hero/bg + header.logo + footer.logo
+      const AU_DIM = 720, AU_Q = 0.62
+      const HERO_DIM = 1200, HERO_Q = 0.72
+      const LOGO_DIM = 600, LOGO_Q = 0.8
+      // Auctions
+      if (next.auctions && Array.isArray(next.auctions.list)) {
+        for (const a of next.auctions.list) {
+          if (typeof a.img === 'string' && a.img.startsWith('data:image') && textSize(a.img) > 140*1024) {
+            a.img = await compressDataUrl(a.img, AU_DIM, AU_Q)
+          }
+          if (Array.isArray(a.images)) {
+            for (let i = 0; i < a.images.length; i++) {
+              const s = a.images[i]
+              if (typeof s === 'string' && s.startsWith('data:image') && textSize(s) > 140*1024) {
+                a.images[i] = await compressDataUrl(s, AU_DIM, AU_Q)
+              }
+            }
+          }
+          // Keep primary in sync
+          a.img = (Array.isArray(a.images) && a.images[0]) ? a.images[0] : (a.img || '')
+        }
+      }
+      // Hero background
+      if (next.hero && typeof next.hero.bg === 'string' && next.hero.bg.startsWith('data:image') && textSize(next.hero.bg) > 220*1024) {
+        next.hero.bg = await compressDataUrl(next.hero.bg, HERO_DIM, HERO_Q)
+      }
+      // Header / Footer logos
+      if (next.header && typeof next.header.logo === 'string' && next.header.logo.startsWith('data:image') && textSize(next.header.logo) > 120*1024) {
+        next.header.logo = await compressDataUrl(next.header.logo, LOGO_DIM, LOGO_Q)
+      }
+      if (next.footer && typeof next.footer.logo === 'string' && next.footer.logo.startsWith('data:image') && textSize(next.footer.logo) > 120*1024) {
+        next.footer.logo = await compressDataUrl(next.footer.logo, LOGO_DIM, LOGO_Q)
+      }
+    } catch {}
+    return next
+  }
+
+  const save = async () => {
+    try {
+      let draft = data
+      // Pre-shrink if close to quota (~5MB). Use 4.5MB threshold.
+      const sizeBefore = jsonSize(draft)
+      if (sizeBefore > 4.5 * 1024 * 1024 || sizeBefore === 0) {
+        draft = await shrinkForLocalStorage(draft)
+      }
+      // Try save
+      try {
+        saveContent(draft)
+      } catch (e) {
+        // One more aggressive pass if quota exceeded
+        draft = await shrinkForLocalStorage(draft)
+        saveContent(draft)
+      }
+      setData(draft)
       setSaved(true)
       setTimeout(() => setSaved(false), 1500)
       // notify other tabs
       window.dispatchEvent(new StorageEvent('storage', { key: 'ar_site_content_v1' }))
     } catch (e) {
       console.error('Save failed', e)
-      alert('Kunde inte spara innehållet. För många/breda bilder? Prova att ladda upp mindre bilder och försök igen.')
+      alert('Kunde inte spara innehållet. Dina bilder är för stora för webbläsarens lagringsgräns. Försök ladda upp mindre bilder, eller minska antal bilder per auktion.')
     }
   }
 
@@ -1909,12 +2021,12 @@ export default function Admin() {
                     <label className="block text-sm text-neutral-600 mb-1">{L('Bild (URL)','Image (URL)')}</label>
                     <input className="w-full border rounded px-3 py-2" placeholder="https://..." title={L('URL till bild som representerar auktionen','Image URL representing the auction')} value={a.img || ''} onChange={(e)=>updateAuction(idx,'img', e.target.value)} />
                     <div className="mt-2 flex items-center gap-2">
-                      <input type="file" accept="image/*" title={L('Ladda upp bild','Upload image')} onChange={handleFileToDataUrl(['auctions','list', idx, 'img'])} />
+                      <input type="file" accept="image/*" title={L('Ladda upp bild','Upload image')} onChange={handleFileToDataUrl(['auctions','list', idx, 'img'], { maxDim: 900, quality: 0.65 })} />
                       <button type="button" className="btn-outline text-xs" onClick={()=>updateAuction(idx,'img','')} title={L('Rensa bilden','Clear image')}>{L('Rensa','Clear')}</button>
                     </div>
                     <div className="mt-4">
                       <label className="block text-sm text-neutral-600 mb-1">{L('Galleri (flera bilder)','Gallery (multiple images)')}</label>
-                      <input type="file" multiple accept="image/*" title={L('Ladda upp flera bilder','Upload multiple images')} onChange={handleFilesToDataUrls(['auctions','list', idx, 'images'])} />
+                      <input type="file" multiple accept="image/*" title={L('Ladda upp flera bilder','Upload multiple images')} onChange={handleFilesToDataUrls(['auctions','list', idx, 'images'], { maxDim: 900, quality: 0.65 })} />
                       <p className="text-xs text-neutral-500 mt-1">{L('Tips: Håll ned Shift/Cmd för att välja flera filer.','Tip: Hold Shift/Cmd to select multiple files.')}</p>
                     </div>
                   </div>
@@ -1922,13 +2034,15 @@ export default function Admin() {
                     <div>
                       <label className="block text-sm text-neutral-600 mb-2">{L('Miniatyrer','Thumbnails')}</label>
                       <div className="flex flex-wrap gap-2">
-                        {(a.images||[]).map((src, j) => (
+                        {(((a.images && a.images.length>0) ? a.images : (a.img ? [a.img] : []))).map((src, j) => (
                           <div key={j} className="relative w-16 h-16 rounded border overflow-hidden bg-white">
                             <img src={src} alt={L('Miniatyrbild','Thumbnail')} className="w-full h-full object-cover" />
-                            <button type="button" className="absolute -top-1 -right-1 bg-white/90 border rounded-full w-5 h-5 text-xs leading-5 text-center" title={L('Ta bort bild','Remove image')} onClick={()=>removeAuctionImage(idx, j)}>×</button>
+                            {(a.images && a.images.length>0) && (
+                              <button type="button" className="absolute -top-1 -right-1 bg-white/90 border rounded-full w-5 h-5 text-xs leading-5 text-center" title={L('Ta bort bild','Remove image')} onClick={()=>removeAuctionImage(idx, j)}>×</button>
+                            )}
                           </div>
                         ))}
-                        {(!a.images || a.images.length===0) && (
+                        {(!a.images || a.images.length===0) && !a.img && (
                           <div className="text-xs text-neutral-500">{L('Inga bilder i galleriet ännu.','No gallery images yet.')}</div>
                         )}
                       </div>

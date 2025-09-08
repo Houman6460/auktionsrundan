@@ -233,8 +233,14 @@ export default function Auctions() {
             const anchorId = `auction-${idx}`
             const titleT = (a.title && (a.title[lang] || a.title.sv || a.title.en)) || ''
             const addrT = a.address && (a.address[lang] || a.address.sv || a.address.en) || ''
+            const imgSrc = (typeof a.img === 'string' && a.img) || (Array.isArray(a.images) && a.images[0]) || ''
             return (
               <a href={`#${anchorId}`} className="block border rounded bg-white hover:bg-neutral-50 p-2">
+                {imgSrc ? (
+                  <div className="w-full h-24 rounded mb-2 overflow-hidden bg-neutral-100">
+                    <img src={imgSrc} alt={titleT || 'auction'} className="w-full h-full object-cover" />
+                  </div>
+                ) : null}
                 <div className="font-medium line-clamp-1">{titleT}</div>
                 <div className="text-xs text-neutral-600 mt-0.5 line-clamp-2">{addrT}</div>
                 <div className="text-xs text-neutral-700 mt-1">{a.date || ''}{a.start ? ` • ${a.start}` : ''}</div>
