@@ -34,6 +34,13 @@ function AuctionCard({ a, idx, now, lang }) {
     return Number.isFinite(ts) ? ts : NaN
   }
   const startTs = toStartTs(a.date, a.start)
+  // Images gallery: use a.images[] when available, otherwise fallback to single a.img
+  const images = React.useMemo(() => {
+    const arr = Array.isArray(a.images) && a.images.length ? a.images : (a.img ? [a.img] : [])
+    return (arr || []).filter((s) => typeof s === 'string' && s)
+  }, [a.images, a.img])
+  const [imgIx, setImgIx] = React.useState(0)
+  React.useEffect(() => { setImgIx(0) }, [images.length, a.img])
   const remaining = () => {
     if (!Number.isFinite(startTs)) return null
     const diff = Math.max(0, startTs - now)
@@ -114,15 +121,29 @@ function AuctionCard({ a, idx, now, lang }) {
       <div className={layoutLeftColsMd}>
         <h3 className="font-serif text-xl">{titleT}</h3>
         <p className="text-sm text-neutral-700 mt-1">{addrT}</p>
-        {(() => {
-          const imgSrc = (typeof a.img === 'string' && a.img) || (Array.isArray(a.images) && a.images[0]) || ''
-          if (!imgSrc) return null
-          return (
-            <div className="mt-3 rounded overflow-hidden border border-amber-900/10 bg-neutral-100">
-              <img src={imgSrc} alt={titleT || 'auction'} className="w-full h-40 md:h-56 object-cover" />
+        {images.length > 0 && (
+          <div className="mt-3">
+            <div className="rounded overflow-hidden border border-amber-900/10 bg-neutral-100">
+              <img src={images[Math.min(imgIx, images.length-1)]} alt={titleT || 'auction'} className="w-full h-40 md:h-56 object-cover" />
             </div>
-          )
-        })()}
+            {images.length > 1 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {images.map((src, j) => (
+                  <button
+                    key={j}
+                    type="button"
+                    onClick={()=>setImgIx(j)}
+                    className={`w-14 h-14 rounded border overflow-hidden bg-white ${j===imgIx ? 'ring-2 ring-earth-dark' : ''}`}
+                    title={`${t('auctions.image') || 'Bild'} ${j+1}`}
+                    aria-label={`${t('auctions.image') || 'Bild'} ${j+1}`}
+                  >
+                    <img src={src} alt="thumbnail" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
           <div className="p-2 rounded bg-vintage-cream/60">
             <div className="text-neutral-500">{t('auctions.viewing')}</div>
