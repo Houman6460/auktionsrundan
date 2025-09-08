@@ -6,7 +6,7 @@ import RatingStars from '../components/RatingStars'
 import ShareButtons from '../components/ShareButtons'
 import RegistrationModal from '../components/RegistrationModal'
 import { trackEvent } from '../services/analytics'
-import EventSlider from '../components/EventSlider'
+ 
 
 function AuctionCard({ a, idx, now, lang }) {
   const { t } = useTranslation()
@@ -143,16 +143,15 @@ function AuctionCard({ a, idx, now, lang }) {
   }, [lightbox.open, closeLightbox, nextImg, prevImg])
 
   // Auto‑scrolling thumbnails row (full‑track loop). Duplicate sequence once for seamless wrap.
+  // In-row dock magnify (no overlay): scale nearby items and add temporary margins to reduce overlap.
   function ThumbsAutoRow({ imgs }) {
-    const containerRef = React.useRef(null) // outer container (no clip)
-    const wrapRef = React.useRef(null)      // inner scroller (clips horizontally)
+    const wrapRef = React.useRef(null)
     const trackRef = React.useRef(null)
     const [paused, setPaused] = React.useState(false)
     const offsetRef = React.useRef(0)
     const stepWRef = React.useRef(0) // width of single tile incl. gap (approx)
     const totalWRef = React.useRef(0) // total width of one sequence
     const rafRef = React.useRef(0)
-    const [hover, setHover] = React.useState({ on:false, idx:0, x:0, scale:1 })
 
     // Measure tile width + gap and compute total track width
     const measure = React.useCallback(() => {
@@ -224,42 +223,50 @@ function AuctionCard({ a, idx, now, lang }) {
       return () => { cancelAnimationFrame(rafRef.current); rafRef.current = 0; tick.last = 0 }
     }, [paused, imgs])
 
-    // Dock-like magnification via overlay (not clipped by scroller)
+    // Dock-like magnification in-row
     const applyMagnify = React.useCallback((clientX) => {
       try {
         const track = trackRef.current
-        const container = containerRef.current
-        if (!track || !container) return
-        const btns = track.querySelectorAll('button')
-        const radius = 160 // px influence radius
-        // Find nearest button center to cursor X
-        let best = { idx: 0, d: Infinity, cx: 0 }
-        btns.forEach((btn, j) => {
+        if (!track) return
+        const radius = 160 // px influence radius horizontally
+        const maxScale = 1.6
+        const maxMargin = 8 // px extra spacing at peak
+        const btns = Array.from(track.querySelectorAll('button'))
+        btns.forEach((btn) => {
           const r = btn.getBoundingClientRect()
           const cx = r.left + r.width/2
           const d = Math.abs(clientX - cx)
-          if (d < best.d) best = { idx: j % Math.max(1, (imgs?.length||1)), d, cx }
+          const influence = Math.max(0, 1 - (d / radius))
+          const scale = 1 + influence * (maxScale - 1)
+          const extra = Math.round(influence * maxMargin)
+          btn.style.transformOrigin = 'bottom center'
+          btn.style.transform = `scale(${scale})`
+          btn.style.marginLeft = `${extra}px`
+          btn.style.marginRight = `${extra}px`
+          btn.style.zIndex = String( 100 + Math.round( influence * 100 ) )
         })
-        const influence = Math.max(0, 1 - (best.d / radius))
-        const scale = 1 + influence * 0.9 // up to ~1.9x
-        // Translate clientX to container-local X
-        const cr = container.getBoundingClientRect()
-        const localX = Math.max(0, Math.min(cr.width, clientX - cr.left))
-        setHover({ on: true, idx: best.idx, x: localX, scale })
       } catch {}
-    }, [imgs])
+    }, [])
 
     const handleEnter = React.useCallback(() => { /* keep moving */ }, [])
     const handleLeave = React.useCallback(() => {
-      setHover({ on:false, idx:0, x:0, scale:1 })
+      try {
+        const track = trackRef.current
+        if (!track) return
+        track.querySelectorAll('button').forEach((btn) => {
+          btn.style.transform = 'scale(1)'
+          btn.style.marginLeft = '0px'
+          btn.style.marginRight = '0px'
+          btn.style.zIndex = '1'
+        })
+      } catch {}
     }, [])
 
     return (
-      <div ref={containerRef} className="relative z-[70] overflow-visible" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
-        {/* Scroller (clips horizontally) */}
+      <div className="relative z-[40] overflow-hidden" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
         <div
           ref={wrapRef}
-          className="overflow-x-hidden overflow-y-visible"
+          className="overflow-hidden"
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
           onMouseMove={(e)=> applyMagnify(e.clientX)}
@@ -279,17 +286,6 @@ function AuctionCard({ a, idx, now, lang }) {
             ))}
           </div>
         </div>
-        {/* Overlay magnified copy (not clipped) */}
-        {hover.on && imgs && imgs.length > 0 && (
-          <div className="pointer-events-none absolute inset-0 z-[90] overflow-visible">
-            <img
-              src={imgs[hover.idx]}
-              alt="hover"
-              className="absolute bottom-0 rounded border bg-white shadow-xl"
-              style={{ left: `${hover.x}px`, transform: `translateX(-50%) scale(${hover.scale})`, transformOrigin: 'bottom center', width: '80px', height: '80px' }}
-            />
-          </div>
-        )}
       </div>
     )
   }
@@ -423,39 +419,8 @@ export default function Auctions() {
 
   const list = content.auctions?.list || []
   const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('lang') || 'sv')
-  const sliderCfg = content?.slider?.events || { enabled: false, title: { sv: '', en: '' }, speed: 40 }
-  const sliderTitle = (sliderCfg?.title && (sliderCfg.title[lang] || sliderCfg.title.sv || sliderCfg.title.en)) || ''
-  const sliderEnabled = sliderCfg?.enabled && list.length > 0
-  const sliderSpeed = Number(sliderCfg?.speed || 40)
   return (
     <div className="grid gap-6">
-      {sliderEnabled && (
-        <EventSlider
-          title={sliderTitle}
-          items={list.map((a, idx) => ({ a, idx }))}
-          speed={sliderSpeed}
-          renderItem={(it) => {
-            const a = it.a
-            const idx = it.idx
-            const anchorId = `auction-${idx}`
-            const titleT = (a.title && (a.title[lang] || a.title.sv || a.title.en)) || ''
-            const addrT = a.address && (a.address[lang] || a.address.sv || a.address.en) || ''
-            const imgSrc = (typeof a.img === 'string' && a.img) || (Array.isArray(a.images) && a.images[0]) || ''
-            return (
-              <a href={`#${anchorId}`} className="block border rounded bg-white hover:bg-neutral-50 p-2">
-                {imgSrc ? (
-                  <div className="w-full h-24 rounded mb-2 overflow-hidden bg-neutral-100">
-                    <img src={imgSrc} alt={titleT || 'auction'} className="w-full h-full object-cover" />
-                  </div>
-                ) : null}
-                <div className="font-medium line-clamp-1">{titleT}</div>
-                <div className="text-xs text-neutral-600 mt-0.5 line-clamp-2">{addrT}</div>
-                <div className="text-xs text-neutral-700 mt-1">{a.date || ''}{a.start ? ` • ${a.start}` : ''}</div>
-              </a>
-            )
-          }}
-        />
-      )}
       {list.map((a, idx) => (
         <AuctionCard key={idx} a={a} idx={idx} now={now} lang={lang} />
       ))}
