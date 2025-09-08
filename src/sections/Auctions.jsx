@@ -34,6 +34,18 @@ function AuctionCard({ a, idx, now, lang }) {
     return Number.isFinite(ts) ? ts : NaN
   }
   const startTs = toStartTs(a.date, a.start)
+  // Small gallery thumbnails (no large image)
+  const images = React.useMemo(() => {
+    const arr = Array.isArray(a.images) ? a.images : []
+    const plusMain = (typeof a.img === 'string' && a.img) ? [...arr, a.img] : arr
+    // de-duplicate while preserving order
+    const seen = new Set()
+    const out = []
+    for (const s of plusMain) {
+      if (typeof s === 'string' && s && !seen.has(s)) { seen.add(s); out.push(s) }
+    }
+    return out
+  }, [a.images, a.img])
   const remaining = () => {
     if (!Number.isFinite(startTs)) return null
     const diff = Math.max(0, startTs - now)
