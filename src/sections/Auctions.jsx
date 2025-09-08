@@ -114,6 +114,15 @@ function AuctionCard({ a, idx, now, lang }) {
       <div className={layoutLeftColsMd}>
         <h3 className="font-serif text-xl">{titleT}</h3>
         <p className="text-sm text-neutral-700 mt-1">{addrT}</p>
+        {(() => {
+          const imgSrc = (typeof a.img === 'string' && a.img) || (Array.isArray(a.images) && a.images[0]) || ''
+          if (!imgSrc) return null
+          return (
+            <div className="mt-3 rounded overflow-hidden border border-amber-900/10 bg-neutral-100">
+              <img src={imgSrc} alt={titleT || 'auction'} className="w-full h-40 md:h-56 object-cover" />
+            </div>
+          )
+        })()}
         <div className="mt-3 text-sm grid grid-cols-2 gap-2">
           <div className="p-2 rounded bg-vintage-cream/60">
             <div className="text-neutral-500">{t('auctions.viewing')}</div>
