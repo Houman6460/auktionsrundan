@@ -1,5 +1,4 @@
 import React from 'react'
-import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 import GoogleMap from '../components/GoogleMap'
@@ -161,6 +160,7 @@ function AuctionCard({ a, idx, now, lang }) {
     const enableScroll = false // turn off movement per request
     const [startIdx, setStartIdx] = React.useState(0)
     const [canScroll, setCanScroll] = React.useState(false)
+    const reduceRef = React.useRef(false)
 
     // Measure tile width + gap and compute total track width
     const measure = React.useCallback(() => {
@@ -200,18 +200,7 @@ function AuctionCard({ a, idx, now, lang }) {
       // Re-measure after images load/render
       const t1 = setTimeout(measure, 50)
       const t2 = setTimeout(measure, 500)
-      let ro = null
-      try {
-        if ('ResizeObserver' in window && trackRef.current) {
-          ro = new ResizeObserver(() => measure())
-          ro.observe(trackRef.current)
-        }
-      } catch {}
-      return () => {
-        window.removeEventListener('resize', onResize)
-        clearTimeout(t1); clearTimeout(t2)
-        try { if (ro) ro.disconnect() } catch {}
-      }
+      return () => { window.removeEventListener('resize', onResize); clearTimeout(t1); clearTimeout(t2) }
     }, [measure])
 
     // Animation loop using translateX
@@ -234,64 +223,73 @@ function AuctionCard({ a, idx, now, lang }) {
       setStartIdx((s) => Math.min(maxStartRef.current, s + 1))
     }, [])
 
-    // Dock-like magnification using overlay + neighbor wave (transform-only)
-    const applyMagnify = React.useCallback((clientX) => {
+    // Dock-style zoom: scale only inner images, no layout shift
+    const applyDock = React.useCallback((clientX) => {
       try {
-        const track = trackRef.current
-        const container = containerRef.current
-        if (!track || !container) return
-        const radius = 180
-        const maxScale = 1.8
-        const btns = Array.from(track.querySelectorAll('button'))
-        let best = { i:0, d:Infinity, cx:0 }
-        btns.forEach((btn, j) => {
-          const r = btn.getBoundingClientRect()
-          const cx = r.left + r.width/2
-          const d = Math.abs(clientX - cx)
-          if (d < best.d) best = { i: j % Math.max(1, (imgs?.length||1)), d, cx }
-        })
-        const cr = container.getBoundingClientRect()
-        const localX = Math.max(0, Math.min(cr.width, clientX - cr.left))
-        const influence = Math.max(0, 1 - (best.d / radius))
-        // store viewport X and the top Y where we want to place the overlay (above the row)
-        const overlayTop = Math.max(0, Math.round(cr.top - 92))
-        setHover({ on:true, idx: best.i, x: clientX, top: overlayTop, scale: 1 + influence * (maxScale - 1) })
-
-        // Neighbor wave scaling (no margins)
-        btns.forEach((btn) => {
-          const r = btn.getBoundingClientRect()
-          const cx = r.left + r.width/2
-          const d = Math.abs(clientX - cx)
-          const inf = Math.max(0, 1 - (d / radius))
-          const s = 1 + inf * 0.25
-          btn.style.transformOrigin = 'bottom center'
-          btn.style.transform = `scale(${s})`
-          btn.style.zIndex = String( 10 + Math.round(inf * 50) )
-        })
-      } catch {}
-    }, [imgs])
-
-    const handleEnter = React.useCallback(() => { /* keep moving */ }, [])
-    const handleLeave = React.useCallback(() => {
-      setHover({ on:false, idx:0, x:0, scale:1 })
-      try {
+        if (reduceRef.current) return
         const track = trackRef.current
         if (!track) return
-        track.querySelectorAll('button').forEach((btn) => {
-          btn.style.transform = 'scale(1)'
-          btn.style.zIndex = '1'
+        const radius = 120
+        const maxScale = 1.6
+        const sigma = radius / 3
+        const tiles = Array.from(track.querySelectorAll('button[data-tile="1"]'))
+        tiles.forEach((btn) => {
+          const img = btn.querySelector('img')
+          if (!img) return
+          const r = btn.getBoundingClientRect()
+          const cx = r.left + r.width/2
+          const d = Math.abs(clientX - cx)
+          const g = Math.exp(- (d*d) / (2 * sigma * sigma))
+          // Strong falloff to keep neighbors subtle
+          const gPow = Math.pow(g, 4)
+          const s = 1 + (maxScale - 1) * gPow
+          img.style.transformOrigin = 'center center'
+          img.style.transform = `scale(${s})`
+          // subtle neighbor emphasis without layout shift
+          const b = 1 + (0.06 * g)
+          img.style.filter = `brightness(${b})`
+          btn.style.zIndex = s > 1.02 ? '20' : '1'
+          btn.style.boxShadow = s > 1.05 ? '0 10px 28px rgba(0,0,0,0.18)' : ''
         })
       } catch {}
     }, [])
 
+    const resetDock = React.useCallback(() => {
+      try {
+        const track = trackRef.current
+        if (!track) return
+        Array.from(track.querySelectorAll('button[data-tile="1"]')).forEach((btn) => {
+          const img = btn.querySelector('img')
+          if (img) { img.style.transform = 'scale(1)'; img.style.filter = '' }
+          btn.style.zIndex = '1'
+          btn.style.boxShadow = ''
+        })
+      } catch {}
+    }, [])
+
+    const handleEnter = React.useCallback(() => { /* noop */ }, [])
+    const handleLeave = React.useCallback(() => {
+      resetDock()
+    }, [resetDock])
+
+    // Reduced-motion listener -> disable zoom and reset state when toggled
+    React.useEffect(() => {
+      try {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+        const onRM = () => { reduceRef.current = mq.matches; if (mq.matches) resetDock() }
+        onRM(); mq.addEventListener('change', onRM)
+        return () => mq.removeEventListener('change', onRM)
+      } catch {}
+    }, [resetDock])
+
     return (
-      <div ref={containerRef} className="relative z-[40] overflow-visible" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
+      <div ref={containerRef} className="relative z-[40] overflow-visible flex justify-center mx-auto" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
         <div
           ref={wrapRef}
-          className="overflow-x-hidden overflow-y-visible"
+          className="overflow-visible"
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
-          onMouseMove={(e)=> applyMagnify(e.clientX)}
+          onMouseMove={(e)=> applyDock(e.clientX)}
         >
           {/* Arrow controls */}
           {canScroll && (
@@ -309,26 +307,19 @@ function AuctionCard({ a, idx, now, lang }) {
               <button
                 type="button"
                 key={`${j}-${src}`}
-                className="relative shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40 hover:shadow-md transition-[filter,box-shadow] duration-200 ease-out"
+                data-tile="1"
+                className="relative shrink-0 w-20 h-20 rounded-xl overflow-visible bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40 hover:shadow-md"
                 title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
                 aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
                 onClick={() => openLightboxAt(j % Math.max(1, (imgs?.length||1)))}
+                onFocus={(e)=>{ try { const r = e.currentTarget.getBoundingClientRect(); applyDock(r.left + r.width/2) } catch {} }}
+                onBlur={resetDock}
               >
-                <img src={src} alt="thumbnail" className="w-full h-full object-cover hover:brightness-110 transition-[filter] duration-200 ease-out" loading="lazy" />
+                <img src={src} alt="thumbnail" className="w-full h-full object-cover rounded-xl pointer-events-none transition-[transform,filter] duration-200 ease-out motion-reduce:transition-none will-change-transform" loading="lazy" />
               </button>
             ))}
           </div>
         </div>
-        {hover.on && imgs && imgs.length > 0 && createPortal(
-          <div className="pointer-events-none fixed z-[1000]" style={{ left: `${hover.x}px`, top: `${hover.top}px` }}>
-            <img
-              src={imgs[hover.idx]}
-              alt="hover"
-              className="rounded-lg bg-white shadow-2xl ring-4 ring-white"
-              style={{ transform: `translateX(-50%) scale(${hover.scale})`, transformOrigin: 'bottom center', width: '80px', height: '80px' }}
-            />
-          </div>, document.body)
-        }
       </div>
     )
   }
