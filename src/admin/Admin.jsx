@@ -742,6 +742,33 @@ export default function Admin() {
     }
   }
 
+  // Convert multiple uploaded images to Data URLs and append to an array at given path
+  const handleFilesToDataUrls = (path) => async (e) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    try {
+      const urls = []
+      for (const f of files) {
+        const u = await fileToCompressedDataUrl(f)
+        urls.push(u)
+      }
+      const next = { ...data }
+      let cur = next
+      for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
+      const key = path[path.length - 1]
+      const arr = Array.isArray(cur[key]) ? cur[key] : []
+      cur[key] = [...arr, ...urls]
+      // If this is auctions.list[idx].images, also sync primary img
+      if (key === 'images' && cur && typeof cur === 'object') {
+        cur.img = cur.images?.[0] || ''
+      }
+      setData(next)
+      e.target.value = '' // allow re-selecting the same files later
+    } catch (err) {
+      alert('Kunde inte läsa en eller flera bilder. Försök med andra filer.')
+    }
+  }
+
   const clearField = (path) => () => {
     const next = { ...data }
     let cur = next
@@ -756,6 +783,8 @@ export default function Admin() {
     next.auctions.list.push({
       title: { sv: 'Ny auktion', en: 'New auction' },
       address: { sv: '', en: '' },
+      img: '',
+      images: [],
       mapEmbed: '',
       viewing: { sv: '', en: '' },
       date: '',
@@ -803,6 +832,20 @@ export default function Admin() {
   const updateAuction = (idx, key, value) => {
     const next = { ...data }
     next.auctions.list[idx][key] = value
+    if (key === 'images') {
+      const arr = Array.isArray(value) ? value : []
+      next.auctions.list[idx].img = arr[0] || ''
+    }
+    setData(next)
+  }
+
+  const removeAuctionImage = (idx, imgIndex) => {
+    const next = { ...data }
+    const arr = Array.isArray(next.auctions?.list?.[idx]?.images) ? [...next.auctions.list[idx].images] : []
+    if (imgIndex < 0 || imgIndex >= arr.length) return
+    arr.splice(imgIndex, 1)
+    next.auctions.list[idx].images = arr
+    next.auctions.list[idx].img = arr[0] || ''
     setData(next)
   }
 
@@ -1869,15 +1912,27 @@ export default function Admin() {
                       <input type="file" accept="image/*" title={L('Ladda upp bild','Upload image')} onChange={handleFileToDataUrl(['auctions','list', idx, 'img'])} />
                       <button type="button" className="btn-outline text-xs" onClick={()=>updateAuction(idx,'img','')} title={L('Rensa bilden','Clear image')}>{L('Rensa','Clear')}</button>
                     </div>
+                    <div className="mt-4">
+                      <label className="block text-sm text-neutral-600 mb-1">{L('Galleri (flera bilder)','Gallery (multiple images)')}</label>
+                      <input type="file" multiple accept="image/*" title={L('Ladda upp flera bilder','Upload multiple images')} onChange={handleFilesToDataUrls(['auctions','list', idx, 'images'])} />
+                      <p className="text-xs text-neutral-500 mt-1">{L('Tips: Håll ned Shift/Cmd för att välja flera filer.','Tip: Hold Shift/Cmd to select multiple files.')}</p>
+                    </div>
                   </div>
                   <div>
-                    {a.img ? (
-                      <div className="rounded border bg-white overflow-hidden w-full aspect-[3/2] grid place-items-center">
-                        <img src={a.img} alt={L('Auktionsbild','Auction image')} className="block w-full h-full object-cover" />
+                    <div>
+                      <label className="block text-sm text-neutral-600 mb-2">{L('Miniatyrer','Thumbnails')}</label>
+                      <div className="flex flex-wrap gap-2">
+                        {(a.images||[]).map((src, j) => (
+                          <div key={j} className="relative w-16 h-16 rounded border overflow-hidden bg-white">
+                            <img src={src} alt={L('Miniatyrbild','Thumbnail')} className="w-full h-full object-cover" />
+                            <button type="button" className="absolute -top-1 -right-1 bg-white/90 border rounded-full w-5 h-5 text-xs leading-5 text-center" title={L('Ta bort bild','Remove image')} onClick={()=>removeAuctionImage(idx, j)}>×</button>
+                          </div>
+                        ))}
+                        {(!a.images || a.images.length===0) && (
+                          <div className="text-xs text-neutral-500">{L('Inga bilder i galleriet ännu.','No gallery images yet.')}</div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="text-xs text-neutral-500 mt-8">{L('Ingen bild vald','No image selected')}</div>
-                    )}
+                    </div>
                   </div>
                 </div>
                 <div className="mt-3 flex gap-2">

@@ -32,6 +32,7 @@ const defaults = {
         title: { sv: 'Hindås Rotundan 24/2-2024', en: 'Hindås Rotundan 24/2-2024' },
         address: { sv: 'Rävlandavägen 15, 438 53 Hindås', en: 'Rävlandavägen 15, 438 53 Hindås' },
         img: '',
+        images: [],
         mapEmbed: '',
         viewing: { sv: '13:00 - 14:00', en: '13:00 - 14:00' },
         date: '2024-02-24',
@@ -41,6 +42,7 @@ const defaults = {
         title: { sv: 'Ullareds Bygdegård 25/2-2024', en: 'Ullareds Bygdegård 25/2-2024' },
         address: { sv: 'Ullareds bygdegård, Skolvägen 12, 311 60 Ullared', en: 'Ullareds bygdegård, Skolvägen 12, 311 60 Ullared' },
         img: '',
+        images: [],
         mapEmbed: '',
         viewing: { sv: '13:00 - 14:00', en: '13:00 - 14:00' },
         date: '2024-02-25',
@@ -337,6 +339,12 @@ function normalize(content) {
         next.address = ensureBilingual(next.address)
         next.viewing = ensureBilingual(next.viewing)
         if (typeof next.img !== 'string') next.img = ''
+        if (!Array.isArray(next.images)) next.images = []
+        next.images = next.images.filter((s) => typeof s === 'string')
+        // migrate single img into images if images empty
+        if (next.img && next.images.length === 0) next.images = [next.img]
+        // keep img in sync as primary image
+        next.img = next.images[0] || next.img || ''
         if (!next.date && typeof next.title?.sv === 'string') {
           const m = next.title.sv.match(/(\d{1,2})\/(\d{1,2})-(\d{4})/) // dd/m-YYYY
           if (m) {
