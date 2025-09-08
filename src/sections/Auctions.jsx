@@ -36,16 +36,9 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
   const startTs = toStartTs(a.date, a.start)
   // Small gallery thumbnails (no large image)
   const images = React.useMemo(() => {
-    const hasGallery = Array.isArray(a.images) && a.images.length > 0
-    const base = hasGallery ? a.images : ((typeof a.img === 'string' && a.img) ? [a.img] : [])
-    // de-duplicate while preserving order
-    const seen = new Set()
-    const out = []
-    for (const s of base) {
-      if (typeof s === 'string' && s && !seen.has(s)) { seen.add(s); out.push(s) }
-    }
-    return out
-  }, [a.images, a.img])
+    const base = Array.isArray(a.images) ? a.images : []
+    return (base || []).filter((s) => typeof s === 'string' && s)
+  }, [a.images])
   const remaining = () => {
     if (!Number.isFinite(startTs)) return null
     const diff = Math.max(0, startTs - now)
@@ -493,6 +486,17 @@ export default function Auctions() {
       window.removeEventListener('storage', onStorage)
       clearInterval(tick)
     }
+  }, [])
+  // Also listen on BroadcastChannel used by saveContent() for same-tab updates
+  React.useEffect(() => {
+    let ch = null
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        ch = new BroadcastChannel('ar_content_sync')
+        ch.onmessage = (ev) => { try { if (ev?.data?.key === 'ar_site_content_v1') setContent(loadContent()) } catch {} }
+      }
+    } catch {}
+    return () => { try { if (ch) ch.close() } catch {} }
   }, [])
 
   if (!content.auctions?.visible) return <div className="text-neutral-500">{t('auctions.sectionOff')}</div>
