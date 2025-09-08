@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 import GoogleMap from '../components/GoogleMap'
@@ -143,8 +144,9 @@ function AuctionCard({ a, idx, now, lang }) {
   }, [lightbox.open, closeLightbox, nextImg, prevImg])
 
   // Auto‑scrolling thumbnails row (full‑track loop). Duplicate sequence once for seamless wrap.
-  // In-row dock magnify (no overlay): scale nearby items and add temporary margins to reduce overlap.
+  // Overlay dock magnify via portal: big preview floats above the whole card; neighbors slightly scale (transform-only).
   function ThumbsAutoRow({ imgs }) {
+    const containerRef = React.useRef(null)
     const wrapRef = React.useRef(null)
     const trackRef = React.useRef(null)
     const [paused, setPaused] = React.useState(false)
@@ -152,6 +154,7 @@ function AuctionCard({ a, idx, now, lang }) {
     const stepWRef = React.useRef(0) // width of single tile incl. gap (approx)
     const totalWRef = React.useRef(0) // total width of one sequence
     const rafRef = React.useRef(0)
+    const [hover, setHover] = React.useState({ on:false, idx:0, x:0, scale:1 })
 
     // Measure tile width + gap and compute total track width
     const measure = React.useCallback(() => {
@@ -200,18 +203,17 @@ function AuctionCard({ a, idx, now, lang }) {
       const tick = (ts) => {
         if (!wrapRef.current || !trackRef.current) { rafRef.current = requestAnimationFrame(tick); return }
         if (!paused) {
-          const speed = 120 // px/sec
+          const speed = 110 // px/sec
           const now = ts
           if (!tick.last) tick.last = now
           const dt = (now - tick.last) / 1000
           tick.last = now
-          offsetRef.current += speed * dt
-          const total = totalWRef.current || 1
-          if (offsetRef.current >= total) {
-            offsetRef.current -= total
-          }
+          const total = totalWRef.current || 0
+          if (total <= 0) { rafRef.current = requestAnimationFrame(tick); return }
+          // advance
+          offsetRef.current = (offsetRef.current + speed * dt) % total
           try {
-            trackRef.current.style.transform = `translateX(-${offsetRef.current}px)`
+            trackRef.current.style.transform = `translate3d(-${offsetRef.current}px,0,0)`
           } catch {}
         } else {
           // keep reference time fresh while paused to avoid jump on resume
@@ -223,50 +225,61 @@ function AuctionCard({ a, idx, now, lang }) {
       return () => { cancelAnimationFrame(rafRef.current); rafRef.current = 0; tick.last = 0 }
     }, [paused, imgs])
 
-    // Dock-like magnification in-row
+    // Dock-like magnification using overlay + neighbor wave (transform-only)
     const applyMagnify = React.useCallback((clientX) => {
       try {
         const track = trackRef.current
-        if (!track) return
-        const radius = 160 // px influence radius horizontally
-        const maxScale = 1.6
-        const maxMargin = 8 // px extra spacing at peak
+        const container = containerRef.current
+        if (!track || !container) return
+        const radius = 180
+        const maxScale = 1.8
         const btns = Array.from(track.querySelectorAll('button'))
+        let best = { i:0, d:Infinity, cx:0 }
+        btns.forEach((btn, j) => {
+          const r = btn.getBoundingClientRect()
+          const cx = r.left + r.width/2
+          const d = Math.abs(clientX - cx)
+          if (d < best.d) best = { i: j % Math.max(1, (imgs?.length||1)), d, cx }
+        })
+        const cr = container.getBoundingClientRect()
+        const localX = Math.max(0, Math.min(cr.width, clientX - cr.left))
+        const influence = Math.max(0, 1 - (best.d / radius))
+        // store viewport X and the top Y where we want to place the overlay (above the row)
+        const overlayTop = Math.max(0, Math.round(cr.top - 92))
+        setHover({ on:true, idx: best.i, x: clientX, top: overlayTop, scale: 1 + influence * (maxScale - 1) })
+
+        // Neighbor wave scaling (no margins)
         btns.forEach((btn) => {
           const r = btn.getBoundingClientRect()
           const cx = r.left + r.width/2
           const d = Math.abs(clientX - cx)
-          const influence = Math.max(0, 1 - (d / radius))
-          const scale = 1 + influence * (maxScale - 1)
-          const extra = Math.round(influence * maxMargin)
+          const inf = Math.max(0, 1 - (d / radius))
+          const s = 1 + inf * 0.25
           btn.style.transformOrigin = 'bottom center'
-          btn.style.transform = `scale(${scale})`
-          btn.style.marginLeft = `${extra}px`
-          btn.style.marginRight = `${extra}px`
-          btn.style.zIndex = String( 100 + Math.round( influence * 100 ) )
+          btn.style.transform = `scale(${s})`
+          btn.style.zIndex = String( 10 + Math.round(inf * 50) )
         })
       } catch {}
-    }, [])
+    }, [imgs])
 
     const handleEnter = React.useCallback(() => { /* keep moving */ }, [])
     const handleLeave = React.useCallback(() => {
+      setHover({ on:false, idx:0, x:0, scale:1 })
       try {
         const track = trackRef.current
         if (!track) return
         track.querySelectorAll('button').forEach((btn) => {
           btn.style.transform = 'scale(1)'
-          btn.style.marginLeft = '0px'
-          btn.style.marginRight = '0px'
           btn.style.zIndex = '1'
         })
       } catch {}
     }, [])
 
     return (
-      <div className="relative z-[40] overflow-hidden" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
+      <div ref={containerRef} className="relative z-[40] overflow-visible" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
         <div
           ref={wrapRef}
-          className="overflow-hidden"
+          className="overflow-x-hidden overflow-y-visible"
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
           onMouseMove={(e)=> applyMagnify(e.clientX)}
@@ -286,6 +299,16 @@ function AuctionCard({ a, idx, now, lang }) {
             ))}
           </div>
         </div>
+        {hover.on && imgs && imgs.length > 0 && createPortal(
+          <div className="pointer-events-none fixed z-[1000]" style={{ left: `${hover.x}px`, top: `${hover.top}px` }}>
+            <img
+              src={imgs[hover.idx]}
+              alt="hover"
+              className="rounded-lg bg-white shadow-2xl ring-4 ring-white"
+              style={{ transform: `translateX(-50%) scale(${hover.scale})`, transformOrigin: 'bottom center', width: '80px', height: '80px' }}
+            />
+          </div>, document.body)
+        }
       </div>
     )
   }
