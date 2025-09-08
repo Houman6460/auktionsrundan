@@ -121,7 +121,82 @@ function AuctionCard({ a, idx, now, lang }) {
   const layoutRightColsMd = (shareEnabled && anyPlatformOn) ? 'md:col-span-5 lg:col-span-4' : 'md:col-span-6 lg:col-span-6'
   const ratingsEnabled = contentObj?.ratings?.enabled !== false
 
+  // Lightbox state for thumbnails
+  const [lightbox, setLightbox] = React.useState({ open: false, idx: 0 })
+  const openLightboxAt = React.useCallback((i) => {
+    setLightbox({ open: true, idx: Math.max(0, Math.min(i, Math.max(0, images.length - 1))) })
+  }, [images.length])
+  const closeLightbox = React.useCallback(() => setLightbox({ open: false, idx: 0 }), [])
+  const nextImg = React.useCallback(() => setLightbox((s) => ({ open: true, idx: (s.idx + 1) % Math.max(1, images.length) })), [images.length])
+  const prevImg = React.useCallback(() => setLightbox((s) => ({ open: true, idx: (s.idx - 1 + Math.max(1, images.length)) % Math.max(1, images.length) })), [images.length])
+  React.useEffect(() => {
+    if (!lightbox.open) return
+    const onKey = (e) => {
+      try {
+        if (e.key === 'Escape') closeLightbox()
+        else if (e.key === 'ArrowRight') nextImg()
+        else if (e.key === 'ArrowLeft') prevImg()
+      } catch {}
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightbox.open, closeLightbox, nextImg, prevImg])
+
+  // Auto‑scrolling thumbnails row (marquee‑style, duplicates list for seamless loop)
+  function ThumbsAutoRow({ imgs }) {
+    const scrollerRef = React.useRef(null)
+    const [paused, setPaused] = React.useState(false)
+    const loopImgs = React.useMemo(() => (Array.isArray(imgs) ? [...imgs, ...imgs] : []), [imgs])
+    React.useEffect(() => {
+      const el = scrollerRef.current
+      if (!el) return
+      let raf = 0
+      let last = 0
+      const speed = 40 // px/sec
+      const step = (ts) => {
+        if (!last) last = ts
+        const dt = (ts - last) / 1000
+        last = ts
+        if (!paused) {
+          try {
+            el.scrollLeft += speed * dt
+            const half = el.scrollWidth / 2
+            if (el.scrollLeft >= half) el.scrollLeft -= half
+          } catch {}
+        }
+        raf = requestAnimationFrame(step)
+      }
+      raf = requestAnimationFrame(step)
+      return () => cancelAnimationFrame(raf)
+    }, [paused, imgs])
+    return (
+      <div
+        ref={scrollerRef}
+        className="relative overflow-x-hidden"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        aria-label={t('auctions.thumbnails') || 'Thumbnails'}
+      >
+        <div className="flex gap-2">
+          {loopImgs.map((src, j) => (
+            <button
+              type="button"
+              key={j}
+              className="shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40"
+              title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
+              aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
+              onClick={() => openLightboxAt(j % Math.max(1, imgs.length))}
+            >
+              <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
+    <>
     <div id={anchorId} className="section-card p-4 grid md:grid-cols-12 gap-4">
       <div className={layoutLeftColsMd}>
         <h3 className="font-serif text-xl">{titleT}</h3>
@@ -146,22 +221,7 @@ function AuctionCard({ a, idx, now, lang }) {
             )}
           </div>
         </div>
-        {images.length > 0 && (
-          <div className="mt-3">
-            <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 -mx-1 snap-x snap-mandatory" aria-label={t('auctions.thumbnails') || 'Thumbnails'}>
-              {images.map((src, j) => (
-                <div
-                  key={j}
-                  className="inline-block shrink-0 w-14 h-14 rounded border overflow-hidden bg-white snap-start"
-                  title={`${t('auctions.image') || 'Bild'} ${j+1}`}
-                  aria-label={`${t('auctions.image') || 'Bild'} ${j+1}`}
-                >
-                  <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Thumbnails moved to a separate card below */}
         <div className="mt-3">
           {shareEnabled && anyPlatformOn ? (
             <ShareButtons title={titleT} url={shareUrl} text={shareText} image={staticMapUrl} mapUrl={mapUrl} platforms={platforms}>
@@ -223,6 +283,26 @@ function AuctionCard({ a, idx, now, lang }) {
         })()}
       </div>
     </div>
+    {images.length > 0 && (
+      <div className="section-card p-2">
+        <ThumbsAutoRow imgs={images} />
+      </div>
+    )}
+    {lightbox.open && images.length > 0 && (
+      <div className="fixed inset-0 z-[1000] bg-black/70 grid place-items-center p-4" role="dialog" aria-modal="true" onClick={closeLightbox}>
+        <div className="relative max-w-[92vw] max-h-[88vh]">
+          <img src={images[lightbox.idx]} alt="preview" className="max-w-[92vw] max-h-[88vh] object-contain rounded" onClick={(e)=>e.stopPropagation()} />
+          <button type="button" className="absolute top-2 right-2 btn-outline text-xs" onClick={closeLightbox} title={t('close') || 'Stäng'}>✕</button>
+          <div className="absolute inset-y-0 left-0 flex items-center p-2">
+            <button type="button" className="btn-outline text-sm" onClick={(e)=>{ e.stopPropagation(); prevImg() }} aria-label="Prev">‹</button>
+          </div>
+          <div className="absolute inset-y-0 right-0 flex items-center p-2">
+            <button type="button" className="btn-outline text-sm" onClick={(e)=>{ e.stopPropagation(); nextImg() }} aria-label="Next">›</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
 
