@@ -41,6 +41,11 @@ function AuctionCard({ a, idx, now, lang }) {
   }, [a.images, a.img])
   const [imgIx, setImgIx] = React.useState(0)
   React.useEffect(() => { setImgIx(0) }, [images.length, a.img])
+  const currentSrc = images.length ? images[Math.min(imgIx, images.length-1)] : ''
+  const [imgKey, setImgKey] = React.useState(currentSrc)
+  React.useEffect(() => { setImgKey(currentSrc) }, [currentSrc])
+  const triedBlobRef = React.useRef(false)
+  React.useEffect(() => { triedBlobRef.current = false }, [currentSrc])
   const remaining = () => {
     if (!Number.isFinite(startTs)) return null
     const diff = Math.max(0, startTs - now)
@@ -124,7 +129,27 @@ function AuctionCard({ a, idx, now, lang }) {
         {images.length > 0 && (
           <div className="mt-3">
             <div className="rounded overflow-hidden border border-amber-900/10 bg-neutral-100">
-              <img src={images[Math.min(imgIx, images.length-1)]} alt={titleT || 'auction'} className="w-full h-40 md:h-56 object-cover" />
+              <img
+                key={imgKey}
+                src={currentSrc}
+                alt={titleT || 'auction'}
+                className="w-full h-40 md:h-56 object-cover"
+                onError={(e)=>{
+                  try {
+                    const srcNow = e.currentTarget.src || ''
+                    if (!triedBlobRef.current && typeof currentSrc === 'string' && currentSrc.startsWith('data:image')) {
+                      triedBlobRef.current = true
+                      fetch(currentSrc).then(r=>r.blob()).then(b=>{
+                        const u = URL.createObjectURL(b)
+                        e.currentTarget.src = u
+                      }).catch(()=>{/* ignore */})
+                      return
+                    }
+                    const fallback = (typeof a.img === 'string' && a.img) || (Array.isArray(a.images) && a.images[0]) || ''
+                    if (fallback && srcNow !== fallback) e.currentTarget.src = fallback
+                  } catch {}
+                }}
+              />
             </div>
             {images.length > 1 && (
               <div className="mt-2 flex flex-wrap gap-2">

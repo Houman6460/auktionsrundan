@@ -2020,11 +2020,11 @@ export default function Admin() {
                   <div>
                     <label className="block text-sm text-neutral-600 mb-1">{L('Bild (URL)','Image (URL)')}</label>
                     <input className="w-full border rounded px-3 py-2" placeholder="https://..." title={L('URL till bild som representerar auktionen','Image URL representing the auction')} value={a.img || ''} onChange={(e)=>updateAuction(idx,'img', e.target.value)} />
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="flex-1 min-w-0">
+                    <div className="mt-2 flex flex-wrap items-center gap-2 justify-start">
+                      <div className="flex-1 min-w-[220px]">
                         <input className="w-full" type="file" accept="image/*" title={L('Ladda upp bild','Upload image')} onChange={handleFileToDataUrl(['auctions','list', idx, 'img'], { maxDim: 900, quality: 0.65 })} />
                       </div>
-                      <button type="button" className="shrink-0 btn-outline text-xs" onClick={()=>updateAuction(idx,'img','')} title={L('Rensa bilden','Clear image')}>{L('Rensa','Clear')}</button>
+                      <button type="button" className="btn-outline text-xs order-2" onClick={()=>updateAuction(idx,'img','')} title={L('Rensa bilden','Clear image')}>{L('Rensa','Clear')}</button>
                     </div>
                     <div className="mt-4">
                       <label className="block text-sm text-neutral-600 mb-1">{L('Galleri (flera bilder)','Gallery (multiple images)')}</label>
