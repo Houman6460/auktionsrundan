@@ -11,30 +11,18 @@ export default function EventSlider({ title, items = [], renderItem, speed = 40,
   const wrapRef = React.useRef(null)
   const trackRef = React.useRef(null)
   const [paused, setPaused] = React.useState(false)
-  const [w, setW] = React.useState(0) // width of a single copy group
-  const [copies, setCopies] = React.useState(2)
+  const [w, setW] = React.useState(0)
   const [offset, setOffset] = React.useState(0)
 
   const effectiveSpeed = Math.max(10, Math.min(200, Number(speed) || 40))
 
-  // Measure a single group width and compute how many copies are needed to fill viewport without gaps
+  // Measure track width
   const measure = React.useCallback(() => {
     try {
-      const wrap = wrapRef.current
-      const track = trackRef.current
-      if (!wrap || !track) return
-      const firstGroup = track.querySelector('[data-copy="0"]') || track.children?.[0]
-      const groupWidth = firstGroup ? firstGroup.scrollWidth : 0
-      const viewport = wrap.clientWidth || 0
-      if (groupWidth > 0) {
-        setW(groupWidth)
-        // Need enough copies so that total width >= viewport + one extra group for smooth looping
-        const need = Math.max(2, Math.ceil((viewport + groupWidth) / groupWidth) + 1)
-        setCopies(need)
-      } else {
-        setW(0)
-        setCopies(2)
-      }
+      const el = trackRef.current
+      if (!el) return
+      const width = el.scrollWidth / 2 // since we render duplicate
+      setW(width)
     } catch {}
   }, [])
 
@@ -42,26 +30,7 @@ export default function EventSlider({ title, items = [], renderItem, speed = 40,
     measure()
     const onResize = () => measure()
     window.addEventListener('resize', onResize)
-    // Re-measure after images load to avoid initial zero-width gaps
-    const track = trackRef.current
-    let listeners = []
-    if (track) {
-      const imgs = track.querySelectorAll('img')
-      imgs.forEach((img) => {
-        const fn = () => measure()
-        listeners.push({ img, fn })
-        img.addEventListener('load', fn, { once: true })
-      })
-    }
-    // Staggered timeouts as a fallback
-    const t1 = setTimeout(measure, 50)
-    const t2 = setTimeout(measure, 300)
-    const t3 = setTimeout(measure, 1000)
-    return () => {
-      window.removeEventListener('resize', onResize)
-      listeners.forEach(({ img, fn }) => img.removeEventListener('load', fn))
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
-    }
+    return () => window.removeEventListener('resize', onResize)
   }, [measure, items])
 
   // Animation loop
@@ -101,12 +70,12 @@ export default function EventSlider({ title, items = [], renderItem, speed = 40,
       >
         <div
           ref={trackRef}
-          className="flex will-change-transform"
+          className="flex gap-3 will-change-transform"
           style={{ transform: `translateX(${Math.round(offset)}px)` }}
         >
-          {/* Duplicate content for seamless loop; render as many copies as needed to avoid gaps */}
-          {Array.from({ length: Math.max(2, copies) }).map((_, copy) => (
-            <div key={copy} data-copy={copy} className="flex gap-3">
+          {/* Duplicate content for seamless loop */}
+          {[0,1].map((copy) => (
+            <div key={copy} className="flex gap-3">
               {items.map((it, idx) => (
                 <div key={`${copy}-${idx}`} className="min-w-[220px] max-w-[260px]">
                   {renderItem(it, idx)}
