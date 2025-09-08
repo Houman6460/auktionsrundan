@@ -36,12 +36,12 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
   const startTs = toStartTs(a.date, a.start)
   // Small gallery thumbnails (no large image)
   const images = React.useMemo(() => {
-    const arr = Array.isArray(a.images) ? a.images : []
-    const plusMain = (typeof a.img === 'string' && a.img) ? [...arr, a.img] : arr
+    const hasGallery = Array.isArray(a.images) && a.images.length > 0
+    const base = hasGallery ? a.images : ((typeof a.img === 'string' && a.img) ? [a.img] : [])
     // de-duplicate while preserving order
     const seen = new Set()
     const out = []
-    for (const s of plusMain) {
+    for (const s of base) {
       if (typeof s === 'string' && s && !seen.has(s)) { seen.add(s); out.push(s) }
     }
     return out
@@ -159,7 +159,7 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
       if (!imgs || imgs.length === 0) return
       let t = 0
       const step = () => {
-        if (!pausedRef.current && !reduceRef.current) {
+        if (!pausedRef.current) {
           setI((v) => (v + 1) % imgs.length)
         }
         t = window.setTimeout(step, Math.max(800, parseInt(intervalMs,10)||3500))
