@@ -152,10 +152,15 @@ function AuctionCard({ a, idx, now, lang }) {
     const [paused, setPaused] = React.useState(false)
     const offsetRef = React.useRef(0)
     const stepWRef = React.useRef(0) // width of single tile incl. gap (approx)
-    const totalWRef = React.useRef(0) // total width of one sequence
+    const totalWRef = React.useRef(0) // total width of track (single sequence)
+    const wrapWRef = React.useRef(0)  // wrapper visible width
+    const visibleCountRef = React.useRef(1)
+    const maxStartRef = React.useRef(0)
     const rafRef = React.useRef(0)
     const [hover, setHover] = React.useState({ on:false, idx:0, x:0, scale:1 })
     const enableScroll = false // turn off movement per request
+    const [startIdx, setStartIdx] = React.useState(0)
+    const [canScroll, setCanScroll] = React.useState(false)
 
     // Measure tile width + gap and compute total track width
     const measure = React.useCallback(() => {
@@ -174,7 +179,17 @@ function AuctionCard({ a, idx, now, lang }) {
         stepWRef.current = stepW
         // Use actual rendered width for single sequence to avoid drift
         const full = track.scrollWidth || 0
-        totalWRef.current = Math.max(1, Math.round(full / 2))
+        totalWRef.current = Math.max(1, Math.round(full))
+        const wrap = wrapRef.current
+        wrapWRef.current = wrap ? Math.max(0, Math.round(wrap.clientWidth || 0)) : 0
+        const visibleCount = Math.max(1, Math.floor(wrapWRef.current / stepWRef.current))
+        visibleCountRef.current = visibleCount
+        const n = (imgs?.length || 0)
+        const maxStart = Math.max(0, n - visibleCount)
+        maxStartRef.current = maxStart
+        setCanScroll(n > visibleCount)
+        // clamp start index after any resize
+        setStartIdx((s)=> Math.max(0, Math.min(s, maxStart)))
       } catch {}
     }, [imgs])
 
@@ -201,11 +216,23 @@ function AuctionCard({ a, idx, now, lang }) {
 
     // Animation loop using translateX
     React.useEffect(() => {
-      // movement disabled: ensure transform reset and stop any RAF
-      try { if (trackRef.current) trackRef.current.style.transform = 'translate3d(0,0,0)' } catch {}
+      // movement disabled: apply manual slide transform based on startIdx
+      try {
+        if (trackRef.current) {
+          const dx = startIdx * (stepWRef.current || 0)
+          trackRef.current.style.transform = `translate3d(-${dx}px,0,0)`
+        }
+      } catch {}
       if (rafRef.current) { try { cancelAnimationFrame(rafRef.current) } catch {} ; rafRef.current = 0 }
       return () => { if (rafRef.current) { try { cancelAnimationFrame(rafRef.current) } catch {} ; rafRef.current = 0 } }
-    }, [paused, imgs])
+    }, [paused, imgs, startIdx])
+
+    const goPrev = React.useCallback(() => {
+      setStartIdx((s) => Math.max(0, s - 1))
+    }, [])
+    const goNext = React.useCallback(() => {
+      setStartIdx((s) => Math.min(maxStartRef.current, s + 1))
+    }, [])
 
     // Dock-like magnification using overlay + neighbor wave (transform-only)
     const applyMagnify = React.useCallback((clientX) => {
@@ -266,17 +293,28 @@ function AuctionCard({ a, idx, now, lang }) {
           onMouseLeave={handleLeave}
           onMouseMove={(e)=> applyMagnify(e.clientX)}
         >
-          <div ref={trackRef} className="flex gap-2 will-change-transform">
-            {[...(imgs||[]), ...(imgs||[])].map((src, j) => (
+          {/* Arrow controls */}
+          {canScroll && (
+            <>
+              <div className="absolute inset-y-0 left-0 z-[80] flex items-center">
+                <button type="button" className="btn-outline text-xs mx-1" onClick={goPrev} aria-label="Prev">‹</button>
+              </div>
+              <div className="absolute inset-y-0 right-0 z-[80] flex items-center">
+                <button type="button" className="btn-outline text-xs mx-1" onClick={goNext} aria-label="Next">›</button>
+              </div>
+            </>
+          )}
+          <div ref={trackRef} className="flex gap-3 md:gap-4 xl:gap-5 will-change-transform select-none">
+            {(imgs||[]).map((src, j) => (
               <button
                 type="button"
                 key={`${j}-${src}`}
-                className="relative shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40"
+                className="relative shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40 hover:shadow-md transition-[filter,box-shadow] duration-200 ease-out"
                 title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
                 aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
                 onClick={() => openLightboxAt(j % Math.max(1, (imgs?.length||1)))}
               >
-                <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
+                <img src={src} alt="thumbnail" className="w-full h-full object-cover hover:brightness-110 transition-[filter] duration-200 ease-out" loading="lazy" />
               </button>
             ))}
           </div>
