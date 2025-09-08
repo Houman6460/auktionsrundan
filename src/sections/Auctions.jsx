@@ -142,44 +142,42 @@ function AuctionCard({ a, idx, now, lang }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [lightbox.open, closeLightbox, nextImg, prevImg])
 
-  // Auto‑scrolling thumbnails row (no duplicated DOM). We translate the track and rotate order when a tile passes fully.
+  // Auto‑scrolling thumbnails row (full‑track loop). Duplicate sequence once for seamless wrap.
   function ThumbsAutoRow({ imgs }) {
     const wrapRef = React.useRef(null)
     const trackRef = React.useRef(null)
     const [paused, setPaused] = React.useState(false)
-    const [order, setOrder] = React.useState(() => (Array.isArray(imgs) ? imgs.map((_, i) => i) : []))
     const offsetRef = React.useRef(0)
-    const stepWRef = React.useRef(0)
+    const stepWRef = React.useRef(0) // width of single tile incl. gap
+    const totalWRef = React.useRef(0) // total width of one sequence
     const rafRef = React.useRef(0)
 
-    // Reset order when imgs change
-    React.useEffect(() => {
-      setOrder(Array.isArray(imgs) ? imgs.map((_, i) => i) : [])
-      offsetRef.current = 0
-    }, [imgs])
-
-    // Measure tile width + gap
-    const measureStepWidth = React.useCallback(() => {
+    // Measure tile width + gap and compute total track width
+    const measure = React.useCallback(() => {
       try {
         const track = trackRef.current
         if (!track || !track.firstElementChild) return
+        // The first child corresponds to first tile of first sequence
         const first = track.firstElementChild
         const rect = first.getBoundingClientRect()
         const cs = window.getComputedStyle(track)
-        // Support browsers reporting row/column gap separately
         let gap = 0
         const cg = parseFloat(cs.columnGap || '0')
         const g = cs.gap ? parseFloat(cs.gap) : 0
         gap = Number.isFinite(cg) && cg > 0 ? cg : (Number.isFinite(g) ? g : 0)
-        stepWRef.current = Math.max(1, Math.round(rect.width + gap))
+        const stepW = Math.max(1, Math.round(rect.width + gap))
+        stepWRef.current = stepW
+        const n = Array.isArray(imgs) ? imgs.length : 0
+        totalWRef.current = Math.max(1, stepW * n)
       } catch {}
-    }, [])
+    }, [imgs])
+
     React.useEffect(() => {
-      measureStepWidth()
-      const onResize = () => measureStepWidth()
+      measure()
+      const onResize = () => measure()
       window.addEventListener('resize', onResize)
       return () => window.removeEventListener('resize', onResize)
-    }, [measureStepWidth])
+    }, [measure])
 
     // Animation loop using translateX
     React.useEffect(() => {
@@ -191,20 +189,11 @@ function AuctionCard({ a, idx, now, lang }) {
           if (!tick.last) tick.last = now
           const dt = (now - tick.last) / 1000
           tick.last = now
-          const dx = speed * dt
-          offsetRef.current += dx
-          const stepW = stepWRef.current || 88 // fallback ~ w-20 + gap-2
-          // Rotate once the first tile has fully exited the left edge
-          if (offsetRef.current >= stepW && order.length > 1) {
-            // rotate one tile and keep smooth motion
-            offsetRef.current -= stepW
-            setOrder((prev) => {
-              if (!prev || prev.length <= 1) return prev
-              const [first, ...rest] = prev
-              return [...rest, first]
-            })
+          offsetRef.current += speed * dt
+          const total = totalWRef.current || 1
+          if (offsetRef.current >= total) {
+            offsetRef.current -= total
           }
-          // apply transform
           try {
             trackRef.current.style.transform = `translateX(-${offsetRef.current}px)`
           } catch {}
@@ -213,7 +202,7 @@ function AuctionCard({ a, idx, now, lang }) {
       }
       rafRef.current = requestAnimationFrame(tick)
       return () => { cancelAnimationFrame(rafRef.current); rafRef.current = 0; tick.last = 0 }
-    }, [paused, order.length])
+    }, [paused, imgs])
 
     // Dock-like magnification on hover
     const applyMagnify = React.useCallback((clientX) => {
@@ -260,16 +249,16 @@ function AuctionCard({ a, idx, now, lang }) {
         aria-label={t('auctions.thumbnails') || 'Thumbnails'}
       >
         <div ref={trackRef} className="flex gap-2 will-change-transform">
-          {order.map((idxVal, j) => (
+          {[...(imgs||[]), ...(imgs||[])].map((src, j) => (
             <button
               type="button"
-              key={`${idxVal}-${j}`}
-              className="shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40"
-              title={`${t('auctions.image') || 'Bild'} ${idxVal+1}`}
-              aria-label={`${t('auctions.image') || 'Bild'} ${idxVal+1}`}
-              onClick={() => openLightboxAt(idxVal)}
+              key={`${j}-${src}`}
+              className="shrink-0 w-20 h-20 rounded border overflow-hidden bg-white focus:outline-none focus:ring-2 focus:ring-earth-dark/40 transition-transform duration-150"
+              title={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
+              aria-label={`${t('auctions.image') || 'Bild'} ${((j % (imgs?.length||1))+1)}`}
+              onClick={() => openLightboxAt(j % Math.max(1, (imgs?.length||1)))}
             >
-              <img src={imgs[idxVal]} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
+              <img src={src} alt="thumbnail" className="w-full h-full object-cover" loading="lazy" />
             </button>
           ))}
         </div>
@@ -366,7 +355,7 @@ function AuctionCard({ a, idx, now, lang }) {
       </div>
     </div>
     {images.length > 0 && (
-      <div className="section-card p-2">
+      <div className="section-card p-2 overflow-visible">
         <ThumbsAutoRow imgs={images} />
       </div>
     )}
