@@ -8,7 +8,7 @@ import RegistrationModal from '../components/RegistrationModal'
 import { trackEvent } from '../services/analytics'
  
 
-function AuctionCard({ a, idx, now, lang }) {
+function AuctionCard({ a, idx, now, lang, gallery }) {
   const { t } = useTranslation()
   const [openReg, setOpenReg] = React.useState(false)
   const [regCount, setRegCount] = React.useState(0)
@@ -142,8 +142,55 @@ function AuctionCard({ a, idx, now, lang }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [lightbox.open, closeLightbox, nextImg, prevImg])
 
-  // Auto‑scrolling thumbnails row (full‑track loop). Duplicate sequence once for seamless wrap.
-  // Overlay dock magnify via portal: big preview floats above the whole card; neighbors slightly scale (transform-only).
+  // Slideshow banner above event card (golden ratio)
+  function SlideshowBanner({ imgs, intervalMs }) {
+    const [i, setI] = React.useState(0)
+    const pausedRef = React.useRef(false)
+    const reduceRef = React.useRef(false)
+    React.useEffect(() => {
+      try {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+        const onRM = () => { reduceRef.current = mq.matches }
+        onRM(); mq.addEventListener('change', onRM)
+        return () => mq.removeEventListener('change', onRM)
+      } catch {}
+    }, [])
+    React.useEffect(() => {
+      if (!imgs || imgs.length === 0) return
+      let t = 0
+      const step = () => {
+        if (!pausedRef.current && !reduceRef.current) {
+          setI((v) => (v + 1) % imgs.length)
+        }
+        t = window.setTimeout(step, Math.max(800, parseInt(intervalMs,10)||3500))
+      }
+      t = window.setTimeout(step, Math.max(800, parseInt(intervalMs,10)||3500))
+      return () => { if (t) window.clearTimeout(t) }
+    }, [imgs, intervalMs])
+    const onEnter = () => { pausedRef.current = true }
+    const onLeave = () => { pausedRef.current = false }
+    if (!imgs || imgs.length === 0) return null
+    const src = imgs[i]
+    return (
+      <div className="section-card p-0 overflow-hidden">
+        <div
+          className="relative w-full aspect-[1.618/1] bg-neutral-200 cursor-pointer"
+          onMouseEnter={onEnter}
+          onMouseLeave={onLeave}
+          onClick={() => openLightboxAt(i)}
+          role="button"
+          title={(t('auctions.image')||'Bild') + ' ' + String(i+1)}
+          aria-label={(t('auctions.image')||'Bild') + ' ' + String(i+1)}
+        >
+          <img src={src} alt="banner" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+          {/* subtle gradient overlay for legibility, optional */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/0 to-black/0" />
+        </div>
+      </div>
+    )
+  }
+
+  // Thumbnails row (manual paging, with dock zoom)
   function ThumbsAutoRow({ imgs }) {
     const containerRef = React.useRef(null)
     const wrapRef = React.useRef(null)
@@ -327,6 +374,11 @@ function AuctionCard({ a, idx, now, lang }) {
 
   return (
     <>
+    {gallery?.slideshowEnabled && images.length > 0 && (
+      <div className="mb-3">
+        <SlideshowBanner imgs={images} intervalMs={gallery?.slideshowIntervalMs} />
+      </div>
+    )}
     <div id={anchorId} className="section-card p-4 grid md:grid-cols-12 gap-4">
       <div className={layoutLeftColsMd}>
         <h3 className="font-serif text-xl">{titleT}</h3>
@@ -413,7 +465,7 @@ function AuctionCard({ a, idx, now, lang }) {
         })()}
       </div>
     </div>
-    {images.length > 0 && (
+    {gallery?.thumbnailsEnabled !== false && images.length > 0 && (
       <div className="section-card relative z-[60] p-2 overflow-visible">
         <ThumbsAutoRow imgs={images} />
       </div>
@@ -453,11 +505,16 @@ export default function Auctions() {
   if (!content.auctions?.visible) return <div className="text-neutral-500">{t('auctions.sectionOff')}</div>
 
   const list = content.auctions?.list || []
+  const gallery = {
+    thumbnailsEnabled: content.auctions?.thumbnailsEnabled !== false,
+    slideshowEnabled: content.auctions?.slideshowEnabled !== false,
+    slideshowIntervalMs: content.auctions?.slideshowIntervalMs ?? 3500,
+  }
   const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('lang') || 'sv')
   return (
     <div className="grid gap-6">
       {list.map((a, idx) => (
-        <AuctionCard key={idx} a={a} idx={idx} now={now} lang={lang} />
+        <AuctionCard key={idx} a={a} idx={idx} now={now} lang={lang} gallery={gallery} />
       ))}
       {list.length === 0 && (
         <div className="section-card p-4 text-neutral-600">{t('auctions.none')}</div>

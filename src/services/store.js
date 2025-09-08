@@ -27,6 +27,10 @@ const defaults = {
   },
   auctions: {
     visible: true,
+    // Gallery display options
+    thumbnailsEnabled: true, // show thumbnails band under each auction
+    slideshowEnabled: true,  // show golden‑ratio slideshow banner above each auction
+    slideshowIntervalMs: 3500, // default autoplay interval for slideshow
     list: [
       {
         title: { sv: 'Hindås Rotundan 24/2-2024', en: 'Hindås Rotundan 24/2-2024' },
@@ -330,8 +334,13 @@ function normalize(content) {
       }
     }
 
-    // Normalize auctions.list bilingual fields and date: if missing, try extract from title like "... 24/2-2024"
+    // Normalize auctions list and gallery toggles
     if (out.auctions && Array.isArray(out.auctions.list)) {
+      // Ensure gallery flags exist at auctions level
+      out.auctions.thumbnailsEnabled = out.auctions.thumbnailsEnabled !== false
+      out.auctions.slideshowEnabled = out.auctions.slideshowEnabled !== false
+      const iv = parseInt(out.auctions.slideshowIntervalMs, 10)
+      out.auctions.slideshowIntervalMs = Number.isFinite(iv) ? iv : defaults.auctions.slideshowIntervalMs
       out.auctions.list = out.auctions.list.map((it) => {
         const next = { ...it }
         // bilingual fields

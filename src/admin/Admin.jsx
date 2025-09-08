@@ -1996,6 +1996,25 @@ export default function Admin() {
             <Toggle checked={!!data.auctions.visible} onChange={handleToggle(['auctions','visible'])} />
             <span>{L('Visa sektion','Show section')}</span>
           </label>
+          {/* Gallery controls: slideshow banner above card and thumbnails band below card */}
+          <div className="grid md:grid-cols-3 gap-3 mb-3">
+            <div className="section-card p-3">
+              <h3 className="font-serif text-lg mb-2">{L('Galleriinställningar','Gallery Settings')}</h3>
+              <label className="flex items-center gap-2 mb-2" title={L('Visa bildspelsbaner ovanför varje auktion (gyllene snitt)','Show slideshow banner above each auction (golden ratio)')}>
+                <Toggle checked={data.auctions?.slideshowEnabled !== false} onChange={handleToggle(['auctions','slideshowEnabled'])} />
+                <span>{L('Visa bildspelsbaner','Show slideshow banner')}</span>
+              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <label className="text-sm text-neutral-700" htmlFor="auctions-slideshow-interval">{L('Intervall (ms)','Interval (ms)')}</label>
+                <input id="auctions-slideshow-interval" type="number" min="800" step="100" className="w-32 border rounded px-2 py-1" value={data.auctions?.slideshowIntervalMs ?? 3500} onChange={handleChange(['auctions','slideshowIntervalMs'])} title={L('Tid mellan bilder i bildspelet (millisekunder)','Time between slides in the slideshow (milliseconds)')} />
+              </div>
+              <label className="flex items-center gap-2" title={L('Visa miniatyrband under varje auktion','Show thumbnails band under each auction')}>
+                <Toggle checked={data.auctions?.thumbnailsEnabled !== false} onChange={handleToggle(['auctions','thumbnailsEnabled'])} />
+                <span>{L('Visa miniatyrband','Show thumbnails band')}</span>
+              </label>
+              <p className="text-xs text-neutral-600 mt-2">{L('Hovra pausar bildspelet. Klick öppnar bilden i full storlek.','Hover pauses the slideshow. Click opens the image in full size.')}</p>
+            </div>
+          </div>
           <div className="flex items-center justify-between mb-2">
             {/* auctions management controls here */}
             <button className="btn-outline text-sm" type="button" onClick={addAuction} title={L('Skapa en ny auktion i listan','Create a new auction in the list')}>{L('Lägg till auktion','Add auction')}</button>
