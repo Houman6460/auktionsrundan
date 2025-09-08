@@ -248,6 +248,7 @@ function AuctionCard({ a, idx, now, lang }) {
           // subtle neighbor emphasis without layout shift
           const b = 1 + (0.06 * g)
           img.style.filter = `brightness(${b})`
+          img.style.boxShadow = s > 1.02 ? '0 0 0 2px rgba(255,255,255,0.98)' : ''
           btn.style.zIndex = s > 1.02 ? '20' : '1'
           btn.style.boxShadow = s > 1.05 ? '0 10px 28px rgba(0,0,0,0.18)' : ''
         })
@@ -260,7 +261,7 @@ function AuctionCard({ a, idx, now, lang }) {
         if (!track) return
         Array.from(track.querySelectorAll('button[data-tile="1"]')).forEach((btn) => {
           const img = btn.querySelector('img')
-          if (img) { img.style.transform = 'scale(1)'; img.style.filter = '' }
+          if (img) { img.style.transform = 'scale(1)'; img.style.filter = ''; img.style.boxShadow = '' }
           btn.style.zIndex = '1'
           btn.style.boxShadow = ''
         })
@@ -315,7 +316,7 @@ function AuctionCard({ a, idx, now, lang }) {
                 onFocus={(e)=>{ try { const r = e.currentTarget.getBoundingClientRect(); applyDock(r.left + r.width/2) } catch {} }}
                 onBlur={resetDock}
               >
-                <img src={src} alt="thumbnail" className="w-full h-full object-cover rounded-xl pointer-events-none transition-[transform,filter] duration-200 ease-out motion-reduce:transition-none will-change-transform" loading="lazy" />
+                <img src={src} alt="thumbnail" className="w-full h-full object-cover rounded-xl pointer-events-none transition-[transform,filter,box-shadow] duration-200 ease-out motion-reduce:transition-none will-change-transform" loading="lazy" />
               </button>
             ))}
           </div>
