@@ -54,6 +54,21 @@ export default function RatingStars({ targetType, targetId, className }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
 
+  // Live updates: cross-tab via BroadcastChannel and periodic polling
+  React.useEffect(() => {
+    let ch = null
+    let t = 0
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        ch = new BroadcastChannel('ar_analytics_sync')
+        ch.onmessage = (ev) => { try { if (ev?.data?.key === 'ar_analytics_events_v1') fetchRating() } catch {} }
+      }
+    } catch {}
+    t = window.setInterval(() => { fetchRating() }, 20000)
+    return () => { try { if (ch) ch.close() } catch {}; if (t) window.clearInterval(t) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+
   const submit = async (score) => {
     if (pending) return
     setPending(true)

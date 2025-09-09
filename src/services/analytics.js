@@ -24,6 +24,11 @@ function saveEvents(list) {
   try {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new StorageEvent('storage', { key: ANALYTICS_KEY }))
+      if ('BroadcastChannel' in window) {
+        const ch = new BroadcastChannel('ar_analytics_sync')
+        ch.postMessage({ key: ANALYTICS_KEY, ts: Date.now() })
+        ch.close()
+      }
     }
   } catch {}
 }

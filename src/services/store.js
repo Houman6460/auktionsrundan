@@ -540,12 +540,28 @@ export function loadContent() {
 
 export function saveContent(content) {
   localStorage.setItem(LS_KEY, JSON.stringify(content))
+  // Update local revision for polling diff
+  try { localStorage.setItem('ar_content_rev', String(Date.now())) } catch {}
   try {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       const ch = new BroadcastChannel('ar_content_sync')
       ch.postMessage({ key: LS_KEY, ts: Date.now() })
       ch.close()
     }
+  } catch {}
+  // Best-effort push to server for cross-device sync (requires KV binding in Cloudflare)
+  try {
+    fetch('/api/content', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(content),
+      cache: 'no-store'
+    }).then(async (res) => {
+      try {
+        const data = await res.json().catch(()=>({}))
+        if (data && data.rev) localStorage.setItem('ar_content_rev', String(data.rev))
+      } catch {}
+    }).catch(()=>{})
   } catch {}
 }
 

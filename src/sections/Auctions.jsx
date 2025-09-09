@@ -496,6 +496,34 @@ export default function Auctions() {
     return () => { try { if (ch) ch.close() } catch {} }
   }, [])
 
+  // Poll remote content revision via Cloudflare Function to sync across devices without refresh
+  React.useEffect(() => {
+    let t = 0
+    const poll = async () => {
+      try {
+        const revRes = await fetch('/api/content?revOnly=1', { cache: 'no-store' })
+        if (!revRes.ok) return
+        const revData = await revRes.json().catch(()=>({}))
+        const remoteRev = Number(revData.rev || 0)
+        const localRev = Number(localStorage.getItem('ar_content_rev') || 0)
+        if (remoteRev > localRev) {
+          const fullRes = await fetch('/api/content', { cache: 'no-store' })
+          if (!fullRes.ok) return
+          const payload = await fullRes.json().catch(()=>({}))
+          if (payload && payload.content) {
+            try { localStorage.setItem('ar_site_content_v1', JSON.stringify(payload.content)) } catch {}
+            try { localStorage.setItem('ar_content_rev', String(payload.rev || remoteRev)) } catch {}
+            try { window.dispatchEvent(new StorageEvent('storage', { key: 'ar_site_content_v1' })) } catch {}
+            setContent(loadContent())
+          }
+        }
+      } catch {}
+    }
+    poll()
+    t = window.setInterval(poll, 10000)
+    return () => { if (t) window.clearInterval(t) }
+  }, [])
+
   if (!content.auctions?.visible) return <div className="text-neutral-500">{t('auctions.sectionOff')}</div>
 
   const list = content.auctions?.list || []
