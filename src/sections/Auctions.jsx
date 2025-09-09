@@ -138,10 +138,9 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
   // Slideshow banner above event card (golden ratio)
   function SlideshowBanner({ imgs, intervalMs }) {
     const [i, setI] = React.useState(0)
+    React.useEffect(() => { try { setI(0) } catch {} }, [imgs])
     React.useEffect(() => {
-      // Always autoplay through gallery
-      try { setI(0) } catch {}
-      if (!imgs || imgs.length <= 1) return
+      if (!Array.isArray(imgs) || imgs.length <= 1) return
       const delay = Math.max(800, parseInt(intervalMs, 10) || 3500)
       const id = window.setInterval(() => {
         setI((v) => (v + 1) % imgs.length)
