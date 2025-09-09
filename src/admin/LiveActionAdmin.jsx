@@ -80,15 +80,20 @@ function downloadBlob(filename, mime, data) {
 }
 
 // --- Country helpers ---
-function getRegionCodes() {
+function getRegionCodes(sortLang = 'sv') {
   try {
     if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
       const list = Intl.supportedValuesOf('region')
-      if (Array.isArray(list) && list.length) return list
+      if (Array.isArray(list) && list.length) {
+        const codes = list.filter(c => /^[A-Z]{2}$/.test(c))
+        // stable sort by localized label for better UX
+        return codes.sort((a,b) => (regionLabel(a, sortLang) || a).localeCompare(regionLabel(b, sortLang) || b, sortLang))
+      }
     }
   } catch {}
   // Fallback to a practical subset
-  return ['SE','NO','DK','FI','IS','DE','FR','NL','BE','LU','GB','IE','ES','PT','IT','GR','PL','CZ','SK','AT','CH','EE','LV','LT','HU','RO','BG','HR','SI','RS','BA','ME','MK','AL','UA','MD','BY','GE','AM','AZ','TR','US','CA','MX','BR','AR','CL','CO','PE','UY','AU','NZ','JP','CN','KR','IN','AE','SA','EG','MA','TN','ZA']
+  const fallback = ['SE','NO','DK','FI','IS','DE','FR','NL','BE','LU','GB','IE','ES','PT','IT','GR','PL','CZ','SK','AT','CH','EE','LV','LT','HU','RO','BG','HR','SI','RS','BA','ME','MK','AL','UA','MD','BY','GE','AM','AZ','TR','US','CA','MX','BR','AR','CL','CO','PE','UY','AU','NZ','JP','CN','KR','IN','AE','SA','EG','MA','TN','ZA']
+  return fallback.sort((a,b)=>a.localeCompare(b))
 }
 function regionLabel(code, lang) {
   try {
@@ -97,6 +102,18 @@ function regionLabel(code, lang) {
   } catch {
     return code
   }
+}
+
+// Switch-style toggle (same look & feel as Admin)
+function Toggle({ checked, onChange, id, disabled, title }) {
+  const S = { box: 'w-10 h-6', knob: 'w-4 h-4', move: 'peer-checked:translate-x-4', inset: 'top-1 left-1' }
+  return (
+    <label htmlFor={id} title={title} className={`relative inline-flex items-center ${S.box} cursor-pointer ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
+      <input id={id} type="checkbox" className="sr-only peer" checked={!!checked} onChange={onChange} disabled={disabled} />
+      <span aria-hidden className={`absolute inset-0 rounded-full bg-neutral-300 transition-colors peer-checked:bg-earth-dark peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-earth-dark/30`}></span>
+      <span aria-hidden className={`absolute ${S.inset} ${S.knob} bg-white rounded-full shadow transition-transform ${S.move}`}></span>
+    </label>
+  )
 }
 
 export default function LiveActionAdmin({ data, setData, L }) {
@@ -500,7 +517,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
     <div className="grid gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-neutral-700 text-sm">{L('Live Action','Live Action')}</div>
+          <div className="text-neutral-700 text-sm">{L('Live Auktion','Live Auction')}</div>
           <div className="text-xs text-neutral-500">{L('Skapa live-event, koppla mot Kommande Auktioner, lägg till varor och styr visningen i realtid.','Create live events, link to Upcoming Auctions, add items and control the show in real time.')}</div>
         </div>
         <button type="button" className="btn-primary" onClick={createEvent} title={L('Skapa ett nytt live‑event','Create a new live event')}>{L('Nytt event','New event')}</button>
@@ -562,11 +579,9 @@ export default function LiveActionAdmin({ data, setData, L }) {
               <div className="text-right">
                 <div className="text-sm text-neutral-600">{L('Totalt','Total')}</div>
                 <div className="text-xl font-serif">{total.toLocaleString('sv-SE')} SEK</div>
-                <div className="mt-2">
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa eventet i arkivet när det är klart','Show this event in the public archive after it is finished')}>
-                    <input type="checkbox" checked={!!ev.visible} onChange={(e)=>updateField(id,['visible'], e.target.checked)} />
-                    <span>{L('Visa historik','Show in history')}</span>
-                  </label>
+                <div className="mt-2 flex items-center justify-end gap-2 text-sm text-neutral-700" title={L('Visa eventet i arkivet när det är klart','Show this event in the public archive after it is finished')}>
+                  <span>{L('Visa historik','Show in history')}</span>
+                  <Toggle id={`ev-visible-${id}`} checked={!!ev.visible} onChange={(e)=>updateField(id,['visible'], e.target.checked)} />
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <a href={publicUrl} className="btn-outline text-xs" target="_blank" rel="noopener noreferrer" title={L('Öppna den publika sidan i en ny flik','Open the public page in a new tab')}>{L('Öppna','Open')}</a>
@@ -606,19 +621,35 @@ export default function LiveActionAdmin({ data, setData, L }) {
                   <label className="block text-xs text-neutral-600 mb-1">{L('Efterfönster (minuter)','Post window (minutes)')}</label>
                   <input type="number" min="0" className="w-full border rounded px-3 py-2" title={L('Tiden efter stopp då feedbackformulär är öppet (minuter)','Time after stop when feedback form stays open (minutes)')} value={ev.settings?.postMinutes||10} onChange={(e)=>updateField(id,['settings','postMinutes'], Math.max(0, parseInt(e.target.value||'10',10)||10))} />
                 </div>
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700" title={L('Visa total försäljning på publika sidan','Show total sales amount on public page')}><input type="checkbox" checked={ev.settings?.publicDisplay?.showTotals!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showTotals'], e.target.checked)} />{L('Visa totalsumma','Show total')}</label>
-                  <label className="inline-flex items-center gap-2 mt-6 text-sm text-neutral-700" title={L('Visa SÅLD-märkning och slutpris på publika sidan','Show SOLD badges and final price on public page')}><input type="checkbox" checked={ev.settings?.publicDisplay?.showSold!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showSold'], e.target.checked)} />{L('Visa sålda-status','Show sold status')}</label>
+                <div className="flex items-center gap-6 mt-6">
+                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Visa total försäljning på publika sidan','Show total sales amount on public page')}>
+                    <span>{L('Visa totalsumma','Show total')}</span>
+                    <Toggle id={`ev-showtotals-${id}`} checked={ev.settings?.publicDisplay?.showTotals!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showTotals'], e.target.checked)} />
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Visa SÅLD-märkning och slutpris på publika sidan','Show SOLD badges and final price on public page')}>
+                    <span>{L('Visa sålda-status','Show sold status')}</span>
+                    <Toggle id={`ev-showsold-${id}`} checked={ev.settings?.publicDisplay?.showSold!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showSold'], e.target.checked)} />
+                  </div>
                 </div>
               </div>
               <div className="grid md:grid-cols-3 gap-3 mt-3">
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Aktivera insamling av feedback efter eventet','Enable collecting feedback after the event')}><input type="checkbox" checked={ev.settings?.feedback?.enabled!==false} onChange={(e)=>updateField(id,['settings','feedback','enabled'], e.target.checked)} />{L('Feedback aktiv','Feedback enabled')}</label>
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa stjärnor för helhetsbetyg','Show stars for overall rating')}><input type="checkbox" checked={ev.settings?.feedback?.rating!==false} onChange={(e)=>updateField(id,['settings','feedback','rating'], e.target.checked)} />{L('Stjärnbetyg','Star rating')}</label>
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Låt besökaren skriva fritext','Let visitors write free‑text notes')}><input type="checkbox" checked={ev.settings?.feedback?.notes!==false} onChange={(e)=>updateField(id,['settings','feedback','notes'], e.target.checked)} />{L('Anteckningar','Notes')}</label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa fält för namn, email och telefon med samtycke','Show fields for name, email and phone with consent')}><input type="checkbox" checked={ev.settings?.feedback?.contact!==false} onChange={(e)=>updateField(id,['settings','feedback','contact'], e.target.checked)} />{L('Kontaktuppgifter','Contact details')}</label>
+                <div className="grid md:grid-cols-2 gap-4 items-start">
+                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Aktivera insamling av feedback efter eventet','Enable collecting feedback after the event')}>
+                    <span>{L('Feedback aktiv','Feedback enabled')}</span>
+                    <Toggle id={`ev-fb-enabled-${id}`} checked={ev.settings?.feedback?.enabled!==false} onChange={(e)=>updateField(id,['settings','feedback','enabled'], e.target.checked)} />
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Visa stjärnor för helhetsbetyg','Show stars for overall rating')}>
+                    <span>{L('Stjärnbetyg','Star rating')}</span>
+                    <Toggle id={`ev-fb-rating-${id}`} checked={ev.settings?.feedback?.rating!==false} onChange={(e)=>updateField(id,['settings','feedback','rating'], e.target.checked)} />
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Låt besökaren skriva fritext','Let visitors write free‑text notes')}>
+                    <span>{L('Anteckningar','Notes')}</span>
+                    <Toggle id={`ev-fb-notes-${id}`} checked={ev.settings?.feedback?.notes!==false} onChange={(e)=>updateField(id,['settings','feedback','notes'], e.target.checked)} />
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Visa fält för namn, email och telefon med samtycke','Show fields for name, email and phone with consent')}>
+                    <span>{L('Kontaktuppgifter','Contact details')}</span>
+                    <Toggle id={`ev-fb-contact-${id}`} checked={ev.settings?.feedback?.contact!==false} onChange={(e)=>updateField(id,['settings','feedback','contact'], e.target.checked)} />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs text-neutral-600 mb-1">{L('Tack-meddelande (SV)','Thank-you message (SV)')}</label>
@@ -685,7 +716,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
                           <label className="block text-xs text-neutral-600 mb-1">{L('Land','Country')}</label>
                           <select className="w-full border rounded px-3 py-2" value={it.country || ''} onChange={(e)=>updateField(id,['items',idx,'country'], e.target.value)}>
                             <option value="">{L('— inget valt —','— none —')}</option>
-                            {getRegionCodes().map(code => (
+                            {getRegionCodes('sv').map(code => (
                               <option key={code} value={code}>{regionLabel(code, 'sv')} / {regionLabel(code, 'en')}</option>
                             ))}
                           </select>

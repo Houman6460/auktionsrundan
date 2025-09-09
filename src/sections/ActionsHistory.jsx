@@ -24,7 +24,7 @@ export default function ActionsHistory() {
 
   return (
     <main className="container mx-auto px-4 py-12">
-      <h1 className="font-serif text-3xl mb-6">{tl('Action-historik','Action history')}</h1>
+      <h1 className="font-serif text-3xl mb-6">{tl('Auktionshistorik','Auction history')}</h1>
       {list.length === 0 && (
         <div className="section-card p-4 text-neutral-600">{tl('Inga publika event ännu.','No public events yet.')}</div>
       )}
@@ -43,7 +43,7 @@ export default function ActionsHistory() {
             <Link key={ev.id} to={`/action/${ev.id}`} className="section-card p-4 hover:bg-neutral-50">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="font-serif text-xl">{title || tl('Live Event','Live Event')}</div>
+                  <div className="font-serif text-xl">{title || tl('Live Auktion','Live Auction')}</div>
                   <div className="text-sm text-neutral-600">{dt ? dt.toLocaleString() : '—'}</div>
                 </div>
                 <div className="text-right">

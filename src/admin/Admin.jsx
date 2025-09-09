@@ -820,7 +820,7 @@ export default function Admin() {
     }
     if (!next.actions.order.includes(id)) next.actions.order.unshift(id)
     setData(next)
-    // Auto-focus Live Action section for convenience
+    // Auto-focus Live Auction section for convenience
     try { document.querySelector('a[href="#admin-liveaction"]').click() } catch {}
   }
 
@@ -1326,7 +1326,7 @@ export default function Admin() {
                   </button>
                   {expandEngagement && (
                     <div className="pl-3 flex flex-col gap-1">
-                      <a href="#admin-liveaction" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑event, lägg till varor och styr visningen','Create live events, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}>{L('Action (Live)','Action (Live)')}</a>
+                      <a href="#admin-liveaction" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑auktion, lägg till varor och styr visningen','Create live auctions, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}>{L('Auktion (Live)','Auction (Live)')}</a>
                       <a href="#admin-registration" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Formulär för anmälan, fält och egna frågor','Registration form, fields and custom questions')} onClick={()=>setActiveFilter('admin-registration')}>{L('Registrering','Registration')}</a>
                       <a href="#admin-ratings" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
                     </div>
@@ -2141,8 +2141,8 @@ export default function Admin() {
           </p>
         </Section>
 
-        {/* Live Action (Admin) */}
-        <Section id="admin-liveaction" title={L('Action (Live)','Action (Live)')} visible={isSectionVisible('admin-liveaction')} help={L('Skapa live‑event, länka till Kommande Auktioner, lägg in varor. Styr i realtid: Start/Stop, Visa nästa, Markera såld. CSV‑import/export stöds.','Create live events, link to Upcoming Auctions, add items. Control in real‑time: Start/Stop, Reveal next, Mark sold. CSV import/export supported.') }>
+        {/* Live Auction (Admin) */}
+        <Section id="admin-liveaction" title={L('Auktion (Live)','Auction (Live)')} visible={isSectionVisible('admin-liveaction')} help={L('Skapa live‑auktion, länka till Kommande Auktioner, lägg in varor. Styr i realtid: Start/Stop, Visa nästa, Markera såld. CSV‑import/export stöds.','Create live auctions, link to Upcoming Auctions, add items. Control in real‑time: Start/Stop, Reveal next, Mark sold. CSV import/export supported.') }>
           <LiveActionAdmin data={data} setData={setData} L={L} />
         </Section>
 

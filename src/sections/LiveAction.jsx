@@ -267,7 +267,7 @@ export default function LiveAction() {
       <div className="grid gap-6">
         <header className="section-card p-5">
           <div className="flex items-center justify-between">
-            <h1 className="font-serif text-2xl">{titleText || 'Live Action'}</h1>
+            <h1 className="font-serif text-2xl">{titleText || tl('Live Auktion','Live Auction')}</h1>
             {showTotals && (
               <div className="text-sm text-neutral-700">{tl('Totalt','Total')}: <span className="font-medium">{total.toLocaleString('sv-SE')} SEK</span></div>
             )}
