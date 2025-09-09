@@ -288,6 +288,10 @@ export default function LiveAction() {
                         <span className="text-xs font-semibold">{tl('SÅLD','SOLD')}</span>
                         <span className="text-xs">{parseFloat(currentItem.finalPrice||0).toLocaleString('sv-SE')} SEK</span>
                       </div>
+                    ) : showSold && currentItem.unsold ? (
+                      <div className="mt-3 inline-flex items-center gap-2 px-2 py-1 rounded bg-neutral-500 text-white">
+                        <span className="text-xs font-semibold">{tl('EJ SÅLD','NOT SOLD')}</span>
+                      </div>
                     ) : (
                       <div className="mt-3 text-sm text-neutral-600">{tl('Väntar på försäljning...','Waiting for sale...')}</div>
                     )}
@@ -318,6 +322,8 @@ export default function LiveAction() {
                       <div className="text-xs text-neutral-600 mt-1">
                         {showSold && it.sold ? (
                           <span className="inline-flex items-center gap-1 text-emerald-700">{tl('SÅLD','SOLD')} · {parseFloat(it.finalPrice||0).toLocaleString('sv-SE')} SEK</span>
+                        ) : showSold && it.unsold ? (
+                          <span className="inline-flex items-center gap-1 text-neutral-600">{tl('EJ SÅLD','NOT SOLD')}</span>
                         ) : (
                           <span>{tl('Visad','Shown')}</span>
                         )}

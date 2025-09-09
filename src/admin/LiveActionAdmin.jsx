@@ -295,11 +295,48 @@ export default function LiveActionAdmin({ data, setData, L }) {
     if (p == null) return
     const price = String(p).replace(/[^0-9.,]/g,'').replace(',', '.')
     ev.items[cur].sold = true
+    ev.items[cur].unsold = false
     ev.items[cur].finalPrice = price
     try { ev.state.salesLog = Array.isArray(ev.state.salesLog) ? ev.state.salesLog : [] } catch {}
     ev.state.salesLog.push({ index: cur, price: parseFloat(price)||0, ts: Date.now() })
     setData(nextData)
     saveNow(nextData)
+  }
+
+  const markSoldAndNext = (id) => {
+    const nextData = ensureActions({ ...data })
+    const ev = nextData.actions.events[id]
+    if (!ev || !Array.isArray(ev.items)) return
+    const cur = ev.state?.currentIndex ?? -1
+    if (cur < 0 || cur >= ev.items.length) return
+    const p = prompt(L('Slutpris (SEK)?','Final price (SEK)?'), ev.items[cur].finalPrice || '')
+    if (p == null) return
+    const price = String(p).replace(/[^0-9.,]/g,'').replace(',', '.')
+    ev.items[cur].sold = true
+    ev.items[cur].unsold = false
+    ev.items[cur].finalPrice = price
+    try { ev.state.salesLog = Array.isArray(ev.state.salesLog) ? ev.state.salesLog : [] } catch {}
+    ev.state.salesLog.push({ index: cur, price: parseFloat(price)||0, ts: Date.now(), action: 'sold' })
+    const hasNext = cur + 1 < ev.items.length
+    if (hasNext) ev.state.currentIndex = cur + 1
+    saveNow(nextData)
+  }
+
+  const markUnsoldAndNext = (id) => {
+    upsert(data, setData, (next) => {
+      const ev = next.actions.events[id]
+      if (!ev || !Array.isArray(ev.items)) return
+      const cur = ev.state?.currentIndex ?? -1
+      if (cur < 0 || cur >= ev.items.length) return
+      ev.items[cur].sold = false
+      ev.items[cur].unsold = true
+      ev.items[cur].finalPrice = ''
+      try { ev.state.salesLog = Array.isArray(ev.state.salesLog) ? ev.state.salesLog : [] } catch {}
+      ev.state.salesLog.push({ index: cur, price: 0, ts: Date.now(), action: 'unsold' })
+      const hasNext = cur + 1 < ev.items.length
+      if (hasNext) ev.state.currentIndex = cur + 1
+      saveNow(next)
+    })
   }
 
   const copyLink = async (id) => {
@@ -533,7 +570,8 @@ export default function LiveActionAdmin({ data, setData, L }) {
                     <button type="button" className="btn-outline text-xs" onClick={()=>stopEvent(id)} title={L('Stoppa livesändningen (Kortkommando: Mellanslag)','Stop the live show (Shortcut: Space)')}>{L('Stoppa','Stop')}</button>
                   )}
                   <button type="button" className="btn-outline text-xs" onClick={()=>revealNext(id)} title={L('Visa nästa vara (Kortkommando: N)','Reveal next item (Shortcut: N)')}>{L('Visa nästa','Reveal next')}</button>
-                  <button type="button" className="btn-outline text-xs" onClick={()=>markSold(id)} title={L('Markera nuvarande vara som såld (Kortkommando: S)','Mark current item as sold (Shortcut: S)')}>{L('Markera såld','Mark sold')}</button>
+                  <button type="button" className="btn-outline text-xs" onClick={()=>markUnsoldAndNext(id)} title={L('Markera nuvarande vara som inte såld och gå till nästa','Mark current item as not sold and advance to next')}>{L('Inte såld + Nästa','Not sold + Next')}</button>
+                  <button type="button" className="btn-primary text-xs" onClick={()=>markSoldAndNext(id)} title={L('Markera nuvarande vara som såld och gå till nästa','Mark current item as sold and advance to next')}>{L('Såld + Nästa','Sold + Next')}</button>
                 </div>
               </div>
               <div className="text-xs text-neutral-600 mb-3" title={L('0-baserad position för varan som visas nu','0-based position of the item currently showing')}>{L('Aktuell index','Current index')}: {Number.isInteger(ev.state?.currentIndex) ? ev.state.currentIndex : -1}</div>
