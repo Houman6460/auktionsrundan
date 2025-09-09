@@ -79,6 +79,26 @@ function downloadBlob(filename, mime, data) {
   URL.revokeObjectURL(url)
 }
 
+// --- Country helpers ---
+function getRegionCodes() {
+  try {
+    if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
+      const list = Intl.supportedValuesOf('region')
+      if (Array.isArray(list) && list.length) return list
+    }
+  } catch {}
+  // Fallback to a practical subset
+  return ['SE','NO','DK','FI','IS','DE','FR','NL','BE','LU','GB','IE','ES','PT','IT','GR','PL','CZ','SK','AT','CH','EE','LV','LT','HU','RO','BG','HR','SI','RS','BA','ME','MK','AL','UA','MD','BY','GE','AM','AZ','TR','US','CA','MX','BR','AR','CL','CO','PE','UY','AU','NZ','JP','CN','KR','IN','AE','SA','EG','MA','TN','ZA']
+}
+function regionLabel(code, lang) {
+  try {
+    const dn = new Intl.DisplayNames([lang === 'en' ? 'en' : 'sv'], { type: 'region' })
+    return dn.of(code) || code
+  } catch {
+    return code
+  }
+}
+
 export default function LiveActionAdmin({ data, setData, L }) {
   const [linkCopied, setLinkCopied] = React.useState(null)
   const [activeEventId, setActiveEventId] = React.useState(null)
@@ -164,7 +184,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
     upsert(data, setData, (next) => {
       const ev = next.actions.events[id]
       ev.items = Array.isArray(ev.items) ? ev.items : []
-      ev.items.push({ title: { sv: 'Ny vara', en: 'New item' }, desc: { sv: '', en: '' }, tags: [], startPrice: '', img: '', sold: false, finalPrice: '' })
+      ev.items.push({ title: { sv: 'Ny vara', en: 'New item' }, desc: { sv: '', en: '' }, artist: { sv: '', en: '' }, country: '', tags: [], startPrice: '', img: '', sold: false, finalPrice: '' })
       saveNow(next)
     })
   }
@@ -649,6 +669,28 @@ export default function LiveActionAdmin({ data, setData, L }) {
                         <input className="w-full border rounded px-3 py-2" title={L('Svensk titel som visas publikt','Swedish title shown publicly')} value={it.title?.sv||''} onChange={(e)=>updateField(id,['items',idx,'title','sv'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Title (EN)','Title (EN)')}</label>
                         <input className="w-full border rounded px-3 py-2" title={L('Engelsk titel som visas publikt','English title shown publicly')} value={it.title?.en||''} onChange={(e)=>updateField(id,['items',idx,'title','en'], e.target.value)} />
+                        {/* Artist bilingual */}
+                        <div className="grid md:grid-cols-2 gap-3 mt-2">
+                          <div>
+                            <label className="block text-xs text-neutral-600 mb-1">{L('Konstnär (SV)','Artist (SV)')}</label>
+                            <input className="w-full border rounded px-3 py-2" title={L('Artistnamn på svenska (valfritt)','Artist name in Swedish (optional)')} value={it.artist?.sv||''} onChange={(e)=>updateField(id,['items',idx,'artist','sv'], e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-neutral-600 mb-1">{L('Artist (EN)','Artist (EN)')}</label>
+                            <input className="w-full border rounded px-3 py-2" title={L('Artist name in English (optional)','Artist name in English (optional)')} value={it.artist?.en||''} onChange={(e)=>updateField(id,['items',idx,'artist','en'], e.target.value)} />
+                          </div>
+                        </div>
+                        {/* Country select */}
+                        <div className="mt-2">
+                          <label className="block text-xs text-neutral-600 mb-1">{L('Land','Country')}</label>
+                          <select className="w-full border rounded px-3 py-2" value={it.country || ''} onChange={(e)=>updateField(id,['items',idx,'country'], e.target.value)}>
+                            <option value="">{L('— inget valt —','— none —')}</option>
+                            {getRegionCodes().map(code => (
+                              <option key={code} value={code}>{regionLabel(code, 'sv')} / {regionLabel(code, 'en')}</option>
+                            ))}
+                          </select>
+                          <div className="text-[11px] text-neutral-500 mt-1">{L('Lämna tomt om du inte vill visa på publika sidan.','Leave empty if you don\'t want to show on the public page.')}</div>
+                        </div>
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Beskrivning (SV)','Description (SV)')}</label>
                         <textarea className="w-full border rounded px-3 py-2" title={L('Svensk beskrivning (valfritt)','Swedish description (optional)')} value={it.desc?.sv||''} onChange={(e)=>updateField(id,['items',idx,'desc','sv'], e.target.value)} />
                         <label className="block text-xs text-neutral-600 mb-1 mt-2">{L('Description (EN)','Description (EN)')}</label>

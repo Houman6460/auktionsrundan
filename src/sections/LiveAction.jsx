@@ -92,6 +92,15 @@ function SoldStamp({ play = false, size = 120 }) {
   )
 }
 
+// Localized region label helper
+function regionLabel(code, lang) {
+  try {
+    if (!code) return ''
+    const dn = new Intl.DisplayNames([lang === 'en' ? 'en' : 'sv'], { type: 'region' })
+    return dn.of(code) || code
+  } catch { return code || '' }
+}
+
 export default function LiveAction() {
   const { id } = useParams()
   const { i18n } = useTranslation()
@@ -308,6 +317,21 @@ export default function LiveAction() {
                     {!!pick(currentItem.desc) && (
                       <div className="text-neutral-700 mt-2 whitespace-pre-wrap">{pick(currentItem.desc)}</div>
                     )}
+                    {/* Artist and Country (optional) */}
+                    {(() => {
+                      const artistText = pick(currentItem.artist)
+                      const countryText = currentItem.country ? regionLabel(currentItem.country, lang) : ''
+                      return (
+                        <>
+                          {!!artistText && (
+                            <div className="text-neutral-700 mt-1">{tl('Konstnär','Artist')}: {artistText}</div>
+                          )}
+                          {!!countryText && (
+                            <div className="text-neutral-700 mt-1">{tl('Land','Country')}: {countryText}</div>
+                          )}
+                        </>
+                      )
+                    })()}
                     {!!currentItem.startPrice && (
                       <div className="text-neutral-700 mt-1">{tl('Utropspris','Start price')}: {currentItem.startPrice} SEK</div>
                     )}
@@ -347,6 +371,15 @@ export default function LiveAction() {
                     </div>
                     <div className="p-2">
                       <div className="font-medium truncate">{pick(it.title) || tl('Vara','Item')}</div>
+                      {/* optional artist/country line */}
+                      {(() => {
+                        const artistText = pick(it.artist)
+                        const countryText = it.country ? regionLabel(it.country, lang) : ''
+                        const line = [artistText, countryText].filter(Boolean).join(' · ')
+                        return line ? (
+                          <div className="text-[11px] text-neutral-600 mt-1 truncate">{line}</div>
+                        ) : null
+                      })()}
                       <div className="text-xs text-neutral-600 mt-1">
                         {showSold && it.sold ? (
                           <span className="inline-flex items-center gap-1 text-emerald-700">{tl('SÅLD','SOLD')} · {parseFloat(it.finalPrice||0).toLocaleString('sv-SE')} SEK</span>
