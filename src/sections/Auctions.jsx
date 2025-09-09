@@ -138,41 +138,22 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
   // Slideshow banner above event card (golden ratio)
   function SlideshowBanner({ imgs, intervalMs }) {
     const [i, setI] = React.useState(0)
-    const pausedRef = React.useRef(false)
-    const reduceRef = React.useRef(false)
     React.useEffect(() => {
-      try {
-        const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-        const onRM = () => { reduceRef.current = mq.matches }
-        onRM(); mq.addEventListener('change', onRM)
-        return () => mq.removeEventListener('change', onRM)
-      } catch {}
-    }, [])
-    React.useEffect(() => {
-      // Auto-advance through gallery unless paused (hover)
+      // Always autoplay through gallery
       try { setI(0) } catch {}
       if (!imgs || imgs.length <= 1) return
-      let t = 0
       const delay = Math.max(800, parseInt(intervalMs, 10) || 3500)
-      const step = () => {
-        if (!pausedRef.current) {
-          setI((v) => (v + 1) % imgs.length)
-        }
-        t = window.setTimeout(step, delay)
-      }
-      t = window.setTimeout(step, delay)
-      return () => { if (t) window.clearTimeout(t) }
+      const id = window.setInterval(() => {
+        setI((v) => (v + 1) % imgs.length)
+      }, delay)
+      return () => { window.clearInterval(id) }
     }, [imgs, intervalMs])
-    const onEnter = () => { pausedRef.current = true }
-    const onLeave = () => { pausedRef.current = false }
     if (!imgs || imgs.length === 0) return null
     const src = imgs[i]
     return (
       <div className="section-card p-0 overflow-hidden">
         <div
           className="relative w-full aspect-[1.618/1] bg-neutral-200 cursor-pointer"
-          onMouseEnter={onEnter}
-          onMouseLeave={onLeave}
           onClick={() => openLightboxAt(i)}
           role="button"
           title={(t('auctions.image')||'Bild') + ' ' + String(i+1)}
