@@ -142,6 +142,7 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
     const [loaded, setLoaded] = React.useState(false)
     const reduceRef = React.useRef(false)
     const overlayRef = React.useRef(null)
+    const fadeTimerRef = React.useRef(0)
     React.useEffect(() => { try { setBase(0); setNext(-1); setLoaded(false) } catch {} }, [imgs])
     React.useEffect(() => {
       try {
@@ -185,13 +186,26 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
     if (!imgs || imgs.length === 0) return null
     const baseSrc = imgs[base]
     const overlaySrc = next !== -1 ? imgs[next] : null
+    const finalize = React.useCallback(() => {
+      try {
+        if (fadeTimerRef.current) { clearTimeout(fadeTimerRef.current); fadeTimerRef.current = 0 }
+      } catch {}
+      if (next !== -1) { setBase(next); setNext(-1); setLoaded(false) }
+    }, [next])
     const onOverlayLoad = () => {
-      if (reduceRef.current) { setBase(next); setNext(-1); setLoaded(false); return }
-      setLoaded(true)
+      if (reduceRef.current) { finalize(); return }
+      // Ensure initial opacity-0 is painted before toggling to opacity-100
+      try { requestAnimationFrame(() => setLoaded(true)) } catch { setLoaded(true) }
     }
-    const onOverlayTransitionEnd = () => {
-      if (next !== -1 && loaded) { setBase(next); setNext(-1); setLoaded(false) }
-    }
+    const onOverlayTransitionEnd = () => { finalize() }
+    // Fallback: if transitionend doesn't fire, commit after duration
+    React.useEffect(() => {
+      try { if (fadeTimerRef.current) { clearTimeout(fadeTimerRef.current); fadeTimerRef.current = 0 } } catch {}
+      if (next !== -1 && loaded && !reduceRef.current) {
+        fadeTimerRef.current = window.setTimeout(() => finalize(), 820)
+      }
+      return () => { try { if (fadeTimerRef.current) { clearTimeout(fadeTimerRef.current); fadeTimerRef.current = 0 } } catch {} }
+    }, [next, loaded, finalize])
     return (
       <div className="section-card p-0 overflow-hidden">
         <div
@@ -216,7 +230,8 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
               src={overlaySrc}
               alt="banner next"
               ref={overlayRef}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] pointer-events-none ${loaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-800 ease-in-out will-change-[opacity] pointer-events-none ${loaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{ willChange: 'opacity' }}
               onLoad={onOverlayLoad}
               onTransitionEnd={onOverlayTransitionEnd}
               onError={() => { try { setBase(next); setNext(-1); setLoaded(false) } catch {} }}
