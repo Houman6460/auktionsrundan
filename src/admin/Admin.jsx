@@ -736,13 +736,6 @@ export default function Admin() {
       let cur = next
       for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]]
       cur[path[path.length - 1]] = dataUrl
-      // If updating an auction's primary img, keep images[0] in sync so thumbnails show
-      const lastKey = path[path.length - 1]
-      if (lastKey === 'img' && cur && typeof cur === 'object') {
-        const arr = Array.isArray(cur.images) ? cur.images : []
-        if (arr.length === 0) cur.images = [dataUrl]
-        else cur.images[0] = dataUrl
-      }
       setData(next)
     } catch (err) {
       alert('Kunde inte läsa bilden. Försök med en annan fil.')
@@ -765,10 +758,6 @@ export default function Admin() {
       const key = path[path.length - 1]
       const arr = Array.isArray(cur[key]) ? cur[key] : []
       cur[key] = [...arr, ...urls]
-      // If this is auctions.list[idx].images, also sync primary img
-      if (key === 'images' && cur && typeof cur === 'object') {
-        cur.img = cur.images?.[0] || ''
-      }
       setData(next)
       e.target.value = '' // allow re-selecting the same files later
     } catch (err) {
@@ -790,7 +779,6 @@ export default function Admin() {
     next.auctions.list.push({
       title: { sv: 'Ny auktion', en: 'New auction' },
       address: { sv: '', en: '' },
-      img: '',
       images: [],
       mapEmbed: '',
       viewing: { sv: '', en: '' },
@@ -839,21 +827,6 @@ export default function Admin() {
   const updateAuction = (idx, key, value) => {
     const next = { ...data }
     next.auctions.list[idx][key] = value
-    if (key === 'images') {
-      const arr = Array.isArray(value) ? value : []
-      next.auctions.list[idx].img = arr[0] || ''
-    } else if (key === 'img') {
-      // Keep primary image and gallery in sync when editing Image (URL)
-      const arr = Array.isArray(next.auctions.list[idx].images) ? [...next.auctions.list[idx].images] : []
-      if (value) {
-        if (arr.length === 0) arr.push(value)
-        else arr[0] = value
-      } else {
-        // cleared: remove first, keep others
-        if (arr.length > 0) arr.shift()
-      }
-      next.auctions.list[idx].images = arr
-    }
     setData(next)
   }
 
@@ -863,7 +836,6 @@ export default function Admin() {
     if (imgIndex < 0 || imgIndex >= arr.length) return
     arr.splice(imgIndex, 1)
     next.auctions.list[idx].images = arr
-    next.auctions.list[idx].img = arr[0] || ''
     setData(next)
   }
 
@@ -2037,23 +2009,15 @@ export default function Admin() {
                 </div>
                 <div className="grid md:grid-cols-2 gap-3 mt-2">
                   <div>
-                    <label className="block text-sm text-neutral-600 mb-1">{L('Bild (URL)','Image (URL)')}</label>
-                    <input className="w-full border rounded px-3 py-2" placeholder="https://..." title={L('URL till bild som representerar auktionen','Image URL representing the auction')} value={a.img || ''} onChange={(e)=>updateAuction(idx,'img', e.target.value)} />
-                    <div className="mt-2 flex items-center gap-2">
-                      <input type="file" accept="image/*" title={L('Ladda upp bild','Upload image')} onChange={handleFileToDataUrl(['auctions','list', idx, 'img'], { maxDim: 900, quality: 0.65 })} />
-                      <button type="button" className="btn-outline text-xs" onClick={()=>updateAuction(idx,'img','')} title={L('Rensa bilden','Clear image')}>{L('Rensa','Clear')}</button>
-                    </div>
-                    <div className="mt-4">
-                      <label className="block text-sm text-neutral-600 mb-1">{L('Galleri (flera bilder)','Gallery (multiple images)')}</label>
-                      <input type="file" multiple accept="image/*" title={L('Ladda upp flera bilder','Upload multiple images')} onChange={handleFilesToDataUrls(['auctions','list', idx, 'images'], { maxDim: 900, quality: 0.65 })} />
-                      <p className="text-xs text-neutral-500 mt-1">{L('Tips: Håll ned Shift/Cmd för att välja flera filer.','Tip: Hold Shift/Cmd to select multiple files.')}</p>
-                    </div>
+                    <label className="block text-sm text-neutral-600 mb-1">{L('Galleri (flera bilder)','Gallery (multiple images)')}</label>
+                    <input type="file" multiple accept="image/*" title={L('Ladda upp flera bilder','Upload multiple images')} onChange={handleFilesToDataUrls(['auctions','list', idx, 'images'], { maxDim: 900, quality: 0.65 })} />
+                    <p className="text-xs text-neutral-500 mt-1">{L('Tips: Håll ned Shift/Cmd för att välja flera filer.','Tip: Hold Shift/Cmd to select multiple files.')}</p>
                   </div>
                   <div>
                     <div>
                       <label className="block text-sm text-neutral-600 mb-2">{L('Miniatyrer','Thumbnails')}</label>
                       <div className="flex flex-wrap gap-2">
-                        {(((a.images && a.images.length>0) ? a.images : (a.img ? [a.img] : []))).map((src, j) => (
+                        {(Array.isArray(a.images) ? a.images : []).map((src, j) => (
                           <div key={j} className="relative w-16 h-16 rounded border overflow-hidden bg-white">
                             <img src={src} alt={L('Miniatyrbild','Thumbnail')} className="w-full h-full object-cover" />
                             {(a.images && a.images.length>0) && (
@@ -2061,7 +2025,7 @@ export default function Admin() {
                             )}
                           </div>
                         ))}
-                        {(!a.images || a.images.length===0) && !a.img && (
+                        {(!a.images || a.images.length===0) && (
                           <div className="text-xs text-neutral-500">{L('Inga bilder i galleriet ännu.','No gallery images yet.')}</div>
                         )}
                       </div>
