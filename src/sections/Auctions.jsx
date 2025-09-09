@@ -141,6 +141,7 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
     const [next, setNext] = React.useState(-1)
     const [loaded, setLoaded] = React.useState(false)
     const reduceRef = React.useRef(false)
+    const overlayRef = React.useRef(null)
     React.useEffect(() => { try { setBase(0); setNext(-1); setLoaded(false) } catch {} }, [imgs])
     React.useEffect(() => {
       try {
@@ -161,6 +162,17 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
       }, delay)
       return () => { window.clearTimeout(id) }
     }, [base, next, imgs, intervalMs])
+    // If overlay image is already cached, ensure we trigger fade immediately
+    React.useEffect(() => {
+      if (next === -1) return
+      const el = overlayRef.current
+      try {
+        if (el && el.complete && el.naturalWidth > 0) {
+          // Defer to next frame so CSS classes are applied before toggling opacity
+          requestAnimationFrame(() => setLoaded(true))
+        }
+      } catch {}
+    }, [next])
     // Preload upcoming image to avoid flicker
     React.useEffect(() => {
       try {
@@ -203,9 +215,11 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
               key={'overlay-' + next + '-' + (overlaySrc||'')}
               src={overlaySrc}
               alt="banner next"
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] ${loaded ? 'opacity-100' : 'opacity-0'}`}
+              ref={overlayRef}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] pointer-events-none ${loaded ? 'opacity-100' : 'opacity-0'}`}
               onLoad={onOverlayLoad}
               onTransitionEnd={onOverlayTransitionEnd}
+              onError={() => { try { setBase(next); setNext(-1); setLoaded(false) } catch {} }}
             />
           )}
           {/* subtle gradient overlay for legibility, optional */}
