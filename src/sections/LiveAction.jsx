@@ -19,6 +19,79 @@ function Countdown({ startIso }) {
   return <div className="font-mono text-2xl">{d}d {String(h).padStart(2,'0')}:{String(m).padStart(2,'0')}:{String(sec).padStart(2,'0')}</div>
 }
 
+// Ensure the lottie-player script is present (web component loader)
+function useLottiePlayer() {
+  React.useEffect(() => {
+    try {
+      if (typeof window === 'undefined') return
+      if (window.customElements && window.customElements.get('lottie-player')) return
+      const existing = document.querySelector('script[data-lottie-player]')
+      if (existing) return
+      const s = document.createElement('script')
+      s.src = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js'
+      s.async = true
+      s.defer = true
+      s.setAttribute('data-lottie-player', '1')
+      document.head.appendChild(s)
+    } catch {}
+  }, [])
+}
+
+// Small overlay that plays once to frame 50 and freezes there
+function SoldStamp({ play = false, size = 120 }) {
+  const ref = React.useRef(null)
+  useLottiePlayer()
+  React.useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const STOP = 50
+    let lottie = null
+    const ready = () => {
+      try {
+        lottie = el.getLottie && el.getLottie()
+        if (!lottie) return
+        if (play) {
+          try { lottie.playSegments && lottie.playSegments([0, STOP], true) } catch { try { lottie.play && lottie.play() } catch {} }
+          const onEnter = () => {
+            try {
+              if (lottie.currentFrame >= STOP) {
+                lottie.goToAndStop(STOP, true)
+                try { lottie.removeEventListener('enterFrame', onEnter) } catch {}
+              }
+            } catch {}
+          }
+          try { lottie.addEventListener('enterFrame', onEnter) } catch {}
+          const onComplete = () => { try { lottie.goToAndStop(STOP, true) } catch {} }
+          try { lottie.addEventListener('complete', onComplete) } catch {}
+        } else {
+          // If already sold: show static frame
+          try { lottie.goToAndStop(STOP, true) } catch {}
+        }
+      } catch {}
+    }
+    // If already ready, call immediately; also listen for ready event
+    try {
+      if (el.getLottie && el.getLottie()) { ready() }
+      el.addEventListener('ready', ready)
+      el.addEventListener('load', ready)
+    } catch {}
+    return () => {
+      try { el.removeEventListener('ready', ready) } catch {}
+      try { el.removeEventListener('load', ready) } catch {}
+    }
+  }, [play])
+  return (
+    <lottie-player
+      ref={ref}
+      {...(play ? { autoplay: true } : {})}
+      mode="normal"
+      src="/lottie/sold-at-auction.json"
+      style={{ width: size + 'px', height: size + 'px' }}
+      aria-label="Sold animation"
+    />
+  )
+}
+
 export default function LiveAction() {
   const { id } = useParams()
   const { i18n } = useTranslation()
@@ -102,6 +175,24 @@ export default function LiveAction() {
   const isWithinPost = endedAt > 0 && (now - endedAt) < postMs
   const postRemaining = Math.max(0, postMs - (now - endedAt))
 
+  // Track sold animation play state: play once when item becomes sold; static if already sold
+  const soldPrevRef = React.useRef({ idx: -1, sold: false })
+  const [soldKey, setSoldKey] = React.useState(0)
+  const [soldMode, setSoldMode] = React.useState('static') // 'play' | 'static'
+  React.useEffect(() => {
+    const idx = currentIndex
+    const curSold = !!currentItem?.sold
+    const prev = soldPrevRef.current
+    const justBecame = curSold && (!prev.sold || prev.idx !== idx)
+    if (justBecame) {
+      setSoldMode('play'); setSoldKey((k)=>k+1)
+    } else if (curSold && prev.idx !== idx) {
+      // switched to a different already-sold item
+      setSoldMode('static'); setSoldKey((k)=>k+1)
+    }
+    soldPrevRef.current = { idx, sold: curSold }
+  }, [currentIndex, currentItem?.sold])
+
   const toggleInterested = (idx) => {
     setFb((s) => ({ ...s, interested: s.interested.includes(idx) ? s.interested.filter(i=>i!==idx) : [...s.interested, idx] }))
   }
@@ -172,11 +263,16 @@ export default function LiveAction() {
               <div className="text-neutral-600 text-sm mb-2">{tl('Pågående','Now showing')}</div>
               {currentItem ? (
                 <div className="grid md:grid-cols-2 gap-4 items-start">
-                  <div className="aspect-[4/3] bg-vintage-cream/70 rounded grid place-items-center text-neutral-500">
+                  <div className="aspect-[4/3] bg-vintage-cream/70 rounded grid place-items-center text-neutral-500 relative">
                     {currentItem.img ? (
                       <img src={currentItem.img} alt={pick(currentItem.title)} className="w-full h-full object-cover rounded" />
                     ) : (
                       <span>{tl('Ingen bild','No image')}</span>
+                    )}
+                    {showSold && currentItem.sold && (
+                      <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                        <SoldStamp key={soldKey} play={soldMode==='play'} size={120} />
+                      </div>
                     )}
                   </div>
                   <div>
