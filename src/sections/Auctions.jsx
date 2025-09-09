@@ -149,7 +149,6 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
       return () => { window.clearInterval(id) }
     }, [imgs, intervalMs])
     if (!imgs || imgs.length === 0) return null
-    const src = imgs[i]
     return (
       <div className="section-card p-0 overflow-hidden">
         <div
@@ -159,7 +158,15 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
           title={(t('auctions.image')||'Bild') + ' ' + String(i+1)}
           aria-label={(t('auctions.image')||'Bild') + ' ' + String(i+1)}
         >
-          <img src={src} alt="banner" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+          <img
+            key={String(i) + '-' + (imgs[i]||'')}
+            src={imgs[i]}
+            alt="banner"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
           {/* subtle gradient overlay for legibility, optional */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/0 to-black/0" />
         </div>
