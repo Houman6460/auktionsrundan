@@ -137,35 +137,77 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
 
   // Slideshow banner above event card (golden ratio)
   function SlideshowBanner({ imgs, intervalMs }) {
-    const [i, setI] = React.useState(0)
-    React.useEffect(() => { try { setI(0) } catch {} }, [imgs])
+    const [base, setBase] = React.useState(0)
+    const [next, setNext] = React.useState(-1)
+    const [loaded, setLoaded] = React.useState(false)
+    const reduceRef = React.useRef(false)
+    React.useEffect(() => { try { setBase(0); setNext(-1); setLoaded(false) } catch {} }, [imgs])
+    React.useEffect(() => {
+      try {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+        const onRM = () => { reduceRef.current = mq.matches }
+        onRM(); mq.addEventListener('change', onRM)
+        return () => mq.removeEventListener('change', onRM)
+      } catch {}
+    }, [])
     React.useEffect(() => {
       if (!Array.isArray(imgs) || imgs.length <= 1) return
-      const delay = Math.max(800, parseInt(intervalMs, 10) || 3500)
-      const id = window.setInterval(() => {
-        setI((v) => (v + 1) % imgs.length)
+      if (next !== -1) return // fade in progress
+      const delay = Math.max(1200, parseInt(intervalMs, 10) || 3500)
+      const id = window.setTimeout(() => {
+        const ni = (base + 1) % imgs.length
+        setNext(ni)
+        setLoaded(false)
       }, delay)
-      return () => { window.clearInterval(id) }
-    }, [imgs, intervalMs])
+      return () => { window.clearTimeout(id) }
+    }, [base, next, imgs, intervalMs])
+    // Preload upcoming image to avoid flicker
+    React.useEffect(() => {
+      try {
+        if (!Array.isArray(imgs) || imgs.length <= 1) return
+        const ni = (base + 1) % imgs.length
+        const src = imgs[ni]
+        if (src) { const im = new Image(); im.decoding = 'async'; im.src = src }
+      } catch {}
+    }, [base, imgs])
     if (!imgs || imgs.length === 0) return null
+    const baseSrc = imgs[base]
+    const overlaySrc = next !== -1 ? imgs[next] : null
+    const onOverlayLoad = () => {
+      if (reduceRef.current) { setBase(next); setNext(-1); setLoaded(false); return }
+      setLoaded(true)
+    }
+    const onOverlayTransitionEnd = () => {
+      if (next !== -1 && loaded) { setBase(next); setNext(-1); setLoaded(false) }
+    }
     return (
       <div className="section-card p-0 overflow-hidden">
         <div
           className="relative w-full aspect-[1.618/1] bg-neutral-200 cursor-pointer"
-          onClick={() => openLightboxAt(i)}
+          onClick={() => openLightboxAt(next !== -1 ? next : base)}
           role="button"
-          title={(t('auctions.image')||'Bild') + ' ' + String(i+1)}
-          aria-label={(t('auctions.image')||'Bild') + ' ' + String(i+1)}
+          title={(t('auctions.image')||'Bild') + ' ' + String((next !== -1 ? next : base)+1)}
+          aria-label={(t('auctions.image')||'Bild') + ' ' + String((next !== -1 ? next : base)+1)}
         >
           <img
-            key={String(i) + '-' + (imgs[i]||'')}
-            src={imgs[i]}
+            key={'base-' + base + '-' + (baseSrc||'')}
+            src={baseSrc}
             alt="banner"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             decoding="async"
             fetchpriority="high"
           />
+          {overlaySrc && (
+            <img
+              key={'overlay-' + next + '-' + (overlaySrc||'')}
+              src={overlaySrc}
+              alt="banner next"
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out will-change-[opacity] ${loaded ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={onOverlayLoad}
+              onTransitionEnd={onOverlayTransitionEnd}
+            />
+          )}
           {/* subtle gradient overlay for legibility, optional */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/0 to-black/0" />
         </div>
