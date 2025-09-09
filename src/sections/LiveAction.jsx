@@ -183,7 +183,7 @@ export default function LiveAction() {
     const idx = currentIndex
     const curSold = !!currentItem?.sold
     const prev = soldPrevRef.current
-    const justBecame = curSold && (!prev.sold || prev.idx !== idx)
+    const justBecame = curSold && (prev.idx === idx) && !prev.sold
     if (justBecame) {
       setSoldMode('play'); setSoldKey((k)=>k+1)
     } else if (curSold && prev.idx !== idx) {
