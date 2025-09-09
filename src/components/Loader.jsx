@@ -22,8 +22,8 @@ function useLottiePlayer() {
 
 export default function Loader({ variant = 'inline', label = 'Laddar…' }) {
   useLottiePlayer()
-  // Sizes: keep it small per request
-  const size = variant === 'page' ? 72 : 40
+  // Sizes: slightly larger per request
+  const size = variant === 'page' ? 88 : 48
   const labelEl = (
     <span className="text-sm text-neutral-700">{label}</span>
   )
