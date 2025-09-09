@@ -149,14 +149,24 @@ function AuctionCard({ a, idx, now, lang, gallery }) {
       } catch {}
     }, [])
     React.useEffect(() => {
-      // Auto-advance disabled: keep static image (index 0)
+      // Auto-advance through gallery unless paused (hover)
       try { setI(0) } catch {}
-      return () => {}
-    }, [imgs])
+      if (!imgs || imgs.length <= 1) return
+      let t = 0
+      const delay = Math.max(800, parseInt(intervalMs, 10) || 3500)
+      const step = () => {
+        if (!pausedRef.current) {
+          setI((v) => (v + 1) % imgs.length)
+        }
+        t = window.setTimeout(step, delay)
+      }
+      t = window.setTimeout(step, delay)
+      return () => { if (t) window.clearTimeout(t) }
+    }, [imgs, intervalMs])
     const onEnter = () => { pausedRef.current = true }
     const onLeave = () => { pausedRef.current = false }
     if (!imgs || imgs.length === 0) return null
-    const src = imgs[0]
+    const src = imgs[i]
     return (
       <div className="section-card p-0 overflow-hidden">
         <div
