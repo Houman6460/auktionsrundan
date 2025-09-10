@@ -74,7 +74,7 @@ function Section({ id, title, children, visible = true, help }) {
 }
 
 // Icon component backed by Google Material Symbols (font)
-function Icon({ name, className = 'text-[22px] leading-none' }) {
+function Icon({ name, className = 'text-[22px] leading-none text-earth-dark' }) {
   return <span className={`material-symbols-outlined ${className}`} aria-hidden="true">{name}</span>
 }
 
@@ -1412,7 +1412,7 @@ export default function Admin() {
               <div className={`section-card ${sidebarMin ? 'p-2' : 'p-4'} h-full overflow-y-auto`} aria-label={L('Sidomeny','Sidebar menu')}>
                 <nav className="flex flex-col gap-2 text-sm">
                   <div className="flex items-center justify-end mb-1">
-                    <button type="button" className="btn-outline w-8 h-8 p-0 grid place-items-center" onClick={()=>setSidebarMin(v=>!v)} title={sidebarMin ? L('Expandera sidomeny','Expand sidebar') : L('Minimera sidomeny','Minimize sidebar')}>
+                    <button type="button" className="w-8 h-8 p-0 grid place-items-center text-earth-dark hover:text-earth transition" onClick={()=>setSidebarMin(v=>!v)} title={sidebarMin ? L('Expandera sidomeny','Expand sidebar') : L('Minimera sidomeny','Minimize sidebar')} aria-label={sidebarMin ? L('Expandera sidomeny','Expand sidebar') : L('Minimera sidomeny','Minimize sidebar')}>
                       <Icon name={sidebarMin ? 'chevron_right' : 'chevron_left'} />
                     </button>
                   </div>
@@ -1619,6 +1619,23 @@ export default function Admin() {
                 <hr className={`my-3 ${sidebarMin ? 'hidden' : ''}`} />
                 <button className={`btn-primary w-full ${sidebarMin ? 'hidden' : ''}`} onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="overlay" data-tip-align="start">{L('Spara','Save')}</button>
                 <button className={`btn-outline w-full ${sidebarMin ? 'hidden' : ''}`} onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay" data-tip-align="start">{L('Återställ standard','Reset to defaults')}</button>
+
+                {sidebarMin && (
+                  <>
+                    <hr className="my-2 opacity-20" />
+                    <div className="flex flex-col items-center gap-2">
+                      <button type="button" className="w-8 h-8 grid place-items-center text-earth-dark hover:text-earth transition" onClick={save} title={L('Spara alla ändringar','Save all changes')} aria-label={L('Spara','Save')}>
+                        <Icon name="save" />
+                      </button>
+                      <button type="button" className="w-8 h-8 grid place-items-center text-earth-dark hover:text-earth transition" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} aria-label={L('Återställ standard','Reset to defaults')}>
+                        <Icon name="restart_alt" />
+                      </button>
+                      <button type="button" className="w-8 h-8 grid place-items-center text-earth-dark hover:text-earth transition" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')} aria-label={L('Visa alla','Show all')}>
+                        <Icon name="view_cozy" />
+                      </button>
+                    </div>
+                  </>
+                )}
               </nav>
             </div>
             </div>
