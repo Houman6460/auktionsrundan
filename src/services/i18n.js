@@ -9,6 +9,7 @@ const resources = {
         auctions: 'Kommande auktioner',
         items: 'Auktionsvaror',
         terms: 'Auktionsvillkor',
+        contact: 'Kontakt',
         admin: 'Admin'
       },
       hero: {
@@ -36,6 +37,19 @@ const resources = {
       footer: {
         follow: 'Följ oss i sociala medier',
         credit: 'skapad av Logoland Design med ❤️ '
+      },
+      contact: {
+        title: 'Kontakta oss',
+        intro: 'Har du en fråga eller vill komma i kontakt? Fyll i formuläret så återkommer vi så snart vi kan.',
+        name: 'Namn',
+        email: 'E‑post',
+        message: 'Meddelande',
+        submit: 'Skicka',
+        sending: 'Skickar…',
+        success: 'Tack! Ditt meddelande har skickats.',
+        error_required: 'Vänligen fyll i alla fält.',
+        error_email: 'Ange en giltig e‑postadress.',
+        error_generic: 'Något gick fel. Försök igen senare.'
       }
     }
   },
@@ -46,6 +60,7 @@ const resources = {
         auctions: 'Upcoming Auctions',
         items: 'Auction Items',
         terms: 'Terms',
+        contact: 'Contact',
         admin: 'Admin'
       },
       hero: {
@@ -73,6 +88,19 @@ const resources = {
       footer: {
         follow: 'Follow us on social media',
         credit: 'created by Logoland Design with ❤️ '
+      },
+      contact: {
+        title: 'Contact us',
+        intro: 'Have a question or want to get in touch? Fill out the form and we will get back to you shortly.',
+        name: 'Name',
+        email: 'Email',
+        message: 'Message',
+        submit: 'Send',
+        sending: 'Sending…',
+        success: 'Thanks! Your message has been sent.',
+        error_required: 'Please fill in all fields.',
+        error_email: 'Please enter a valid email address.',
+        error_generic: 'Something went wrong. Please try again later.'
       }
     }
   }

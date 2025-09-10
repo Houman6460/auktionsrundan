@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { loadContent } from '../services/store'
 
@@ -41,6 +42,7 @@ export default function Footer() {
           <ul className="space-y-1 text-sm">
             <li>Telefon: {f.phone || '-'}</li>
             <li>Email: {f.email || '-'}</li>
+            <li><Link to="/contact" className="underline">{t('nav.contact')}</Link></li>
           </ul>
         </div>
         <div>

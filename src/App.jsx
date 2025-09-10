@@ -12,6 +12,7 @@ const Auctions = React.lazy(() => import('./sections/Auctions.jsx'))
 const Items = React.lazy(() => import('./sections/Items.jsx'))
 const Testimonials = React.lazy(() => import('./sections/Testimonials.jsx'))
 const Terms = React.lazy(() => import('./sections/Terms.jsx'))
+const Contact = React.lazy(() => import('./sections/Contact.jsx'))
 const InstagramFeed = React.lazy(() => import('./sections/InstagramFeed.jsx'))
 const FAQ = React.lazy(() => import('./sections/FAQ.jsx'))
 const FAQPreview = React.lazy(() => import('./sections/FAQPreview.jsx'))
@@ -182,6 +183,17 @@ export default function App() {
                   <h2 className="text-3xl font-serif mb-6">{t('nav.terms')}</h2>
                   <Terms />
                 </div>
+              </section>
+              <Footer />
+            </main>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <main>
+              <section className="scroll-mt-24">
+                <Contact />
               </section>
               <Footer />
             </main>

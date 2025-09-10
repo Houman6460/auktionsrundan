@@ -60,6 +60,7 @@ export default function Header() {
             <NavLink to="/auctions" className="hover:underline">{getLabel('auctions')}</NavLink>
             <NavLink to="/items" className="hover:underline">{getLabel('items')}</NavLink>
             <NavLink to="/terms" className="hover:underline">{getLabel('terms')}</NavLink>
+            <NavLink to="/contact" className="hover:underline">{getLabel('contact')}</NavLink>
             <NavLink to="/admin" className="text-sm text-earth-dark/80 hover:text-earth-dark">{t('nav.admin')}</NavLink>
             <div className="flex items-center gap-2">
               {activeLangs.sv && <button onClick={() => changeLang('sv')} className="btn-outline text-xs">SV</button>}
@@ -79,6 +80,7 @@ export default function Header() {
             <NavLink to="/auctions" onClick={()=>setOpen(false)}>{getLabel('auctions')}</NavLink>
             <NavLink to="/items" onClick={()=>setOpen(false)}>{getLabel('items')}</NavLink>
             <NavLink to="/terms" onClick={()=>setOpen(false)}>{getLabel('terms')}</NavLink>
+            <NavLink to="/contact" onClick={()=>setOpen(false)}>{getLabel('contact')}</NavLink>
             <NavLink to="/admin" onClick={()=>setOpen(false)}>{t('nav.admin')}</NavLink>
             <div className="flex items-center gap-2 pt-2">
               {activeLangs.sv && <button onClick={() => changeLang('sv')} className="btn-outline text-xs">SV</button>}
