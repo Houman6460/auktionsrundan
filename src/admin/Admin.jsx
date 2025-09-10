@@ -686,6 +686,9 @@ export default function Admin() {
   const [analyticsFilters, setAnalyticsFilters] = React.useState({ lang: [], device: [], route: [] })
   const [drill, setDrill] = React.useState({ open: false, type: null, rows: [] })
   const [annotations, setAnnotations] = React.useState([])
+  // Chart type for Events over time
+  const [chartType, setChartType] = React.useState(() => localStorage.getItem('ar_analytics_chart_type') || 'bar')
+  React.useEffect(() => { try { localStorage.setItem('ar_analytics_chart_type', chartType) } catch {} }, [chartType])
 
   // Sidebar minimize (icon-only) mode
   const [sidebarMin, setSidebarMin] = React.useState(() => localStorage.getItem('ar_admin_sidebar_min') === '1')
@@ -1818,7 +1821,23 @@ export default function Admin() {
             <div className="md:col-span-2">
               <h3 className="font-serif text-lg mb-2">{L('Händelser över tid','Events over time')}</h3>
               <div id="analytics-chart" className="section-card p-3">
-                <AnalyticsChart data={analyticsSelection.buckets} />
+                <div className="flex items-center justify-end mb-2">
+                  <div className="inline-flex rounded-md border border-earth-dark/20 overflow-hidden">
+                    <button type="button" className={`px-2 py-1 text-xs flex items-center ${chartType==='bar' ? 'bg-earth-light/30 text-earth-dark' : 'hover:bg-neutral-50'}`} onClick={()=>setChartType('bar')} title={L('Stapeldiagram','Bar chart')} aria-pressed={chartType==='bar'}>
+                      <span className="material-symbols-outlined text-[18px] leading-none text-earth-dark">bar_chart_4_bars</span>
+                      <span className="sr-only">Bar</span>
+                    </button>
+                    <button type="button" className={`px-2 py-1 text-xs flex items-center border-l border-earth-dark/20 ${chartType==='line' ? 'bg-earth-light/30 text-earth-dark' : 'hover:bg-neutral-50'}`} onClick={()=>setChartType('line')} title={L('Linjediagram','Line chart')} aria-pressed={chartType==='line'}>
+                      <span className="material-symbols-outlined text-[18px] leading-none text-earth-dark">show_chart</span>
+                      <span className="sr-only">Line</span>
+                    </button>
+                    <button type="button" className={`px-2 py-1 text-xs flex items-center border-l border-earth-dark/20 ${chartType==='area' ? 'bg-earth-light/30 text-earth-dark' : 'hover:bg-neutral-50'}`} onClick={()=>setChartType('area')} title={L('Ytdiagram','Area chart')} aria-pressed={chartType==='area'}>
+                      <span className="material-symbols-outlined text-[18px] leading-none text-earth-dark">area_chart</span>
+                      <span className="sr-only">Area</span>
+                    </button>
+                  </div>
+                </div>
+                <AnalyticsChart data={analyticsSelection.buckets} type={chartType} />
               </div>
             </div>
             <div>
