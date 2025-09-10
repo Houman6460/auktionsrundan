@@ -1362,10 +1362,10 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         {saved && <div className="section-card p-3 text-emerald-700 bg-emerald-50 mb-6">{L('Sparat!','Saved!')}</div>}
 
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6">
           {/* Sidebar */}
-          <aside id="admin-sidebar" className="col-span-12 md:col-span-3 lg:col-span-3">
-            <div className="section-card p-4 sticky top-0 max-h-[100vh] overflow-y-auto">
+          <aside id="admin-sidebar" className="md:sticky md:top-0 md:h-screen" role="navigation" aria-label={L('Adminsektioner','Admin sections')}>
+            <div className="section-card p-4 h-full overflow-y-auto">
               <nav className="flex flex-col gap-2 text-sm">
                 {/* Favorites */}
                 <div>
@@ -1530,7 +1530,7 @@ export default function Admin() {
 
           {/* Content */}
           <AdminUxCtx.Provider value={{ favorites, toggleFavorite, collapsed, toggleCollapsed }}>
-          <div className="col-span-12 md:col-span-9 lg:col-span-9 grid gap-6">
+          <div className="grid gap-6">
 
         {/* Analytics Dashboard */}
         <Section id="admin-analytics" title={L('Analys','Analytics Dashboard')} visible={isSectionVisible('admin-analytics')} help={L('Visa trafik, händelser och toppsektioner. Justera tidsintervall, filtrera på språk, enhet och sidor. Exportera CSV från panelen.','View traffic, events and top sections. Adjust time range, filter by language, device and routes. Export CSV from the dashboard.') }>
