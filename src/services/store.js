@@ -142,6 +142,33 @@ const defaults = {
       speed: 40, // pixels per second
     },
   },
+  // Testimonials section (bilingual)
+  testimonials: {
+    visible: true,
+    autoplay: true,
+    intervalMs: 5000,
+    speed: 40,
+    items: [
+      {
+        name: 'Anna Karlsson',
+        role: { sv: 'Kund', en: 'Customer' },
+        text: { sv: 'Fantastisk upplevelse! Välorganiserat och trevlig personal. Jag hittade precis det jag letade efter.', en: 'Fantastic experience! Well organized and friendly staff. I found exactly what I was looking for.' },
+        avatar: ''
+      },
+      {
+        name: 'Johan Berg',
+        role: { sv: 'Samlare', en: 'Collector' },
+        text: { sv: 'Stort utbud och bra priser. Rekommenderar Auktionsrundan till alla som gillar unika fynd.', en: 'Great selection and fair prices. I recommend Auktionsrundan to anyone who enjoys unique finds.' },
+        avatar: ''
+      },
+      {
+        name: 'Elin Svensson',
+        role: { sv: 'Återkommande kund', en: 'Returning customer' },
+        text: { sv: 'Alltid roligt att besöka auktionerna. Proffsigt genomförda och härlig stämning.', en: 'Always a pleasure to visit the auctions. Professionally run with a great atmosphere.' },
+        avatar: ''
+      }
+    ]
+  },
   // Social share settings
   share: {
     enabled: true,
@@ -495,6 +522,30 @@ function normalize(content) {
         title: ensureBilingual(ev.title, defaults.slider.events.title.en),
         speed: Number.isFinite(parseInt(ev.speed,10)) ? parseInt(ev.speed,10) : defaults.slider.events.speed,
       }
+    }
+    // Ensure testimonials section exists and normalize
+    if (!out.testimonials || typeof out.testimonials !== 'object') {
+      out.testimonials = deepClone(defaults.testimonials)
+    } else {
+      const t = out.testimonials
+      t.visible = t.visible !== false
+      t.autoplay = t.autoplay !== false
+      const iv = parseInt(t.intervalMs, 10)
+      t.intervalMs = Number.isFinite(iv) ? iv : defaults.testimonials.intervalMs
+      const sp = parseInt(t.speed, 10)
+      t.speed = Number.isFinite(sp) ? sp : defaults.testimonials.speed
+      const ensureBilingual = (val) => {
+        if (typeof val === 'string') return { sv: val, en: '' }
+        if (val && typeof val === 'object') return { sv: val.sv ?? '', en: val.en ?? '' }
+        return { sv: '', en: '' }
+      }
+      const arr = Array.isArray(t.items) ? t.items : []
+      t.items = arr.map((it) => ({
+        name: typeof it?.name === 'string' ? it.name : String(it?.name || ''),
+        role: ensureBilingual(it?.role),
+        text: ensureBilingual(it?.text),
+        avatar: typeof it?.avatar === 'string' ? it.avatar : '',
+      }))
     }
     // Ensure share section exists and normalize
     if (!out.share || typeof out.share !== 'object') {

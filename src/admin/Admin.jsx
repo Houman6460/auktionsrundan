@@ -215,7 +215,7 @@ export default function Admin() {
   const groupSections = React.useMemo(() => ({
     favorites: Array.from(favorites || []),
     auction_system: ['admin-auctions','admin-slider','admin-items','admin-terms','admin-liveaction','admin-ratings'],
-    design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
+    design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-testimonials','admin-terms','admin-instagram','admin-faq','admin-footer'],
     marketing: ['admin-newsletter','admin-share','admin-chat'],
     engagement: ['admin-liveaction','admin-registration','admin-ratings'],
     integrations: ['admin-maps'],
@@ -702,6 +702,7 @@ export default function Admin() {
     'admin-auctions': 'gavel',
     'admin-slider': 'view_carousel',
     'admin-items': 'category',
+    'admin-testimonials': 'format_quote',
     'admin-terms': 'article',
     'admin-instagram': 'photo_camera',
     'admin-faq': 'help_center',
@@ -1503,6 +1504,7 @@ export default function Admin() {
                       <a href="#admin-auctions" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}><Icon name={iconForSection('admin-auctions')} /><span className={sidebarMin?'sr-only':''}>{L('Kommande Auktioner','Upcoming Auctions')}</span></a>
                       <a href="#admin-slider" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Ställ in bildspel/slider för auktioner','Configure auctions slider')} onClick={()=>setActiveFilter('admin-slider')}><Icon name={iconForSection('admin-slider')} /><span className={sidebarMin?'sr-only':''}>{L('Slider (Auktioner)','Slider (Auctions)')}</span></a>
                       <a href="#admin-items" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}><Icon name={iconForSection('admin-items')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvaror','Auction Items')}</span></a>
+                      <a href="#admin-testimonials" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Visa kundomdömen på webbplatsen','Show customer testimonials on the site')} onClick={()=>setActiveFilter('admin-testimonials')}><Icon name={iconForSection('admin-testimonials')} /><span className={sidebarMin?'sr-only':''}>{L('Kundomdömen','Testimonials')}</span></a>
                       <a href="#admin-terms" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}><Icon name={iconForSection('admin-terms')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvillkor','Terms')}</span></a>
                       <a href="#admin-instagram" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}><Icon name={iconForSection('admin-instagram')} /><span className={sidebarMin?'sr-only':''}>Instagram</span></a>
                       <a href="#admin-faq" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera vanliga frågor och svar','Manage frequently asked questions')} onClick={()=>setActiveFilter('admin-faq')}><Icon name={iconForSection('admin-faq')} /><span className={sidebarMin?'sr-only':''}>FAQ</span></a>
@@ -1909,6 +1911,66 @@ export default function Admin() {
                 </li>
               ))}
             </ul>
+          </div>
+        </Section>
+
+        <Section id="admin-testimonials" title={L('Kundomdömen','Testimonials')} visible={isSectionVisible('admin-testimonials')} help={L('Visa utvalda kundomdömen på startsidan. Hantera språk, bild (avatar), namn och roll.','Show selected customer testimonials on the homepage. Manage language, avatar, name and role.') }>
+          <label className="flex items-center gap-2 mb-3" title={L('Visa/Dölj sektionen Kundomdömen','Show/Hide Testimonials section')}>
+            <Toggle checked={!!data.testimonials?.visible} onChange={(e)=>{ const n={...data}; n.testimonials = n.testimonials||{}; n.testimonials.visible = e.target.checked; setData(n) }} />
+            <span>{L('Visa sektion','Show section')}</span>
+          </label>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Visningsläge','Display mode')}</h3>
+              <label className="flex items-center gap-2 mb-2" title={L('Aktivera automatisk horisontell rullning','Enable automatic horizontal scrolling')}>
+                <Toggle checked={!!data.testimonials?.autoplay} onChange={(e)=>{ const n={...data}; n.testimonials=n.testimonials||{}; n.testimonials.autoplay=e.target.checked; setData(n) }} />
+                <span>{L('Auto‑slide','Auto‑slide')}</span>
+              </label>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Hastighet (px/s)','Speed (px/s)')}</label>
+              <input type="number" min={10} max={200} className="w-full border rounded px-3 py-2" value={Number(data.testimonials?.speed)||40} onChange={(e)=>{ const n={...data}; n.testimonials=n.testimonials||{}; n.testimonials.speed = parseInt(e.target.value,10)||40; setData(n) }} />
+              <p className="text-xs text-neutral-500 mt-1">{L('Gäller endast vid Auto‑slide.','Applies when Auto‑slide is on.')}</p>
+            </div>
+            <div className="md:col-span-2">
+              <h3 className="font-serif text-lg mb-2">{L('Poster','Entries')}</h3>
+              <button type="button" className="btn-outline text-sm mb-2" onClick={()=>{ const n={...data}; n.testimonials=n.testimonials||{}; const arr = Array.isArray(n.testimonials.items)?n.testimonials.items:[]; arr.push({ name:'', role:{sv:'',en:''}, text:{sv:'',en:''}, avatar:'' }); n.testimonials.items = arr; setData(n) }} title={L('Lägg till omdöme','Add testimonial')}>{L('Lägg till','Add')}</button>
+              <div className="grid gap-3">
+                {(data.testimonials?.items||[]).map((it, idx)=> (
+                  <div key={idx} className="section-card p-3">
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm text-neutral-600 mb-1">{L('Namn','Name')}</label>
+                        <input className="w-full border rounded px-3 py-2" value={it.name||''} onChange={(e)=>{ const n={...data}; n.testimonials.items[idx].name=e.target.value; setData(n) }} />
+                        <div className="mt-3">
+                          <label className="block text-sm text-neutral-600 mb-1">{L('Avatar‑URL','Avatar URL')}</label>
+                          <input className="w-full border rounded px-3 py-2" value={it.avatar||''} onChange={(e)=>{ const n={...data}; n.testimonials.items[idx].avatar=e.target.value; setData(n) }} placeholder="https://..." />
+                          <div className="mt-2 flex items-center gap-2">
+                            <input type="file" accept="image/*" title={L('Ladda upp avatar','Upload avatar')} onChange={handleFileToDataUrl(['testimonials','items', idx, 'avatar'], { maxDim: 400, quality: 0.85 })} />
+                            <button type="button" className="btn-outline text-xs" onClick={()=>{ const n={...data}; n.testimonials.items[idx].avatar=''; setData(n) }}>{L('Rensa','Clear')}</button>
+                          </div>
+                          {it.avatar && <img src={it.avatar} alt="avatar" className="mt-2 w-16 h-16 rounded-full object-cover border" />}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-neutral-600 mb-1">Role (SV)</label>
+                        <input className="w-full border rounded px-3 py-2" value={it.role?.sv||''} onChange={(e)=>{ const n={...data}; n.testimonials.items[idx].role = { ...(n.testimonials.items[idx].role||{}), sv: e.target.value }; setData(n) }} />
+                        <label className="block text-sm text-neutral-600 mt-3 mb-1">Text (SV)</label>
+                        <textarea className="w-full border rounded px-3 py-2 min-h-[90px]" value={it.text?.sv||''} onChange={(e)=>{ const n={...data}; n.testimonials.items[idx].text = { ...(n.testimonials.items[idx].text||{}), sv: e.target.value }; setData(n) }} />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-neutral-600 mb-1">Role (EN)</label>
+                        <input className="w-full border rounded px-3 py-2" value={it.role?.en||''} onChange={(e)=>{ const n={...data}; n.testimonials.items[idx].role = { ...(n.testimonials.items[idx].role||{}), en: e.target.value }; setData(n) }} />
+                        <label className="block text-sm text-neutral-600 mt-3 mb-1">Text (EN)</label>
+                        <textarea className="w-full border rounded px-3 py-2 min-h-[90px]" value={it.text?.en||''} onChange={(e)=>{ const n={...data}; n.testimonials.items[idx].text = { ...(n.testimonials.items[idx].text||{}), en: e.target.value }; setData(n) }} />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button type="button" className="btn-outline text-xs" onClick={()=>{ const n={...data}; n.testimonials.items.splice(idx,1); setData(n) }}>{L('Ta bort','Remove')}</button>
+                      {idx>0 && <button type="button" className="btn-outline text-xs" onClick={()=>{ const n={...data}; const arr=n.testimonials.items; const tmp=arr[idx-1]; arr[idx-1]=arr[idx]; arr[idx]=tmp; setData(n) }}>{L('Flytta upp','Move up')}</button>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </Section>
 

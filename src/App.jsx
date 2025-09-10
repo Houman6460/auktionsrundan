@@ -10,6 +10,7 @@ import LazySection from './components/LazySection.jsx'
 const Hero = React.lazy(() => import('./sections/Hero.jsx'))
 const Auctions = React.lazy(() => import('./sections/Auctions.jsx'))
 const Items = React.lazy(() => import('./sections/Items.jsx'))
+const Testimonials = React.lazy(() => import('./sections/Testimonials.jsx'))
 const Terms = React.lazy(() => import('./sections/Terms.jsx'))
 const InstagramFeed = React.lazy(() => import('./sections/InstagramFeed.jsx'))
 const FAQ = React.lazy(() => import('./sections/FAQ.jsx'))
@@ -43,7 +44,7 @@ export default function App() {
   // Track section views on home page
   React.useEffect(() => {
     if (location.pathname !== '/') return
-    const ids = ['auctions','items','terms','instagram','faq']
+    const ids = ['auctions','items','testimonials','terms','instagram','faq']
     const els = ids.map((id) => document.getElementById(id)).filter(Boolean)
     if (!els.length) return
     const seen = new Set()
@@ -85,6 +86,11 @@ export default function App() {
                 <div className="container mx-auto px-4 py-16">
                   <h2 className="text-3xl font-serif mb-6">{t('nav.items')}</h2>
                   <Items />
+                </div>
+              </section>
+              <section id="testimonials" className="scroll-mt-24">
+                <div className="container mx-auto px-4 py-16">
+                  <LazySection><Testimonials /></LazySection>
                 </div>
               </section>
               <section id="terms" className="scroll-mt-24">
