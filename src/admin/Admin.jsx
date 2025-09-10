@@ -1616,9 +1616,11 @@ export default function Admin() {
                 <div className={`mt-3 ${sidebarMin ? 'hidden' : ''}`}>
                   <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')} data-tip-pos="overlay" data-tip-align="start">{L('Visa alla','Show all')}</button>
                 </div>
-                <hr className={`my-3 ${sidebarMin ? 'hidden' : ''}`} />
-                <button className={`btn-primary w-full ${sidebarMin ? 'hidden' : ''}`} onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="overlay" data-tip-align="start">{L('Spara','Save')}</button>
-                <button className={`btn-outline w-full ${sidebarMin ? 'hidden' : ''}`} onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay" data-tip-align="start">{L('Återställ standard','Reset to defaults')}</button>
+                <div className={`${sidebarMin ? 'hidden' : ''}`}>
+                  <hr className="my-3" />
+                  <button className="btn-primary w-full" onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="overlay" data-tip-align="start">{L('Spara','Save')}</button>
+                  <button className="btn-outline w-full" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay" data-tip-align="start">{L('Återställ standard','Reset to defaults')}</button>
+                </div>
 
                 {sidebarMin && (
                   <>
