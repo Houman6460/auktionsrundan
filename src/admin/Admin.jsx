@@ -1405,6 +1405,11 @@ export default function Admin() {
                 <option value="year">{L('Detta år','This year')}</option>
                 <option value="custom">{L('Anpassad','Custom')}</option>
               </select>
+              {/* Compare previous period: lives under the select for better responsiveness */}
+              <label id="analytics-compare-toggle" className="mt-2 inline-flex items-center gap-2 text-sm text-neutral-700 w-fit" title={L('Jämför mot föregående period i grafer och nyckeltal','Compare against previous period in charts and KPIs')} data-tip-pos="bottom">
+                <span className="whitespace-nowrap">{L('Jämför föregående period','Compare previous period')}</span>
+                <Toggle size="sm" checked={analyticsCompare} onChange={(e)=>setAnalyticsCompare(e.target.checked)} />
+              </label>
             </div>
             {analyticsRange === 'custom' && (
               <>
@@ -1418,11 +1423,7 @@ export default function Admin() {
                 </div>
               </>
             )}
-            <div className="flex items-end justify-end gap-2">
-              <label id="analytics-compare-toggle" className="inline-flex items-center gap-2 text-sm text-neutral-700 mr-2" title={L('Jämför mot föregående period i grafer och nyckeltal','Compare against previous period in charts and KPIs')} data-tip-pos="bottom">
-                <span className="whitespace-nowrap">{L('Jämför föregående period','Compare previous period')}</span>
-                <Toggle size="sm" checked={analyticsCompare} onChange={(e)=>setAnalyticsCompare(e.target.checked)} />
-              </label>
+            <div className="flex items-end justify-end">
               <button id="analytics-export-btn" type="button" className="btn-outline" onClick={()=>analyticsExportAnalyticsCsv()} title={L('Exportera sammanfattning som CSV','Export summary as CSV')}>{L('Exportera CSV','Export CSV')}</button>
             </div>
           </div>
@@ -1437,9 +1438,9 @@ export default function Admin() {
                 { key: 'registration_submit', label: L('Anmälningar','Registrations') },
                 { key: 'rating_submit', label: L('Betyg','Ratings') },
               ]).map(({key,label}) => (
-                <label key={key} className="inline-flex items-center gap-2 text-sm text-neutral-700" title={L('Visa/dölj denna händelsetyp i grafer','Show/hide this event type in charts')} data-tip-pos="bottom">
+                <label key={key} className="inline-flex items-center gap-2 text-sm text-neutral-700 whitespace-nowrap" title={L('Visa/dölj denna händelsetyp i grafer','Show/hide this event type in charts')} data-tip-pos="bottom">
                   <Toggle size="sm" checked={!!analyticsTypes[key]} onChange={(e)=>setAnalyticsTypes((t)=>({ ...t, [key]: e.target.checked }))} />
-                  <span className="truncate">{label}</span>
+                  <span className="truncate max-w-[12rem]">{label}</span>
                 </label>
               ))}
             </div>

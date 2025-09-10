@@ -650,33 +650,33 @@ export default function LiveActionAdmin({ data, setData, L }) {
                   <label className="block text-xs text-neutral-600 mb-1">{L('Efterfönster (minuter)','Post window (minutes)')}</label>
                   <input type="number" min="0" className="w-full border rounded px-3 py-2" title={L('Tiden efter stopp då feedbackformulär är öppet (minuter)','Time after stop when feedback form stays open (minutes)')} value={ev.settings?.postMinutes||10} onChange={(e)=>updateField(id,['settings','postMinutes'], Math.max(0, parseInt(e.target.value||'10',10)||10))} />
                 </div>
-                <div className="flex items-center gap-6 mt-6">
-                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Visa total försäljning på publika sidan','Show total sales amount on public page')}>
-                    <span className="whitespace-nowrap">{L('Visa totalsumma','Show total')}</span>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6 mt-6">
+                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700 w-full overflow-hidden" title={L('Visa total försäljning på publika sidan','Show total sales amount on public page')}>
+                    <span className="min-w-0 truncate">{L('Visa totalsumma','Show total')}</span>
                     <Toggle id={`ev-showtotals-${id}`} size="sm" checked={ev.settings?.publicDisplay?.showTotals!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showTotals'], e.target.checked)} />
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-neutral-700" title={L('Visa SÅLD-märkning och slutpris på publika sidan','Show SOLD badges and final price on public page')}>
-                    <span className="whitespace-nowrap">{L('Visa sålda-status','Show sold status')}</span>
+                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700 w-full overflow-hidden" title={L('Visa SÅLD-märkning och slutpris på publika sidan','Show SOLD badges and final price on public page')}>
+                    <span className="min-w-0 truncate">{L('Visa sålda-status','Show sold status')}</span>
                     <Toggle id={`ev-showsold-${id}`} size="sm" checked={ev.settings?.publicDisplay?.showSold!==false} onChange={(e)=>updateField(id,['settings','publicDisplay','showSold'], e.target.checked)} />
                   </div>
                 </div>
               </div>
               <div className="grid md:grid-cols-3 gap-3 mt-3">
                 <div className="grid md:grid-cols-2 gap-4 items-start">
-                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700" title={L('Aktivera insamling av feedback efter eventet','Enable collecting feedback after the event')}>
-                    <span className="whitespace-nowrap">{L('Feedback aktiv','Feedback enabled')}</span>
+                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700 w-full overflow-hidden" title={L('Aktivera insamling av feedback efter eventet','Enable collecting feedback after the event')}>
+                    <span className="min-w-0 truncate">{L('Feedback aktiv','Feedback enabled')}</span>
                     <Toggle id={`ev-fb-enabled-${id}`} size="sm" checked={ev.settings?.feedback?.enabled!==false} onChange={(e)=>updateField(id,['settings','feedback','enabled'], e.target.checked)} />
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700" title={L('Visa stjärnor för helhetsbetyg','Show stars for overall rating')}>
-                    <span className="whitespace-nowrap">{L('Stjärnbetyg','Star rating')}</span>
+                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700 w-full overflow-hidden" title={L('Visa stjärnor för helhetsbetyg','Show stars for overall rating')}>
+                    <span className="min-w-0 truncate">{L('Stjärnbetyg','Star rating')}</span>
                     <Toggle id={`ev-fb-rating-${id}`} size="sm" checked={ev.settings?.feedback?.rating!==false} onChange={(e)=>updateField(id,['settings','feedback','rating'], e.target.checked)} />
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700" title={L('Låt besökaren skriva fritext','Let visitors write free‑text notes')}>
-                    <span className="whitespace-nowrap">{L('Anteckningar','Notes')}</span>
+                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700 w-full overflow-hidden" title={L('Låt besökaren skriva fritext','Let visitors write free‑text notes')}>
+                    <span className="min-w-0 truncate">{L('Anteckningar','Notes')}</span>
                     <Toggle id={`ev-fb-notes-${id}`} size="sm" checked={ev.settings?.feedback?.notes!==false} onChange={(e)=>updateField(id,['settings','feedback','notes'], e.target.checked)} />
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700" title={L('Visa fält för namn, email och telefon med samtycke','Show fields for name, email and phone with consent')}>
-                    <span className="whitespace-nowrap">{L('Kontaktuppgifter','Contact details')}</span>
+                  <div className="flex items-center justify-between gap-2 text-sm text-neutral-700 w-full overflow-hidden" title={L('Visa fält för namn, email och telefon med samtycke','Show fields for name, email and phone with consent')}>
+                    <span className="min-w-0 truncate">{L('Kontaktuppgifter','Contact details')}</span>
                     <Toggle id={`ev-fb-contact-${id}`} size="sm" checked={ev.settings?.feedback?.contact!==false} onChange={(e)=>updateField(id,['settings','feedback','contact'], e.target.checked)} />
                   </div>
                 </div>
