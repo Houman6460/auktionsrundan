@@ -22,11 +22,11 @@ export default function AnalyticsChart({ data, color = '#8B5E34' }) {
         style={{ backgroundImage: 'repeating-linear-gradient(to top, rgba(0,0,0,0.04), rgba(0,0,0,0.04) 1px, transparent 1px, transparent 24px)' }}
       >
         {rows.map((d, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center justify-end">
+          <div key={i} className="flex-1 h-full flex flex-col items-center justify-end">
             <div
               className="w-4 md:w-6 rounded-t"
               title={`${d.label}: ${d.count}`}
-              style={{ height: `${Math.max(2, (Number(d.count) / max) * 100)}%`, backgroundColor: color }}
+              style={{ height: `${Math.max(2, (((Number(d?.count) || 0)) / max) * 100)}%`, backgroundColor: color }}
             />
           </div>
         ))}
