@@ -1405,13 +1405,13 @@ export default function Admin() {
       <main className="container mx-auto px-4 pt-4 pb-4 flex-1 min-h-0 box-border overflow-hidden flex flex-col">
         {saved && <div className="section-card p-3 text-emerald-700 bg-emerald-50 mb-6">{L('Sparat!','Saved!')}</div>}
 
-        <div className={`grid grid-cols-1 ${sidebarMin ? 'md:grid-cols-[64px_1fr]' : 'md:grid-cols-[260px_1fr]'} gap-6 h-full min-h-0`}>
+        <div className={`grid grid-cols-1 ${sidebarMin ? 'md:grid-cols-[64px_1fr]' : 'md:grid-cols-[260px_1fr]'} gap-6 h-full min-h-0 ${sidebarMin ? 'items-start' : ''}`}>
           {/* Sidebar */}
-          <aside id="admin-sidebar" className="h-full self-start" role="navigation" aria-label={L('Adminsektioner','Admin sections')}>
-            <div className="h-full">
-              <div className={`section-card ${sidebarMin ? 'p-2' : 'p-4'} h-full overflow-y-auto`} aria-label={L('Sidomeny','Sidebar menu')}>
-                <nav className="flex flex-col gap-2 text-sm">
-                  <div className="flex items-center justify-end mb-1">
+          <aside id="admin-sidebar" className={`${sidebarMin ? 'self-start' : 'h-full self-start'}`} role="navigation" aria-label={L('Adminsektioner','Admin sections')}>
+            <div className={`${sidebarMin ? '' : 'h-full'}`}>
+              <div className={`section-card ${sidebarMin ? 'p-2' : 'p-4 h-full overflow-y-auto'}`} aria-label={L('Sidomeny','Sidebar menu')}>
+                <nav className={`flex flex-col gap-2 text-sm ${sidebarMin ? 'items-center' : ''}`}>
+                  <div className="flex items-center justify-center mb-1">
                     <button type="button" className="w-8 h-8 p-0 grid place-items-center text-earth-dark hover:text-earth transition" onClick={()=>setSidebarMin(v=>!v)} title={sidebarMin ? L('Expandera sidomeny','Expand sidebar') : L('Minimera sidomeny','Minimize sidebar')} aria-label={sidebarMin ? L('Expandera sidomeny','Expand sidebar') : L('Minimera sidomeny','Minimize sidebar')}>
                       <Icon name={sidebarMin ? 'chevron_right' : 'chevron_left'} />
                     </button>
@@ -1425,12 +1425,12 @@ export default function Admin() {
                   )}
                   {(expandFavorites || sidebarMin) && (
                     Array.from(favorites).length > 0 ? (
-                      <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
+                      <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
                         {Array.from(favorites).map((sid) => (
                           <a
                             key={sid}
                             href={`#${sid}`}
-                            className="hover:underline flex items-center gap-2"
+                            className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`}
                             data-tip-pos="overlay"
                             data-tip-align="start"
                             onClick={()=>setActiveFilter(sid)}
@@ -1494,16 +1494,16 @@ export default function Admin() {
                   </button>
                   )}
                   {(expandDesign || sidebarMin) && (
-                    <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
-                      <a href="#admin-header" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Konfigurera logotyp, navigering och språk','Configure logo, navigation and languages')} onClick={()=>setActiveFilter('admin-header')}><Icon name={iconForSection('admin-header')} /><span className={sidebarMin?'sr-only':''}>{L('Header','Header')}</span></a>
-                      <a href="#admin-hero" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Lägg till hero‑bild och rubriker för startsidan','Add hero image and titles for the homepage')} onClick={()=>setActiveFilter('admin-hero')}><Icon name={iconForSection('admin-hero')} /><span className={sidebarMin?'sr-only':''}>{L('Hero (Hem)','Hero (Home)')}</span></a>
-                      <a href="#admin-auctions" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}><Icon name={iconForSection('admin-auctions')} /><span className={sidebarMin?'sr-only':''}>{L('Kommande Auktioner','Upcoming Auctions')}</span></a>
-                      <a href="#admin-slider" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Ställ in bildspel/slider för auktioner','Configure auctions slider')} onClick={()=>setActiveFilter('admin-slider')}><Icon name={iconForSection('admin-slider')} /><span className={sidebarMin?'sr-only':''}>{L('Slider (Auktioner)','Slider (Auctions)')}</span></a>
-                      <a href="#admin-items" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}><Icon name={iconForSection('admin-items')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvaror','Auction Items')}</span></a>
-                      <a href="#admin-terms" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}><Icon name={iconForSection('admin-terms')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvillkor','Terms')}</span></a>
-                      <a href="#admin-instagram" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}><Icon name={iconForSection('admin-instagram')} /><span className={sidebarMin?'sr-only':''}>Instagram</span></a>
-                      <a href="#admin-faq" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera vanliga frågor och svar','Manage frequently asked questions')} onClick={()=>setActiveFilter('admin-faq')}><Icon name={iconForSection('admin-faq')} /><span className={sidebarMin?'sr-only':''}>FAQ</span></a>
-                      <a href="#admin-footer" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera kontaktuppgifter och sociala länkar','Edit contact details and social links')} onClick={()=>setActiveFilter('admin-footer')}><Icon name={iconForSection('admin-footer')} /><span className={sidebarMin?'sr-only':''}>{L('Footer','Footer')}</span></a>
+                    <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
+                      <a href="#admin-header" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Konfigurera logotyp, navigering och språk','Configure logo, navigation and languages')} onClick={()=>setActiveFilter('admin-header')}><Icon name={iconForSection('admin-header')} /><span className={sidebarMin?'sr-only':''}>{L('Header','Header')}</span></a>
+                      <a href="#admin-hero" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Lägg till hero‑bild och rubriker för startsidan','Add hero image and titles for the homepage')} onClick={()=>setActiveFilter('admin-hero')}><Icon name={iconForSection('admin-hero')} /><span className={sidebarMin?'sr-only':''}>{L('Hero (Hem)','Hero (Home)')}</span></a>
+                      <a href="#admin-auctions" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}><Icon name={iconForSection('admin-auctions')} /><span className={sidebarMin?'sr-only':''}>{L('Kommande Auktioner','Upcoming Auctions')}</span></a>
+                      <a href="#admin-slider" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Ställ in bildspel/slider för auktioner','Configure auctions slider')} onClick={()=>setActiveFilter('admin-slider')}><Icon name={iconForSection('admin-slider')} /><span className={sidebarMin?'sr-only':''}>{L('Slider (Auktioner)','Slider (Auctions)')}</span></a>
+                      <a href="#admin-items" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}><Icon name={iconForSection('admin-items')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvaror','Auction Items')}</span></a>
+                      <a href="#admin-terms" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}><Icon name={iconForSection('admin-terms')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvillkor','Terms')}</span></a>
+                      <a href="#admin-instagram" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}><Icon name={iconForSection('admin-instagram')} /><span className={sidebarMin?'sr-only':''}>Instagram</span></a>
+                      <a href="#admin-faq" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera vanliga frågor och svar','Manage frequently asked questions')} onClick={()=>setActiveFilter('admin-faq')}><Icon name={iconForSection('admin-faq')} /><span className={sidebarMin?'sr-only':''}>FAQ</span></a>
+                      <a href="#admin-footer" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Redigera kontaktuppgifter och sociala länkar','Edit contact details and social links')} onClick={()=>setActiveFilter('admin-footer')}><Icon name={iconForSection('admin-footer')} /><span className={sidebarMin?'sr-only':''}>{L('Footer','Footer')}</span></a>
                     </div>
                   )}
                 </div>
@@ -1515,13 +1515,13 @@ export default function Admin() {
                   </button>
                   )}
                   {(expandAuctionModules || sidebarMin) && (
-                    <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
-                      <a href="#admin-auctions" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}><Icon name={iconForSection('admin-auctions')} /><span className={sidebarMin?'sr-only':''}>{L('Kommande Auktioner','Upcoming Auctions')}</span></a>
-                      <a href="#admin-slider" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Ställ in bildspel/slider för auktioner','Configure auctions slider')} onClick={()=>setActiveFilter('admin-slider')}><Icon name={iconForSection('admin-slider')} /><span className={sidebarMin?'sr-only':''}>{L('Slider (Auktioner)','Slider (Auctions)')}</span></a>
-                      <a href="#admin-items" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}><Icon name={iconForSection('admin-items')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvaror','Auction Items')}</span></a>
-                      <a href="#admin-terms" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}><Icon name={iconForSection('admin-terms')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvillkor','Terms')}</span></a>
-                      <a href="#admin-liveaction" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑auktion, lägg till varor och styr visningen','Create live auctions, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}><Icon name={iconForSection('admin-liveaction')} /><span className={sidebarMin?'sr-only':''}>{L('Auktion (Live)','Auction (Live)')}</span></a>
-                      <a href="#admin-ratings" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}><Icon name={iconForSection('admin-ratings')} /><span className={sidebarMin?'sr-only':''}>{L('Betyg','Ratings')}</span></a>
+                    <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
+                      <a href="#admin-auctions" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}><Icon name={iconForSection('admin-auctions')} /><span className={sidebarMin?'sr-only':''}>{L('Kommande Auktioner','Upcoming Auctions')}</span></a>
+                      <a href="#admin-slider" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Ställ in bildspel/slider för auktioner','Configure auctions slider')} onClick={()=>setActiveFilter('admin-slider')}><Icon name={iconForSection('admin-slider')} /><span className={sidebarMin?'sr-only':''}>{L('Slider (Auktioner)','Slider (Auctions)')}</span></a>
+                      <a href="#admin-items" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}><Icon name={iconForSection('admin-items')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvaror','Auction Items')}</span></a>
+                      <a href="#admin-terms" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}><Icon name={iconForSection('admin-terms')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvillkor','Terms')}</span></a>
+                      <a href="#admin-liveaction" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑auktion, lägg till varor och styr visningen','Create live auctions, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}><Icon name={iconForSection('admin-liveaction')} /><span className={sidebarMin?'sr-only':''}>{L('Auktion (Live)','Auction (Live)')}</span></a>
+                      <a href="#admin-ratings" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}><Icon name={iconForSection('admin-ratings')} /><span className={sidebarMin?'sr-only':''}>{L('Betyg','Ratings')}</span></a>
                     </div>
                   )}
                 </div>
@@ -1532,10 +1532,10 @@ export default function Admin() {
                   </button>
                   )}
                   {(expandMarketing || sidebarMin) && (
-                    <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
-                      <a href="#admin-newsletter" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Aktivera popup, rubriker och triggrar','Enable newsletter popup, titles and triggers')} onClick={()=>setActiveFilter('admin-newsletter')}><Icon name={iconForSection('admin-newsletter')} /><span className={sidebarMin?'sr-only':''}>{L('Nyhetsbrev','Newsletter')}</span></a>
-                      <a href="#admin-share" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Konfigurera delningsmeny och kanaler','Configure sharing menu and platforms')} onClick={()=>setActiveFilter('admin-share')}><Icon name={iconForSection('admin-share')} /><span className={sidebarMin?'sr-only':''}>{L('Dela (Social)','Share (Social)')}</span></a>
-                      <a href="#admin-chat" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('WhatsApp‑chatt, nummer och hälsning','WhatsApp chat, number and greeting')} onClick={()=>setActiveFilter('admin-chat')}><Icon name={iconForSection('admin-chat')} /><span className={sidebarMin?'sr-only':''}>{L('Chat (WhatsApp)','Chat (WhatsApp)')}</span></a>
+                    <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
+                      <a href="#admin-newsletter" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Aktivera popup, rubriker och triggrar','Enable newsletter popup, titles and triggers')} onClick={()=>setActiveFilter('admin-newsletter')}><Icon name={iconForSection('admin-newsletter')} /><span className={sidebarMin?'sr-only':''}>{L('Nyhetsbrev','Newsletter')}</span></a>
+                      <a href="#admin-share" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Konfigurera delningsmeny och kanaler','Configure sharing menu and platforms')} onClick={()=>setActiveFilter('admin-share')}><Icon name={iconForSection('admin-share')} /><span className={sidebarMin?'sr-only':''}>{L('Dela (Social)','Share (Social)')}</span></a>
+                      <a href="#admin-chat" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('WhatsApp‑chatt, nummer och hälsning','WhatsApp chat, number and greeting')} onClick={()=>setActiveFilter('admin-chat')}><Icon name={iconForSection('admin-chat')} /><span className={sidebarMin?'sr-only':''}>{L('Chat (WhatsApp)','Chat (WhatsApp)')}</span></a>
                     </div>
                   )}
                 </div>
@@ -1546,10 +1546,10 @@ export default function Admin() {
                   </button>
                   )}
                   {(expandEngagement || sidebarMin) && (
-                    <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
-                      <a href="#admin-liveaction" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑auktion, lägg till varor och styr visningen','Create live auctions, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}><Icon name={iconForSection('admin-liveaction')} /><span className={sidebarMin?'sr-only':''}>{L('Auktion (Live)','Auction (Live)')}</span></a>
-                      <a href="#admin-registration" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Formulär för anmälan, fält och egna frågor','Registration form, fields and custom questions')} onClick={()=>setActiveFilter('admin-registration')}><Icon name={iconForSection('admin-registration')} /><span className={sidebarMin?'sr-only':''}>{L('Registrering','Registration')}</span></a>
-                      <a href="#admin-ratings" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}><Icon name={iconForSection('admin-ratings')} /><span className={sidebarMin?'sr-only':''}>{L('Betyg','Ratings')}</span></a>
+                    <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
+                      <a href="#admin-liveaction" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑auktion, lägg till varor och styr visningen','Create live auctions, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}><Icon name={iconForSection('admin-liveaction')} /><span className={sidebarMin?'sr-only':''}>{L('Auktion (Live)','Auction (Live)')}</span></a>
+                      <a href="#admin-registration" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Formulär för anmälan, fält och egna frågor','Registration form, fields and custom questions')} onClick={()=>setActiveFilter('admin-registration')}><Icon name={iconForSection('admin-registration')} /><span className={sidebarMin?'sr-only':''}>{L('Registrering','Registration')}</span></a>
+                      <a href="#admin-ratings" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}><Icon name={iconForSection('admin-ratings')} /><span className={sidebarMin?'sr-only':''}>{L('Betyg','Ratings')}</span></a>
                     </div>
                   )}
                 </div>
@@ -1560,8 +1560,8 @@ export default function Admin() {
                   </button>
                   )}
                   {(expandIntegrations || sidebarMin) && (
-                    <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
-                      <a href="#admin-maps" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Ange Google Maps API‑nyckel och inställningar','Provide Google Maps API key and settings')} onClick={()=>setActiveFilter('admin-maps')}><Icon name={iconForSection('admin-maps')} /><span className={sidebarMin?'sr-only':''}>{L('Google Maps','Google Maps')}</span></a>
+                    <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
+                      <a href="#admin-maps" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Ange Google Maps API‑nyckel och inställningar','Provide Google Maps API key and settings')} onClick={()=>setActiveFilter('admin-maps')}><Icon name={iconForSection('admin-maps')} /><span className={sidebarMin?'sr-only':''}>{L('Google Maps','Google Maps')}</span></a>
                     </div>
                   )}
                 </div>
@@ -1572,8 +1572,8 @@ export default function Admin() {
                   </button>
                   )}
                   {(expandAnalytics || sidebarMin) && (
-                    <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
-                      <a href="#admin-analytics" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Visa trafik, händelser och toppsektioner','View traffic, events and top sections')} onClick={()=>setActiveFilter('admin-analytics')}><Icon name={iconForSection('admin-analytics')} /><span className={sidebarMin?'sr-only':''}>{L('Instrumentpanel','Dashboard')}</span></a>
+                    <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
+                      <a href="#admin-analytics" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Visa trafik, händelser och toppsektioner','View traffic, events and top sections')} onClick={()=>setActiveFilter('admin-analytics')}><Icon name={iconForSection('admin-analytics')} /><span className={sidebarMin?'sr-only':''}>{L('Instrumentpanel','Dashboard')}</span></a>
                     </div>
                   )}
                 </div>
@@ -1584,8 +1584,8 @@ export default function Admin() {
                   </button>
                   )}
                   {(expandSubscribers || sidebarMin) && (
-                    <div className={`flex flex-col gap-1 ${sidebarMin ? '' : 'pl-3'}`}>
-                      <a href="#admin-subscribers" className="hover:underline flex items-center gap-2" data-tip-pos="overlay" data-tip-align="start" title={L('Visa och exportera prenumeranter','View and export subscribers')} onClick={()=>setActiveFilter('admin-subscribers')}><Icon name={iconForSection('admin-subscribers')} /><span className={sidebarMin?'sr-only':''}>{L('Prenumeranter','Subscribers')}</span></a>
+                    <div className={`flex flex-col gap-1 ${sidebarMin ? 'items-center' : 'pl-3'}`}>
+                      <a href="#admin-subscribers" className={`hover:underline flex items-center gap-2 ${sidebarMin ? 'justify-center' : ''}`} data-tip-pos="overlay" data-tip-align="start" title={L('Visa och exportera prenumeranter','View and export subscribers')} onClick={()=>setActiveFilter('admin-subscribers')}><Icon name={iconForSection('admin-subscribers')} /><span className={sidebarMin?'sr-only':''}>{L('Prenumeranter','Subscribers')}</span></a>
                     </div>
                   )}
                 </div>
@@ -1613,14 +1613,18 @@ export default function Admin() {
                     <Toggle id="admin-autosave" checked={!!autoSaveEnabled} onChange={(e)=>setAutoSaveEnabled(e.target.checked)} />
                   </label>
                 </div>
-                <div className={`mt-3 ${sidebarMin ? 'hidden' : ''}`}>
-                  <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')} data-tip-pos="overlay" data-tip-align="start">{L('Visa alla','Show all')}</button>
-                </div>
-                <div className={`${sidebarMin ? 'hidden' : ''}`}>
-                  <hr className="my-3" />
-                  <button className="btn-primary w-full" onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="overlay" data-tip-align="start">{L('Spara','Save')}</button>
-                  <button className="btn-outline w-full" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay" data-tip-align="start">{L('Återställ standard','Reset to defaults')}</button>
-                </div>
+                {!sidebarMin && (
+                  <div className="mt-3">
+                    <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')} data-tip-pos="overlay" data-tip-align="start">{L('Visa alla','Show all')}</button>
+                  </div>
+                )}
+                {!sidebarMin && (
+                  <div>
+                    <hr className="my-3" />
+                    <button className="btn-primary w-full" onClick={save} title={L('Spara alla ändringar','Save all changes')} data-tip-pos="overlay" data-tip-align="start">{L('Spara','Save')}</button>
+                    <button className="btn-outline w-full" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay" data-tip-align="start">{L('Återställ standard','Reset to defaults')}</button>
+                  </div>
+                )}
 
                 {sidebarMin && (
                   <>
