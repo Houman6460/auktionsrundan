@@ -1420,8 +1420,8 @@ export default function Admin() {
             )}
             <div className="flex items-end justify-end gap-2">
               <label id="analytics-compare-toggle" className="inline-flex items-center gap-2 text-sm text-neutral-700 mr-2" title={L('Jämför mot föregående period i grafer och nyckeltal','Compare against previous period in charts and KPIs')} data-tip-pos="bottom">
-                <Toggle checked={analyticsCompare} onChange={(e)=>setAnalyticsCompare(e.target.checked)} />
-                <span>{L('Jämför föregående period','Compare previous period')}</span>
+                <span className="whitespace-nowrap">{L('Jämför föregående period','Compare previous period')}</span>
+                <Toggle size="sm" checked={analyticsCompare} onChange={(e)=>setAnalyticsCompare(e.target.checked)} />
               </label>
               <button id="analytics-export-btn" type="button" className="btn-outline" onClick={()=>analyticsExportAnalyticsCsv()} title={L('Exportera sammanfattning som CSV','Export summary as CSV')}>{L('Exportera CSV','Export CSV')}</button>
             </div>
