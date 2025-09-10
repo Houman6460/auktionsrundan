@@ -195,6 +195,18 @@ export default function Admin() {
       return next
     })
   }, [])
+
+  // Lock page scrolling while Admin is mounted to ensure independent scrolling columns
+  React.useEffect(() => {
+    const prevBody = document.body.style.overflow
+    const prevHtml = document.documentElement.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevBody
+      document.documentElement.style.overflow = prevHtml
+    }
+  }, [])
   const groupSections = React.useMemo(() => ({
     favorites: Array.from(favorites || []),
     auction_system: ['admin-auctions','admin-slider','admin-items','admin-terms','admin-liveaction','admin-ratings'],
@@ -1327,7 +1339,7 @@ export default function Admin() {
 
   return (
     <TourCtx.Provider value={{ startSectionTour, sectionTourEnabled }}>
-    <div ref={rootRef} className={`min-h-screen bg-vintage-cream tooltip-root ${tipsEnabled ? '' : 'tips-off'}`}>
+    <div ref={rootRef} className={`h-screen overflow-hidden overscroll-none flex flex-col bg-vintage-cream tooltip-root ${tipsEnabled ? '' : 'tips-off'}`}>
       <header className="border-b bg-white/80 backdrop-blur">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1358,14 +1370,14 @@ export default function Admin() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 pt-4 pb-4 flex-1 min-h-0 box-border overflow-hidden flex flex-col">
         {saved && <div className="section-card p-3 text-emerald-700 bg-emerald-50 mb-6">{L('Sparat!','Saved!')}</div>}
 
-        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6 h-full min-h-0">
           {/* Sidebar */}
-          <aside id="admin-sidebar" className="self-start" role="navigation" aria-label={L('Adminsektioner','Admin sections')}>
-            <div className="sticky top-16 h-[calc(100vh-4rem)]">
-              <div className="section-card p-4 h-full overflow-y-auto">
+          <aside id="admin-sidebar" className="h-full self-start" role="navigation" aria-label={L('Adminsektioner','Admin sections')}>
+            <div className="h-full">
+              <div className="section-card p-4 h-full overflow-y-auto" aria-label={L('Sidomeny','Sidebar menu')}>
                 <nav className="flex flex-col gap-2 text-sm">
                 {/* Favorites */}
                 <div>
@@ -1531,6 +1543,7 @@ export default function Admin() {
 
           {/* Content */}
           <AdminUxCtx.Provider value={{ favorites, toggleFavorite, collapsed, toggleCollapsed }}>
+          <div className="h-full overflow-y-auto pr-1">
           <div className="grid gap-6">
 
         {/* Analytics Dashboard */}
@@ -2418,6 +2431,8 @@ export default function Admin() {
         </div>
 
         {/* end content grid */}
+        </div>
+        {/* end scroll wrapper */}
         </div>
         </AdminUxCtx.Provider>
         {/* end outer grid container */}
