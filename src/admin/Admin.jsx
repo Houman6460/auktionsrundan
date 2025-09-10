@@ -10,37 +10,65 @@ import { queryEvents as analyticsQueryEvents, summarize as analyticsSummarize, b
 // Context for section tour controls
 const TourCtx = React.createContext({ startSectionTour: () => {}, sectionTourEnabled: true })
 
+// UI context for favorites/collapsed panels
+const AdminUxCtx = React.createContext({
+  favorites: new Set(),
+  toggleFavorite: () => {},
+  collapsed: {},
+  toggleCollapsed: () => {},
+})
+
 function Section({ id, title, children, visible = true, help }) {
   const [showHelp, setShowHelp] = React.useState(false)
   const tour = React.useContext(TourCtx)
+  const ux = React.useContext(AdminUxCtx) || {}
+  const isFav = !!(ux.favorites && typeof ux.favorites.has === 'function' && ux.favorites.has(id))
+  const isCollapsed = !!(ux.collapsed && ux.collapsed[id])
   return (
     <section id={id} className={`section-card p-5 ${visible ? '' : 'hidden'}`}>
       <div className="flex items-start justify-between gap-3 mb-2">
         <h2 className="font-serif text-2xl">{title}</h2>
-        {help ? (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="btn-outline text-xs whitespace-nowrap"
-              onClick={()=>setShowHelp(v=>!v)}
-              aria-expanded={showHelp}
-              aria-controls={`${id}-help`}
-              title="Help / Hjälp"
-            >{showHelp ? '✕ ' : '❓ '}Help</button>
-            <button
-              type="button"
-              className={`btn-outline text-xs whitespace-nowrap ${tour.sectionTourEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}
-              onClick={()=> tour.startSectionTour(id, help, title)}
-              disabled={!tour.sectionTourEnabled}
-              title={tour.sectionTourEnabled ? 'Play walkthrough' : 'Section tour disabled'}
-            >▶ Play</button>
-          </div>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {/* Favorite toggle */}
+          <button
+            type="button"
+            className={`btn-outline text-xs ${isFav ? 'text-earth-dark' : ''}`}
+            onClick={()=> ux.toggleFavorite && ux.toggleFavorite(id)}
+            title={isFav ? '★ Remove favorite / Ta bort favorit' : '☆ Add to favorites / Lägg till favorit'}
+            aria-pressed={isFav}
+          >{isFav ? '★' : '☆'}</button>
+          {/* Minimize toggle */}
+          <button
+            type="button"
+            className="btn-outline text-xs whitespace-nowrap"
+            onClick={()=> ux.toggleCollapsed && ux.toggleCollapsed(id)}
+            title={isCollapsed ? 'Expand / Expandera' : 'Minimize / Minimera'}
+          >{isCollapsed ? '+' : '–'}</button>
+          {help ? (
+            <>
+              <button
+                type="button"
+                className="btn-outline text-xs whitespace-nowrap"
+                onClick={()=>setShowHelp(v=>!v)}
+                aria-expanded={showHelp}
+                aria-controls={`${id}-help`}
+                title="Help / Hjälp"
+              >{showHelp ? '✕ ' : '❓ '}Help</button>
+              <button
+                type="button"
+                className={`btn-outline text-xs whitespace-nowrap ${tour.sectionTourEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}
+                onClick={()=> tour.startSectionTour(id, help, title)}
+                disabled={!tour.sectionTourEnabled}
+                title={tour.sectionTourEnabled ? 'Play walkthrough' : 'Section tour disabled'}
+              >▶ Play</button>
+            </>
+          ) : null}
+        </div>
       </div>
       {help && showHelp && (
         <div id={`${id}-help`} className="mb-4 p-3 rounded border bg-neutral-50 text-sm text-neutral-700 whitespace-pre-wrap">{help}</div>
       )}
-      {children}
+      {!isCollapsed && children}
     </section>
   )
 }
@@ -143,6 +171,8 @@ export default function Admin() {
   const [expandIntegrations, setExpandIntegrations] = React.useState(true)
   const [expandAnalytics, setExpandAnalytics] = React.useState(true)
   const [expandSubscribers, setExpandSubscribers] = React.useState(true)
+  const [expandFavorites, setExpandFavorites] = React.useState(true)
+  const [expandAuctionModules, setExpandAuctionModules] = React.useState(true)
   const [tipsEnabled, setTipsEnabled] = React.useState(() => localStorage.getItem('ar_admin_tooltips') !== '0')
   // Tours: general (on login) and per-section enable toggles
   const [generalTourEnabled, setGeneralTourEnabled] = React.useState(() => localStorage.getItem('ar_admin_tour_general') !== '0')
@@ -154,19 +184,66 @@ export default function Admin() {
   // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
   const [activeFilter, setActiveFilter] = React.useState(null)
   const groupSections = React.useMemo(() => ({
-    design: ['admin-header','admin-hero','admin-slider','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
+    favorites: Array.from(favorites || []),
+    auction_system: ['admin-auctions','admin-slider','admin-items','admin-terms','admin-liveaction','admin-ratings'],
+    design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-terms','admin-instagram','admin-faq','admin-footer'],
     marketing: ['admin-newsletter','admin-share','admin-chat'],
     engagement: ['admin-liveaction','admin-registration','admin-ratings'],
     integrations: ['admin-maps'],
     analytics: ['admin-analytics'],
     subscribers: ['admin-subscribers'],
-  }), [])
+  }), [favorites])
   const isSectionVisible = React.useCallback((id) => {
     if (!activeFilter) return true
     if (groupSections[activeFilter]) return groupSections[activeFilter].includes(id)
     return activeFilter === id
   }, [activeFilter, groupSections])
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
+
+  // Favorites state
+  const [favorites, setFavorites] = React.useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('ar_admin_favorites') || '[]')) } catch { return new Set() }
+  })
+  const toggleFavorite = React.useCallback((id) => {
+    setFavorites((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      try { localStorage.setItem('ar_admin_favorites', JSON.stringify(Array.from(next))) } catch {}
+      return next
+    })
+  }, [])
+
+  // Collapsed state per section
+  const [collapsed, setCollapsed] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('ar_admin_collapsed') || '{}') || {} } catch { return {} }
+  })
+  const toggleCollapsed = React.useCallback((id) => {
+    setCollapsed((prev) => {
+      const next = { ...prev, [id]: !prev[id] }
+      try { localStorage.setItem('ar_admin_collapsed', JSON.stringify(next)) } catch {}
+      return next
+    })
+  }, [])
+
+  // Auto-save toggle
+  const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(() => localStorage.getItem('ar_admin_autosave') === '1')
+  React.useEffect(() => { localStorage.setItem('ar_admin_autosave', autoSaveEnabled ? '1' : '0') }, [autoSaveEnabled])
+  const autoSaveTimer = React.useRef(null)
+  React.useEffect(() => {
+    if (!autoSaveEnabled) return
+    try { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) } catch {}
+    autoSaveTimer.current = setTimeout(async () => {
+      try {
+        // Try a silent save with shrinking to reduce quota risk, but avoid state churn
+        let draft = data
+        try { draft = await shrinkForLocalStorage(data) } catch {}
+        try { saveContent(draft) } catch { saveContent(data) }
+        // Notify other tabs only
+        try { window.dispatchEvent(new StorageEvent('storage', { key: 'ar_site_content_v1' })) } catch {}
+      } catch (e) { console.warn('Auto-save failed', e) }
+    }, 800)
+    return () => { try { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) } catch {} }
+  }, [data, autoSaveEnabled])
 
   // Tour helpers
   const getGeneralTourSteps = React.useCallback(() => ([
@@ -1290,6 +1367,45 @@ export default function Admin() {
           <aside id="admin-sidebar" className="col-span-12 md:col-span-3 lg:col-span-3">
             <div className="section-card p-4 sticky top-0 max-h-[100vh] overflow-y-auto">
               <nav className="flex flex-col gap-2 text-sm">
+                {/* Favorites */}
+                <div>
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Favoriter','Show only Favorites')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandFavorites(v=>!v); setActiveFilter('favorites')}}>
+                    {expandFavorites ? '▾' : '▸'} {L('Favoriter','Favorites')}
+                  </button>
+                  {expandFavorites && (
+                    Array.from(favorites).length > 0 ? (
+                      <div className="pl-3 flex flex-col gap-1">
+                        {Array.from(favorites).map((sid) => (
+                          <a key={sid} href={`#${sid}`} className="hover:underline" data-tip-pos="overlay" data-tip-align="start" onClick={()=>setActiveFilter(sid)}>
+                            {({
+                              'admin-header': L('Header','Header'),
+                              'admin-hero': L('Hero (Hem)','Hero (Home)'),
+                              'admin-auctions': L('Kommande Auktioner','Upcoming Auctions'),
+                              'admin-slider': L('Slider (Auktioner)','Slider (Auctions)'),
+                              'admin-items': L('Auktionsvaror','Auction Items'),
+                              'admin-terms': L('Auktionsvillkor','Terms'),
+                              'admin-instagram': 'Instagram',
+                              'admin-faq': 'FAQ',
+                              'admin-footer': L('Footer','Footer'),
+                              'admin-newsletter': L('Nyhetsbrev','Newsletter'),
+                              'admin-share': L('Dela (Social)','Share (Social)'),
+                              'admin-chat': L('Chat (WhatsApp)','Chat (WhatsApp)'),
+                              'admin-liveaction': L('Auktion (Live)','Auction (Live)'),
+                              'admin-registration': L('Registrering','Registration'),
+                              'admin-ratings': L('Betyg','Ratings'),
+                              'admin-maps': 'Google Maps',
+                              'admin-analytics': L('Instrumentpanel','Dashboard'),
+                              'admin-subscribers': L('Prenumeranter','Subscribers'),
+                            }[sid] || sid)}
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="pl-3 text-neutral-500">{L('Inga favoriter ännu.','No favorites yet.')}</div>
+                    )
+                  )}
+                </div>
+
                 <div>
                   <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Design‑sektioner','Show only Design sections')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandDesign(v=>!v); setActiveFilter('design')}}>
                     {expandDesign ? '▾' : '▸'} {L('Design','Design')}
@@ -1305,6 +1421,22 @@ export default function Admin() {
                       <a href="#admin-instagram" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}>{L('Instagram','Instagram')}</a>
                       <a href="#admin-faq" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera vanliga frågor och svar','Manage frequently asked questions')} onClick={()=>setActiveFilter('admin-faq')}>FAQ</a>
                       <a href="#admin-footer" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera kontaktuppgifter och sociala länkar','Edit contact details and social links')} onClick={()=>setActiveFilter('admin-footer')}>{L('Footer','Footer')}</a>
+                    </div>
+                  )}
+                </div>
+                {/* Auction System group (duplicate quick access) */}
+                <div className="mt-2">
+                  <button type="button" className="w-full text-left font-medium py-2" title={L('Visa auktionsmodulerna samlade','Show auction modules')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandAuctionModules(v=>!v); setActiveFilter('auction_system')}}>
+                    {expandAuctionModules ? '▾' : '▸'} {L('Auktioner (Moduler)','Auction System')}
+                  </button>
+                  {expandAuctionModules && (
+                    <div className="pl-3 flex flex-col gap-1">
+                      <a href="#admin-auctions" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera kommande platsauktioner','Manage upcoming in‑person auctions')} onClick={()=>setActiveFilter('admin-auctions')}>{L('Kommande Auktioner','Upcoming Auctions')}</a>
+                      <a href="#admin-slider" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Ställ in bildspel/slider för auktioner','Configure auctions slider')} onClick={()=>setActiveFilter('admin-slider')}>{L('Slider (Auktioner)','Slider (Auctions)')}</a>
+                      <a href="#admin-items" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}>{L('Auktionsvaror','Auction Items')}</a>
+                      <a href="#admin-terms" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}>{L('Auktionsvillkor','Terms')}</a>
+                      <a href="#admin-liveaction" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Skapa live‑auktion, lägg till varor och styr visningen','Create live auctions, add items and control the show')} onClick={()=>setActiveFilter('admin-liveaction')}>{L('Auktion (Live)','Auction (Live)')}</a>
+                      <a href="#admin-ratings" className="hover:underline" data-tip-pos="overlay" data-tip-align="start" title={L('Stjärnbetyg och besökaromdömen','Star ratings and visitor feedback')} onClick={()=>setActiveFilter('admin-ratings')}>{L('Betyg','Ratings')}</a>
                     </div>
                   )}
                 </div>
@@ -1380,6 +1512,12 @@ export default function Admin() {
                     <Toggle id="tour-section-toggle" checked={!!sectionTourEnabled} onChange={(e)=>{ const v=e.target.checked; setSectionTourEnabled(v); localStorage.setItem('ar_admin_tour_section', v ? '1' : '0') }} title={L('Aktivera/Avaktivera sektion‑genomgångar','Enable/Disable section tours')} />
                   </label>
                 </div>
+                <div className="mt-2">
+                  <label className="flex items-center justify-between gap-2" title={L('Spara ändringar automatiskt (session)','Auto‑save changes (session)')} data-tip-pos="overlay" data-tip-align="start">
+                    <span>{L('Auto‑spara','Auto‑save')}</span>
+                    <Toggle id="admin-autosave" checked={!!autoSaveEnabled} onChange={(e)=>setAutoSaveEnabled(e.target.checked)} />
+                  </label>
+                </div>
                 <div className="mt-3">
                   <button type="button" className="btn-outline w-full" onClick={()=>setActiveFilter(null)} title={L('Visa alla sektioner','Show all sections')} data-tip-pos="overlay" data-tip-align="start">{L('Visa alla','Show all')}</button>
                 </div>
@@ -1391,6 +1529,7 @@ export default function Admin() {
           </aside>
 
           {/* Content */}
+          <AdminUxCtx.Provider value={{ favorites, toggleFavorite, collapsed, toggleCollapsed }}>
           <div className="col-span-12 md:col-span-9 lg:col-span-9 grid gap-6">
 
         {/* Analytics Dashboard */}
@@ -2290,6 +2429,7 @@ export default function Admin() {
 
         {/* end content grid */}
         </div>
+        </AdminUxCtx.Provider>
         {/* end outer grid container */}
         </div>
       </main>
