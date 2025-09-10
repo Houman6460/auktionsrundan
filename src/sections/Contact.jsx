@@ -1,8 +1,22 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { loadContent } from '../services/store'
 
 export default function Contact() {
   const { t, i18n } = useTranslation()
+  const [content, setContent] = React.useState(loadContent())
+  React.useEffect(() => {
+    const onStorage = () => setContent(loadContent())
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+  const lang = (i18n?.language === 'en' || i18n?.language === 'sv') ? i18n.language : (localStorage.getItem('site_lang') || 'sv')
+  const cfg = content?.contact || {}
+  const titleText = (cfg.title && (cfg.title[lang] || cfg.title.sv || cfg.title.en)) || t('contact.title')
+  const introText = (cfg.intro && (cfg.intro[lang] || cfg.intro.sv || cfg.intro.en)) || t('contact.intro')
+  const recipient = (cfg.email && typeof cfg.email.to === 'string') ? cfg.email.to : ''
+  const subjectText = (cfg.email && cfg.email.subject && (cfg.email.subject[lang] || cfg.email.subject.sv || cfg.email.subject.en)) || 'New contact message'
+
   const [name, setName] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [message, setMessage] = React.useState('')
@@ -28,7 +42,7 @@ export default function Contact() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name, email, message, lang: i18n.language, ts: Date.now(), ua: navigator.userAgent }),
+        body: JSON.stringify({ name, email, message, lang: i18n.language, ts: Date.now(), ua: navigator.userAgent, to: recipient, subject: subjectText }),
       })
       const data = await res.json().catch(()=>({ ok:false }))
       if (res.ok && data && data.ok) {

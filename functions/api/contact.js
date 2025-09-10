@@ -18,6 +18,8 @@ export async function onRequestPost(context) {
     const email = (body.email || '').toString().trim()
     const message = (body.message || '').toString().trim()
     const lang = (body.lang || '').toString().trim().slice(0, 5)
+    const toOverride = (body.to || '').toString().trim()
+    const subjectOverride = (body.subject || '').toString().trim()
     if (!name || !email || !message) {
       return new Response(JSON.stringify({ ok: false, error: 'missing_fields' }), { status: 400, headers: { 'content-type': 'application/json' } })
     }
@@ -61,6 +63,44 @@ export async function onRequestPost(context) {
       // ignore
     }
 
+    // Attempt email via MailChannels if configured
+    try {
+      const toEmail = (toOverride || env?.CONTACT_TO || env?.MAIL_TO || '').toString().trim()
+      const fromEmail = (env?.MAIL_FROM || '').toString().trim()
+      const fromName = (env?.MAIL_FROM_NAME || 'Auktionsrundan').toString().trim()
+      const subject = subjectOverride || env?.CONTACT_SUBJECT || 'New contact message'
+      if (toEmail && fromEmail) {
+        const text = `New contact message\n\nName: ${name}\nEmail: ${email}\nLanguage: ${lang}\nReferrer: ${referer}\nIP: ${ip}\nUA: ${ua}\nTime: ${new Date(record.ts).toISOString()}\n\nMessage:\n${message}`
+        const html = `<!doctype html><html><body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height:1.5;">`
+          + `<h2 style="margin:0 0 12px;">New contact message</h2>`
+          + `<p><strong>Name:</strong> ${escapeHtml(name)}<br/><strong>Email:</strong> ${escapeHtml(email)}<br/><strong>Language:</strong> ${escapeHtml(lang)}<br/>`
+          + `<strong>Referrer:</strong> ${escapeHtml(referer)}<br/><strong>IP:</strong> ${escapeHtml(ip)}<br/><strong>UA:</strong> ${escapeHtml(ua)}<br/><strong>Time:</strong> ${new Date(record.ts).toLocaleString()}</p>`
+          + `<hr/><p style="white-space:pre-wrap;">${escapeHtml(message)}</p>`
+          + `</body></html>`
+        const payload = {
+          personalizations: [
+            { to: [{ email: toEmail }] }
+          ],
+          from: { email: fromEmail, name: fromName },
+          subject,
+          content: [
+            { type: 'text/plain', value: text },
+            { type: 'text/html', value: html }
+          ],
+          headers: { 'Reply-To': email }
+        }
+        const mcRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        // Do not fail the request if email provider returns error; still return ok
+        try { await mcRes.text() } catch {}
+      }
+    } catch (e) {
+      // ignore send errors to not break UX
+    }
+
     return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json' } })
   } catch (err) {
     return new Response(JSON.stringify({ ok: false, error: 'server_error' }), { status: 500, headers: { 'content-type': 'application/json' } })
@@ -70,4 +110,15 @@ export async function onRequestPost(context) {
 export async function onRequestGet() {
   // Simple health endpoint
   return new Response(JSON.stringify({ ok: true, service: 'contact' }), { headers: { 'content-type': 'application/json' } })
+}
+
+function escapeHtml(s) {
+  try {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+  } catch { return '' }
 }

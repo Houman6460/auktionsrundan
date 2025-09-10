@@ -169,6 +169,15 @@ const defaults = {
       }
     ]
   },
+  // Contact page settings (bilingual)
+  contact: {
+    title: { sv: 'Kontakta oss', en: 'Contact us' },
+    intro: { sv: 'Har du en fråga eller vill komma i kontakt? Fyll i formuläret så återkommer vi så snart vi kan.', en: 'Have a question or want to get in touch? Fill out the form and we will get back to you shortly.' },
+    email: {
+      to: '', // e.g., your Gmail address to receive messages
+      subject: { sv: 'Nytt kontaktmeddelande', en: 'New contact message' }
+    }
+  },
   // Social share settings
   share: {
     enabled: true,
@@ -546,6 +555,23 @@ function normalize(content) {
         text: ensureBilingual(it?.text),
         avatar: typeof it?.avatar === 'string' ? it.avatar : '',
       }))
+    }
+    // Ensure contact settings exist and normalize
+    if (!out.contact || typeof out.contact !== 'object') {
+      out.contact = deepClone(defaults.contact)
+    } else {
+      const ensureBilingual = (val, enDefault='') => {
+        if (typeof val === 'string') return { sv: val, en: enDefault }
+        if (val && typeof val === 'object') return { sv: val.sv ?? '', en: val.en ?? enDefault }
+        return { sv: '', en: enDefault }
+      }
+      out.contact.title = ensureBilingual(out.contact.title, defaults.contact.title.en)
+      out.contact.intro = ensureBilingual(out.contact.intro, defaults.contact.intro.en)
+      const em = out.contact.email || {}
+      out.contact.email = {
+        to: typeof em.to === 'string' ? em.to.trim() : '',
+        subject: ensureBilingual(em.subject, defaults.contact.email.subject.en)
+      }
     }
     // Ensure share section exists and normalize
     if (!out.share || typeof out.share !== 'object') {

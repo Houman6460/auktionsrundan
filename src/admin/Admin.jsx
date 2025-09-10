@@ -215,7 +215,7 @@ export default function Admin() {
   const groupSections = React.useMemo(() => ({
     favorites: Array.from(favorites || []),
     auction_system: ['admin-auctions','admin-slider','admin-items','admin-terms','admin-liveaction','admin-ratings'],
-    design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-testimonials','admin-terms','admin-instagram','admin-faq','admin-footer'],
+    design: ['admin-header','admin-hero','admin-auctions','admin-items','admin-testimonials','admin-terms','admin-contact','admin-instagram','admin-faq','admin-footer'],
     marketing: ['admin-newsletter','admin-share','admin-chat'],
     engagement: ['admin-liveaction','admin-registration','admin-ratings'],
     integrations: ['admin-maps'],
@@ -703,6 +703,7 @@ export default function Admin() {
     'admin-slider': 'view_carousel',
     'admin-items': 'category',
     'admin-testimonials': 'format_quote',
+    'admin-contact': 'contact_mail',
     'admin-terms': 'article',
     'admin-instagram': 'photo_camera',
     'admin-faq': 'help_center',
@@ -1506,6 +1507,7 @@ export default function Admin() {
                       <a href="#admin-items" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera varukategorier och bilder','Manage item categories and images')} onClick={()=>setActiveFilter('admin-items')}><Icon name={iconForSection('admin-items')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvaror','Auction Items')}</span></a>
                       <a href="#admin-testimonials" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Visa kundomdömen på webbplatsen','Show customer testimonials on the site')} onClick={()=>setActiveFilter('admin-testimonials')}><Icon name={iconForSection('admin-testimonials')} /><span className={sidebarMin?'sr-only':''}>{L('Kundomdömen','Testimonials')}</span></a>
                       <a href="#admin-terms" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Redigera auktionsvillkor på svenska och engelska','Edit auction terms in Swedish and English')} onClick={()=>setActiveFilter('admin-terms')}><Icon name={iconForSection('admin-terms')} /><span className={sidebarMin?'sr-only':''}>{L('Auktionsvillkor','Terms')}</span></a>
+                      <a href="#admin-contact" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Inställningar för kontaktsida och mottagare','Settings for contact page and recipient')} onClick={()=>setActiveFilter('admin-contact')}><Icon name={iconForSection('admin-contact')} /><span className={sidebarMin?'sr-only':''}>{L('Kontakt','Contact')}</span></a>
                       <a href="#admin-instagram" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Visa ett Instagramflöde på sajten','Show an Instagram feed on the site')} onClick={()=>setActiveFilter('admin-instagram')}><Icon name={iconForSection('admin-instagram')} /><span className={sidebarMin?'sr-only':''}>Instagram</span></a>
                       <a href="#admin-faq" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Hantera vanliga frågor och svar','Manage frequently asked questions')} onClick={()=>setActiveFilter('admin-faq')}><Icon name={iconForSection('admin-faq')} /><span className={sidebarMin?'sr-only':''}>FAQ</span></a>
                       <a href="#admin-footer" className={`hover:underline flex items-center ${sidebarMin ? 'justify-center w-full' : 'gap-2'}`} data-tip-pos="overlay" data-tip-align="start" title={L('Redigera kontaktuppgifter och sociala länkar','Edit contact details and social links')} onClick={()=>setActiveFilter('admin-footer')}><Icon name={iconForSection('admin-footer')} /><span className={sidebarMin?'sr-only':''}>{L('Footer','Footer')}</span></a>
@@ -2487,6 +2489,28 @@ export default function Admin() {
               <textarea className="w-full border rounded px-3 py-2 min-h-[100px]" title={L('Villkorstext (aktuellt språk)','Terms text (current language)')} value={val?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.terms.blocks[key] = { ...(n.terms.blocks[key]||{}), [currentLang]: e.target.value }; setData(n)}} />
             </div>
           ))}
+        </Section>
+
+        <Section id="admin-contact" title={L('Kontakt','Contact')} visible={isSectionVisible('admin-contact')} help={L('Ställ in innehåll och email‑mottagare för kontaktsidan. Titel, intro och ämne är tvåspråkiga som övriga sektioner.','Configure content and email recipient for the Contact page. Title, intro and subject are bilingual like other sections.') }>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('Sidinnehåll','Page content')} ({currentLang.toUpperCase()})</h3>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Titel','Title')}</label>
+              <input className="w-full border rounded px-3 py-2 mb-3" title={L('Titel på kontaktsidan (aktuellt språk)','Contact page title (current language)')} value={data.contact?.title?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.contact=n.contact||{}; n.contact.title = { ...(n.contact.title||{}), [currentLang]: e.target.value }; setData(n)}} />
+
+              <label className="block text-sm text-neutral-600 mb-1">{L('Introtext','Intro text')}</label>
+              <textarea className="w-full border rounded px-3 py-2 min-h-[100px] mb-3" title={L('Introduktionstext (aktuellt språk)','Intro text (current language)')} value={data.contact?.intro?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.contact=n.contact||{}; n.contact.intro = { ...(n.contact.intro||{}), [currentLang]: e.target.value }; setData(n)}} />
+
+              <label className="block text-sm text-neutral-600 mb-1">{L('Ämne','Subject')}</label>
+              <input className="w-full border rounded px-3 py-2" title={L('Standardämne på mail (aktuellt språk)','Default email subject (current language)')} value={data.contact?.email?.subject?.[currentLang] || ''} onChange={(e)=>{const n={...data}; n.contact=n.contact||{}; n.contact.email = n.contact.email||{}; n.contact.email.subject = { ...(n.contact.email.subject||{}), [currentLang]: e.target.value }; setData(n)}} />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg mb-2">{L('E‑postinställningar','Email settings')}</h3>
+              <label className="block text-sm text-neutral-600 mb-1">{L('Mottagare (Gmail)','Recipient (Gmail)')}</label>
+              <input className="w-full border rounded px-3 py-2" placeholder="you@gmail.com" title={L('Ange Gmail‑adress som ska ta emot kontaktmeddelanden','Provide the Gmail address to receive contact messages')} value={data.contact?.email?.to || ''} onChange={(e)=>{const n={...data}; n.contact=n.contact||{}; n.contact.email = { ...(n.contact.email||{}), to: e.target.value }; setData(n)}} />
+              <p className="text-xs text-neutral-600 mt-2">{L('Obs: För bästa leverans bör avsändaradress (MAIL_FROM) konfigureras i Cloudflare miljövariabler.','Note: For best deliverability, configure a sender address (MAIL_FROM) in Cloudflare environment variables.')}</p>
+            </div>
+          </div>
         </Section>
 
         <Section id="admin-instagram" title={L('Instagram','Instagram')} visible={isSectionVisible('admin-instagram')} help={L('Visa ett Instagramflöde på webbplatsen. Ange användarnamn och token.','Show an Instagram feed on the website. Provide username and token.') }>
