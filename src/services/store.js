@@ -170,7 +170,7 @@ const defaults = {
     events: {
       'act-demo-now': {
         id: 'act-demo-now',
-        title: { sv: 'Live Action Demo (Pågår)', en: 'Live Action Demo (Ongoing)' },
+        title: { sv: 'Live Auktion Demo (Pågår)', en: 'Live Auction Demo (Ongoing)' },
         startIso: '',
         visible: false,
         linkedAuctionIndex: 0,
@@ -215,7 +215,7 @@ const defaults = {
       },
       'act-demo-past': {
         id: 'act-demo-past',
-        title: { sv: 'Live Action Maj 2025', en: 'Live Action May 2025' },
+        title: { sv: 'Live Auktion Maj 2025', en: 'Live Auction May 2025' },
         startIso: '',
         visible: true,
         linkedAuctionIndex: 1,

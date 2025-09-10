@@ -407,23 +407,26 @@ export default function LiveActionAdmin({ data, setData, L }) {
       csvEscape(f.consent ? (f.tel||'') : ''),
     ])
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    downloadBlob(`live-action-feedback-${id}.csv`, 'text/csv;charset=utf-8;', csv)
+    downloadBlob(`live-auction-feedback-${id}.csv`, 'text/csv;charset=utf-8;', csv)
   }
 
   const exportSalesCsv = (id) => {
     const ev = actions.events[id]
     if (!ev) return
-    const headers = ['index','title_sv','title_en','start_price','sold','final_price']
+    const headers = ['index','title_sv','title_en','artist_sv','artist_en','country','start_price','sold','final_price']
     const rows = (ev.items||[]).map((it, i) => [
       String(i),
       csvEscape(it.title?.sv||''),
       csvEscape(it.title?.en||''),
+      csvEscape(it.artist?.sv||''),
+      csvEscape(it.artist?.en||''),
+      csvEscape(it.country||''),
       csvEscape(it.startPrice||''),
       it.sold ? 'TRUE' : 'FALSE',
       csvEscape(it.finalPrice||''),
     ])
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    downloadBlob(`live-action-sales-${id}.csv`, 'text/csv;charset=utf-8;', csv)
+    downloadBlob(`live-auction-sales-${id}.csv`, 'text/csv;charset=utf-8;', csv)
   }
 
   React.useEffect(() => {
@@ -441,12 +444,15 @@ export default function LiveActionAdmin({ data, setData, L }) {
   const exportItemsCsv = (id) => {
     const ev = actions.events[id]
     if (!ev) return
-    const headers = ['title_sv','title_en','desc_sv','desc_en','tags','start_price_sek','img','sold','final_price_sek']
+    const headers = ['title_sv','title_en','desc_sv','desc_en','artist_sv','artist_en','country','tags','start_price_sek','img','sold','final_price_sek']
     const rows = (ev.items||[]).map(it => [
       csvEscape(it.title?.sv || ''),
       csvEscape(it.title?.en || ''),
       csvEscape(it.desc?.sv || ''),
       csvEscape(it.desc?.en || ''),
+      csvEscape(it.artist?.sv || ''),
+      csvEscape(it.artist?.en || ''),
+      csvEscape(it.country || ''),
       csvEscape((it.tags||[]).join('|')),
       csvEscape(it.startPrice || ''),
       csvEscape(it.img || ''),
@@ -454,14 +460,14 @@ export default function LiveActionAdmin({ data, setData, L }) {
       csvEscape(it.finalPrice || ''),
     ])
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    downloadBlob(`live-action-items-${id}.csv`, 'text/csv;charset=utf-8;', csv)
+    downloadBlob(`live-auction-items-${id}.csv`, 'text/csv;charset=utf-8;', csv)
   }
 
   const downloadTemplateCsv = () => {
-    const headers = ['title_sv','title_en','desc_sv','desc_en','tags','start_price_sek','img','sold','final_price_sek']
-    const sample = ['Exempelvara','Sample item','Kort beskrivning','Short description','antik|retro','100','','FALSE','']
+    const headers = ['title_sv','title_en','desc_sv','desc_en','artist_sv','artist_en','country','tags','start_price_sek','img','sold','final_price_sek']
+    const sample = ['Exempelvara','Sample item','Kort beskrivning','Short description','Konstnärens namn','Artist name','SE','antik|retro','100','','FALSE','']
     const csv = [headers.join(','), sample.map(csvEscape).join(',')].join('\n')
-    downloadBlob('live-action-items-template.csv', 'text/csv;charset=utf-8;', csv)
+    downloadBlob('live-auction-items-template.csv', 'text/csv;charset=utf-8;', csv)
   }
 
   const importItemsCsv = async (id, file) => {
@@ -477,6 +483,9 @@ export default function LiveActionAdmin({ data, setData, L }) {
         en: idxOf('title_en'),
         dsv: idxOf('desc_sv'),
         den: idxOf('desc_en'),
+        asv: idxOf('artist_sv'),
+        aen: idxOf('artist_en'),
+        country: idxOf('country'),
         tags: idxOf('tags'),
         start: idxOf('start_price_sek'),
         img: idxOf('img'),
@@ -486,6 +495,22 @@ export default function LiveActionAdmin({ data, setData, L }) {
       const required = ['title_sv','title_en','start_price_sek']
       const missing = required.filter(h => !headers.includes(h))
       if (missing.length) { alert(L('Ogiltig CSV. Saknade kolumner: ','Invalid CSV. Missing columns: ') + missing.join(', ')); return }
+      const normCountry = (val) => {
+        const raw = String(val||'').trim()
+        if (!raw) return ''
+        const up = raw.toUpperCase()
+        if (/^[A-Z]{2}$/.test(up)) return up
+        try {
+          const codes = getRegionCodes('en')
+          const lower = raw.toLowerCase()
+          const found = codes.find(c => {
+            const sv = (regionLabel(c,'sv')||'').toLowerCase()
+            const en = (regionLabel(c,'en')||'').toLowerCase()
+            return sv === lower || en === lower
+          })
+          return found || ''
+        } catch { return '' }
+      }
       const items = rows.slice(1).filter(r => r.some(cell => String(cell||'').trim() !== '')).map(r => {
         const soldRaw = String((idx.sold>=0 ? r[idx.sold] : '') || '').trim().toLowerCase()
         const isSold = ['true','1','yes','y','ja'].includes(soldRaw)
@@ -493,6 +518,8 @@ export default function LiveActionAdmin({ data, setData, L }) {
         return {
           title: { sv: String((idx.sv>=0 ? r[idx.sv] : '') || '').trim(), en: String((idx.en>=0 ? r[idx.en] : '') || '').trim() },
           desc: { sv: String((idx.dsv>=0 ? r[idx.dsv] : '') || '').trim(), en: String((idx.den>=0 ? r[idx.den] : '') || '').trim() },
+          artist: { sv: String((idx.asv>=0 ? r[idx.asv] : '') || '').trim(), en: String((idx.aen>=0 ? r[idx.aen] : '') || '').trim() },
+          country: normCountry(idx.country>=0 ? r[idx.country] : ''),
           tags: String((idx.tags>=0 ? r[idx.tags] : '') || '').split('|').map(s=>s.trim()).filter(Boolean),
           startPrice: String((idx.start>=0 ? r[idx.start] : '') || '').trim(),
           img: String((idx.img>=0 ? r[idx.img] : '') || '').trim(),
@@ -678,7 +705,7 @@ export default function LiveActionAdmin({ data, setData, L }) {
                 <div className="mt-2 text-xs text-neutral-700 space-y-1">
                   <div>• {L('Dra en vara för att ändra ordning.','Drag an item to re‑order.')}</div>
                   <div>• {L('Kortkommandon: Mellanslag = Start/Stop, N = Nästa, S = Såld.','Shortcuts: Space = Start/Stop, N = Next, S = Sold.')}</div>
-                  <div>• {L('CSV‑import stödjer beskrivning och taggar ("tags" separerade med |).','CSV import supports description and tags ("tags" separated by |).')}</div>
+                  <div>• {L('CSV‑import stödjer beskrivning, konstnär och land (land som ISO‑kod eller namn), samt taggar ("tags" separerade med |).','CSV import supports description, artist, and country (country as ISO code or name), and tags ("tags" separated by |).')}</div>
                 </div>
               </details>
               <div className="grid gap-3">
