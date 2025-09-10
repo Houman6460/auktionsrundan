@@ -1363,9 +1363,10 @@ export default function Admin() {
 
         <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6">
           {/* Sidebar */}
-          <aside id="admin-sidebar" className="md:sticky md:top-0 md:h-screen" role="navigation" aria-label={L('Adminsektioner','Admin sections')}>
-            <div className="section-card p-4 h-full overflow-y-auto">
-              <nav className="flex flex-col gap-2 text-sm">
+          <aside id="admin-sidebar" className="self-start" role="navigation" aria-label={L('Adminsektioner','Admin sections')}>
+            <div className="sticky top-16 h-[calc(100vh-4rem)]">
+              <div className="section-card p-4 h-full overflow-y-auto">
+                <nav className="flex flex-col gap-2 text-sm">
                 {/* Favorites */}
                 <div>
                   <button type="button" className="w-full text-left font-medium py-2" title={L('Visa endast Favoriter','Show only Favorites')} data-tip-pos="overlay" data-tip-align="start" onClick={()=>{setExpandFavorites(v=>!v); setActiveFilter('favorites')}}>
@@ -1525,6 +1526,7 @@ export default function Admin() {
                 <button className="btn-outline w-full" onClick={hardReset} title={L('Återställ allt innehåll till standard','Reset all content to defaults')} data-tip-pos="overlay" data-tip-align="start">{L('Återställ standard','Reset to defaults')}</button>
               </nav>
             </div>
+            </div>
           </aside>
 
           {/* Content */}
@@ -1605,19 +1607,8 @@ export default function Admin() {
               </div>
               <div id="analytics-seg-route">
                 <div className="text-xs text-neutral-600 mb-1">{L('Sida','Route')}</div>
-                <div className="flex flex-wrap gap-2 max-h-16 overflow-y-auto">
-                  {analyticsSelection.routes.map((v)=> (
-                    <button key={v} type="button" className={`px-2 py-1 text-xs rounded border ${analyticsFilters.route.includes(v) ? 'bg-earth-dark text-white' : 'bg-white'}`} title={L('Filtrera på sida: ','Filter by route: ') + v} data-tip-pos="bottom" onClick={()=>setAnalyticsFilters((f)=>({ ...f, route: f.route.includes(v) ? f.route.filter(x=>x!==v) : [...f.route, v] }))}>{v}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-serif text-lg mb-2">{L('Betyg per auktion','Ratings per auction')}</h3>
-              <div id="analytics-ratings-auctions" className="section-card p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm text-neutral-700">{L('Sammanställning av betyg','Ratings summary')}</div>
-                  <button type="button" className="btn-outline text-sm" onClick={()=>{
+                <div className="flex items-center justify-end">
+                  <button type="button" className="btn-outline" onClick={()=>{
                     const rows = analyticsSelection.events.filter(e=>e.type==='rating_submit')
                     analyticsExportEventsCsv(rows)
                   }} title={L('Exportera alla betyg','Export all ratings')}>{L('Exportera CSV','Export CSV')}</button>
