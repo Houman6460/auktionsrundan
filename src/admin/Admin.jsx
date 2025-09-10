@@ -183,6 +183,18 @@ export default function Admin() {
   const rootRef = React.useRef(null)
   // Filtering state: null = show all, or a group key (design, marketing, engagement, integrations, subscribers) or a section id (e.g. 'admin-header')
   const [activeFilter, setActiveFilter] = React.useState(null)
+  // Favorites state (moved above groupSections to avoid TDZ)
+  const [favorites, setFavorites] = React.useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('ar_admin_favorites') || '[]')) } catch { return new Set() }
+  })
+  const toggleFavorite = React.useCallback((id) => {
+    setFavorites((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      try { localStorage.setItem('ar_admin_favorites', JSON.stringify(Array.from(next))) } catch {}
+      return next
+    })
+  }, [])
   const groupSections = React.useMemo(() => ({
     favorites: Array.from(favorites || []),
     auction_system: ['admin-auctions','admin-slider','admin-items','admin-terms','admin-liveaction','admin-ratings'],
@@ -199,19 +211,6 @@ export default function Admin() {
     return activeFilter === id
   }, [activeFilter, groupSections])
   const L = (sv, en) => (currentLang === 'en' ? en : sv)
-
-  // Favorites state
-  const [favorites, setFavorites] = React.useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem('ar_admin_favorites') || '[]')) } catch { return new Set() }
-  })
-  const toggleFavorite = React.useCallback((id) => {
-    setFavorites((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id); else next.add(id)
-      try { localStorage.setItem('ar_admin_favorites', JSON.stringify(Array.from(next))) } catch {}
-      return next
-    })
-  }, [])
 
   // Collapsed state per section
   const [collapsed, setCollapsed] = React.useState(() => {
